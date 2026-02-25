@@ -3,22 +3,26 @@ import {
   HeroSection,
   SocialProofBar,
   ProblemSolutionSection,
-  FeaturesSection,
+  ModuleShowcaseSection,
+  AIAgentsSection,
   HowItWorksSection,
   PricingPreviewSection,
   CTASection,
 } from '@/components/landing/sections'
+import { IndustrySolutionsSection } from '@/components/landing/industry-solutions'
 import { LandingFooter } from '@/components/landing/footer'
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 text-white">
+    <div className="min-h-screen bg-gradient-to-b from-brand-charcoal-900 via-brand-charcoal-900 to-brand-charcoal-800 text-white">
       <LandingNav />
       <main>
         <HeroSection />
         <SocialProofBar />
         <ProblemSolutionSection />
-        <FeaturesSection />
+        <IndustrySolutionsSection />
+        <ModuleShowcaseSection />
+        <AIAgentsSection />
         <HowItWorksSection />
         <PricingPreviewSection />
         <CTASection />

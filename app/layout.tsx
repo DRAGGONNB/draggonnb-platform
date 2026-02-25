@@ -15,8 +15,8 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: "DraggonnB CRMM - Client Relationship & Marketing Management",
-  description: "Rapid-deploy B2B automation SaaS platform for South African SMEs",
+  title: "DraggonnB - AI-Powered Business Operating System",
+  description: "Complete digital operations platform for South African businesses. Accommodation, restaurant, and custom industry modules with AI agents built in.",
 }
 
 export default function RootLayout({

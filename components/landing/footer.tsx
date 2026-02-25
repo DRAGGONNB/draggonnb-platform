@@ -1,8 +1,14 @@
 import Link from 'next/link'
 
 const footerLinks = {
-  Product: [
-    { label: 'Features', href: '#features' },
+  Solutions: [
+    { label: 'Accommodation & Lodges', href: '#solutions' },
+    { label: 'Restaurant & Events', href: '#solutions' },
+    { label: 'Custom Solutions', href: '#solutions' },
+  ],
+  Platform: [
+    { label: 'Modules', href: '#modules' },
+    { label: 'AI Agents', href: '#how-it-works' },
     { label: 'Pricing', href: '/pricing' },
     { label: 'How It Works', href: '#how-it-works' },
   ],
@@ -18,17 +24,18 @@ const footerLinks = {
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-white/10 bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
+    <footer className="border-t border-white/10 bg-brand-charcoal-900 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
-          <div>
-            <Link href="/" className="mb-3 inline-block">
-              <span className="text-xl font-bold gradient-text">DraggonnB</span>{' '}
-              <span className="text-sm font-medium text-slate-500">CRMM</span>
+          <div className="lg:col-span-2">
+            <Link href="/" className="mb-3 inline-flex items-baseline gap-1.5">
+              <span className="text-xl font-bold gradient-text-brand">DraggonnB</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-charcoal-400">OS</span>
             </Link>
-            <p className="text-sm leading-relaxed text-slate-500">
-              Complete B2B automation for South African SMEs. CRM, AI content, social media, and more.
+            <p className="text-sm leading-relaxed text-brand-charcoal-400">
+              AI-powered business operating system for South African SMEs. Accommodation,
+              restaurant, and custom industry modules -- all with AI agents built in.
             </p>
           </div>
 
@@ -41,7 +48,7 @@ export function LandingFooter() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-slate-500 transition-colors hover:text-slate-300"
+                      className="text-sm text-brand-charcoal-400 transition-colors hover:text-brand-charcoal-200"
                     >
                       {link.label}
                     </Link>
@@ -53,11 +60,11 @@ export function LandingFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-brand-charcoal-500">
             Made for South African SMEs. All prices in ZAR.
           </p>
-          <p className="text-xs text-slate-600">
-            &copy; {new Date().getFullYear()} DraggonnB CRMM. All rights reserved.
+          <p className="text-xs text-brand-charcoal-500">
+            &copy; {new Date().getFullYear()} DraggonnB. All rights reserved.
           </p>
         </div>
       </div>

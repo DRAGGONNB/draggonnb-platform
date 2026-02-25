@@ -17,7 +17,7 @@ export function QualificationCTA() {
   const [errorMessage, setErrorMessage] = useState('')
 
   const inputClasses =
-    'w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 text-white placeholder-slate-500 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20'
+    'w-full rounded-lg border border-white/10 bg-brand-charcoal-900/50 px-4 py-3 text-white placeholder-brand-charcoal-400 transition-colors focus:border-brand-crimson-500 focus:outline-none focus:ring-2 focus:ring-brand-crimson-500/20'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -63,22 +63,22 @@ export function QualificationCTA() {
   return (
     <section className="relative overflow-hidden px-4 py-24 sm:px-6 lg:px-8">
       {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0 gradient-mesh opacity-30" />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/15 blur-[100px]" />
+      <div className="pointer-events-none absolute inset-0 gradient-mesh-brand opacity-30" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-crimson-600/15 blur-[100px]" />
 
       <div className="relative mx-auto max-w-3xl">
         <div className="text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-brand-crimson-500 to-brand-crimson-700 shadow-lg">
             <Brain className="h-7 w-7 text-white" />
           </div>
 
           <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
-            What&apos;s Holding Your{' '}
-            <span className="gradient-text">Business Back?</span>
+            Ready to Start Your{' '}
+            <span className="gradient-text-brand">Digital Journey?</span>
           </h2>
 
-          <p className="mx-auto mb-8 max-w-xl text-lg text-slate-400">
-            Tell us your biggest challenge and our AI will show you how to automate it.
+          <p className="mx-auto mb-8 max-w-xl text-lg text-brand-charcoal-300">
+            Tell us your biggest operational challenge. Our AI will show you exactly which modules solve it.
           </p>
         </div>
 
@@ -92,7 +92,7 @@ export function QualificationCTA() {
         {/* Inline form */}
         <form
           onSubmit={handleSubmit}
-          className="mx-auto max-w-xl rounded-xl border border-white/10 bg-slate-800/60 p-6 shadow-2xl backdrop-blur-sm sm:p-8"
+          className="mx-auto max-w-xl rounded-xl border border-white/10 bg-brand-charcoal-800/60 p-6 shadow-2xl backdrop-blur-sm sm:p-8"
         >
           <div className="mb-4 grid gap-4 sm:grid-cols-2">
             <input
@@ -116,7 +116,7 @@ export function QualificationCTA() {
           <textarea
             required
             rows={3}
-            placeholder="Describe your biggest business challenge -- what keeps you up at night?"
+            placeholder="Describe your biggest operational challenge -- what keeps you up at night?"
             value={challenge}
             onChange={(e) => setChallenge(e.target.value)}
             className={inputClasses + ' mb-4 resize-none'}
@@ -137,7 +137,7 @@ export function QualificationCTA() {
             type="submit"
             size="lg"
             disabled={isSubmitting}
-            className="btn-futuristic h-12 w-full rounded-xl text-base"
+            className="btn-brand h-12 w-full rounded-xl text-base"
           >
             {isSubmitting ? (
               <>
@@ -146,7 +146,7 @@ export function QualificationCTA() {
               </>
             ) : (
               <>
-                Get Your AI Solution
+                Start Your Digital Journey
                 <ArrowRight className="ml-2 h-4 w-4" />
               </>
             )}
@@ -154,13 +154,13 @@ export function QualificationCTA() {
         </form>
 
         {/* Trust badges */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-brand-charcoal-400">
           <span className="flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-purple-400" />
+            <Sparkles className="h-4 w-4 text-brand-crimson-400" />
             AI-Powered Analysis
           </span>
           <span className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4 text-blue-400" />
+            <Clock className="h-4 w-4 text-brand-crimson-300" />
             72-Hour Setup
           </span>
           <span className="flex items-center gap-1.5">
