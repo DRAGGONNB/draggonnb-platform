@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-02-02)
 
 **Core value:** A complete, working end-to-end business automation platform that can be cloned and deployed for a new client within 48-72 hours.
-**Current focus:** Brand colour unification complete. Vercel deploy secrets configured. Production credentials + social OAuth remaining.
+**Current focus:** Landing page updated to reflect actual feature availability. Dashboard + CRM show empty data (needs seed data or end-to-end test). Restaurant & Events module not yet built. Production credentials + social OAuth remaining.
 
 ## Current Position
 
-Phase: ALL 7 PHASES COMPLETE + v2 Evolution + Audit fixes + DB migrations + Dashboard fixes + Brand rebrand
+Phase: ALL 7 PHASES COMPLETE + v2 Evolution + Audit fixes + DB migrations + Dashboard fixes + Brand rebrand + Landing page accuracy update
 Plan: 16/16 plans complete + all migrations applied to Supabase
 Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-mvp.vercel.app
-Last activity: 2026-02-25 -- Session 24: Brand colour unification across all pages + Vercel deploy secrets fix
-Progress: [████████████] 100% COMPLETE (social OAuth + PayFast passphrase remaining)
+Last activity: 2026-02-25 -- Session 25: Landing page accuracy update + full platform gap analysis
+Progress: [██████████░░] ~85% COMPLETE (dashboard/CRM empty data, restaurant module unbuilt, accommodation UI partial, PayFast passphrase, OAuth credentials)
 
 ## Accumulated Context
 
@@ -31,12 +31,30 @@ Key architectural decisions:
 
 ### Pending Todos
 
+**Critical -- Dashboard & CRM show empty/zero data on production:**
+- Investigate why dashboard and CRM pages render no data. Likely causes:
+  1. No seed data exists in Supabase for the logged-in user's organization
+  2. RLS policies may be blocking queries (user's org_id doesn't match data)
+  3. `getUserOrg()` may be failing silently (check browser console / server logs)
+- Resolution: Run end-to-end test on production (signup -> create contacts/deals -> verify dashboard stats populate)
+- If no data in DB: add seed data for the test organization, or create records via CRM UI and verify they appear
+
+**Feature gaps identified by gap analysis:**
+- Restaurant & Events module: ZERO code exists (no DB, no API, no UI). Landing page now shows "Coming Soon"
+- Accommodation UI: Only ~30% built (properties, guests, inquiries). Missing: pricing UI, booking confirmation, payment processing, operations workflow, guest portal. DB schema (35 tables) is complete.
+- Payment cancel page (`/payment/cancel`): Does not exist
+- Subscription management / billing history UI: Does not exist
+
+**Infrastructure:**
 - Configure PayFast passphrase (from PayFast dashboard)
 - Switch PAYFAST_MODE from sandbox to production (when ready for real payments)
 - Configure Facebook/LinkedIn OAuth credentials (for social posting)
 
 ### Blockers/Concerns
 
+- Dashboard + CRM pages render empty -- needs investigation (data vs auth vs RLS)
+- Restaurant & Events module not built -- landing page updated to show "Coming Soon"
+- Accommodation UI only covers inventory + inquiries -- pricing, bookings, operations UI needed
 - Facebook App ID/Secret not yet configured (OAuth flow ready, needs credentials)
 - LinkedIn Client ID/Secret not yet configured (OAuth flow ready, needs credentials)
 - PayFast passphrase not yet provided (merchant ID + key configured)
@@ -44,9 +62,41 @@ Key architectural decisions:
 
 ## Session Continuity
 
-Last session: 2026-02-25 (Session 24)
-Stopped at: Brand colour rebrand complete across all 19 files. Vercel deploy secrets (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID) confirmed configured by user.
-Resume with: Merge PR to main, verify Vercel deploy with new colours. PayFast passphrase, Facebook/LinkedIn OAuth credentials still outstanding.
+Last session: 2026-02-25 (Session 25)
+Stopped at: Landing page updated to reflect actual feature availability. Gap analysis complete. Dashboard + CRM empty data documented as priority handover task.
+Resume with: 1) Fix dashboard/CRM empty data (seed data or auth/RLS investigation). 2) Merge PR to main. 3) PayFast passphrase + OAuth credentials. 4) Build out accommodation UI or restaurant module based on priority.
+
+### Session 25 Summary (2026-02-25)
+**What was accomplished:**
+1. Full platform gap analysis across all modules:
+   - CRM, Email, Content Studio, AI Agents, Autopilot, Provisioning: fully functional
+   - Accommodation: DB complete (35 tables), UI covers ~30% (properties, guests, inquiries)
+   - Restaurant & Events: ZERO code exists (only landing page marketing copy)
+   - Missing: /payment/cancel page, subscription management UI, billing history
+2. Landing page updated to reflect actual feature availability:
+   - Restaurant & Events module card shows "Coming Soon" badge with dimmed styling
+   - Restaurant industry tab shows "Coming Soon" badge + "Register Interest" CTA
+   - Accommodation features split into "Available Now" and "Expanding" sections
+   - Pain points rewritten to highlight CRM/email (fully built) instead of bookings
+   - Hero subtitle updated to reference live features (CRM, email, AI content, agents)
+   - Module showcase subtitle simplified (removed "production-ready" for all)
+3. Dashboard + CRM empty data issue documented as priority handover task
+4. No new TypeScript errors introduced
+
+**Git commits this session:**
+- `fb5789c` Update landing page to reflect actual feature availability
+- `22a75b0` Update STATE.md with session 24 summary and add ERR-012 to error catalogue
+- `895f783` Replace old blue/electric/neon colours with brand-crimson/charcoal/gold across all pages
+
+**Still needed (priority order):**
+1. Fix dashboard/CRM empty data rendering (investigate: seed data vs auth vs RLS)
+2. Merge PR to main and verify Vercel deploy
+3. PayFast passphrase (from PayFast dashboard)
+4. PAYFAST_MODE switch to production (when ready)
+5. Facebook/LinkedIn OAuth credentials
+6. Build remaining accommodation UI (pricing, bookings, operations, guest portal)
+7. Build Restaurant & Events module (when ready -- currently "Coming Soon")
+8. Add /payment/cancel page and subscription management UI
 
 ### Session 24 Summary (2026-02-25)
 **What was accomplished:**
@@ -136,6 +186,9 @@ Resume with: Merge PR to main, verify Vercel deploy with new colours. PayFast pa
 - Gitea DNS doesn't resolve from Windows dev machine -- use SSH + localhost:3030
 
 ### Previous Sessions
+- Session 24 (2026-02-25): Brand colour unification (19 files) + Vercel deploy secrets fix
+- Session 23 (2026-02-10): Production credentials (PayFast, Resend, Supabase service role, email tracking)
+- Session 22 (2026-02-10): Dashboard fixes, CRM navigation, security hardening, missing tables
 - Session 21 (2026-02-09): Audit fixes + Supabase migrations (RLS, accommodation, RPC)
 - Session 20 (2026-02-08): Cleanup (git, Vercel, GitHub sync)
 - Sessions 1-19: All 7 phases built + v2 evolution plan
