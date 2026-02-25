@@ -179,6 +179,35 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
+    /* Brand Colors - Crimson/Burgundy (Landing Page) */
+    --brand-crimson-50: 348 100% 97%;
+    --brand-crimson-100: 348 90% 90%;
+    --brand-crimson-200: 348 85% 78%;
+    --brand-crimson-300: 348 80% 65%;
+    --brand-crimson-400: 348 78% 52%;
+    --brand-crimson-500: 348 75% 42%;
+    --brand-crimson-600: 348 72% 35%;
+    --brand-crimson-700: 348 68% 28%;
+    --brand-crimson-800: 348 62% 22%;
+    --brand-crimson-900: 348 58% 16%;
+
+    /* Brand Colors - Charcoal (Landing Page) */
+    --brand-charcoal-50: 220 15% 95%;
+    --brand-charcoal-100: 220 14% 85%;
+    --brand-charcoal-200: 220 13% 70%;
+    --brand-charcoal-300: 220 12% 55%;
+    --brand-charcoal-400: 220 12% 40%;
+    --brand-charcoal-500: 220 14% 28%;
+    --brand-charcoal-600: 220 16% 20%;
+    --brand-charcoal-700: 220 18% 14%;
+    --brand-charcoal-800: 220 20% 10%;
+    --brand-charcoal-900: 220 22% 6%;
+
+    /* Brand Colors - Gold Accent */
+    --brand-gold-400: 38 90% 58%;
+    --brand-gold-500: 38 85% 50%;
+    --brand-gold-600: 38 80% 42%;
+
     /* Border Radius */
     --radius: 0.5rem;
     --radius-sm: 0.375rem;
@@ -834,5 +863,66 @@
     box-shadow:
       0 0 0 3px hsl(var(--electric-blue-400) / 0.2),
       0 0 20px hsl(var(--electric-blue-400) / 0.1);
+  }
+
+  /* Brand Gradient Text - Crimson to Gold */
+  .gradient-text-brand {
+    background: linear-gradient(135deg, hsl(var(--brand-crimson-400)) 0%, hsl(var(--brand-crimson-300)) 50%, hsl(var(--brand-gold-400)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Brand Gradient Mesh for Hero Backgrounds */
+  .gradient-mesh-brand {
+    background:
+      radial-gradient(at 0% 0%, hsl(var(--brand-crimson-600) / 0.3) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsl(var(--brand-crimson-800) / 0.2) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsl(var(--brand-gold-600) / 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(var(--brand-charcoal-700) / 0.3) 0px, transparent 50%);
+  }
+
+  /* Brand Button - Crimson Gradient */
+  .btn-brand {
+    @apply px-6 py-3 rounded-xl font-semibold text-white relative overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--brand-crimson-500)) 0%, hsl(var(--brand-crimson-700)) 100%);
+    box-shadow: 0 4px 15px hsl(var(--brand-crimson-500) / 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .btn-brand::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-brand:hover::before {
+    left: 100%;
+  }
+
+  .btn-brand:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px hsl(var(--brand-crimson-500) / 0.5);
+  }
+
+  .btn-brand:active {
+    transform: translateY(0);
+  }
+
+  /* Brand Hover Glow */
+  .hover-glow-brand {
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+
+  .hover-glow-brand:hover {
+    box-shadow:
+      0 0 20px hsl(var(--brand-crimson-400) / 0.3),
+      0 0 40px hsl(var(--brand-crimson-400) / 0.15);
+    border-color: hsl(var(--brand-crimson-400) / 0.5);
   }
 }
