@@ -21,10 +21,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
  */
 
 // Tier hierarchy for comparison
+// Accommodation standalone tiers map to equivalent CRMM access levels
 const TIER_HIERARCHY: Record<string, number> = {
   core: 1, starter: 1,
   growth: 2, professional: 2,
   scale: 3, enterprise: 3,
+  accommodation_starter: 1,
+  accommodation_growth: 2,
+  accommodation_safari: 3,
 }
 
 // Map old tier names to new
@@ -62,6 +66,8 @@ export type UsageMetric =
   | 'email_sends'
   | 'agent_invocations'
   | 'autopilot_runs'
+  | 'bookings'
+  | 'whatsapp_messages'
 
 export interface FeatureCheckResult {
   allowed: boolean
@@ -78,7 +84,7 @@ export interface UsageCheckResult {
 }
 
 // Tier limits configuration
-export const TIER_LIMITS: Record<string, Record<UsageMetric, number>> = {
+export const TIER_LIMITS: Record<string, Partial<Record<UsageMetric, number>>> = {
   core: {
     social_posts: 30,
     ai_generations: 50,
@@ -100,6 +106,35 @@ export const TIER_LIMITS: Record<string, Record<UsageMetric, number>> = {
     agent_invocations: 1000,
     autopilot_runs: Infinity,
   },
+  // Accommodation standalone tiers
+  accommodation_starter: {
+    bookings: 50,
+    whatsapp_messages: 0,
+    ai_generations: 10,
+    email_sends: 500,
+    agent_invocations: 0,
+  },
+  accommodation_growth: {
+    bookings: 200,
+    whatsapp_messages: 500,
+    ai_generations: 50,
+    email_sends: 2000,
+    agent_invocations: 20,
+  },
+  accommodation_safari: {
+    bookings: Infinity,
+    whatsapp_messages: 2000,
+    ai_generations: 200,
+    email_sends: Infinity,
+    agent_invocations: 100,
+  },
+}
+
+// Accommodation resource limits (non-monthly, count-based)
+export const ACCOMMODATION_RESOURCE_LIMITS: Record<string, { properties: number; units: number }> = {
+  accommodation_starter: { properties: 1, units: 5 },
+  accommodation_growth: { properties: 3, units: 15 },
+  accommodation_safari: { properties: 10, units: 50 },
 }
 
 // Feature access by minimum tier
@@ -119,7 +154,12 @@ const FEATURE_MIN_TIER: Record<Feature, string> = {
   business_autopilot: 'core',
   api_access: 'scale',
   custom_integrations: 'scale',
-  accommodation_module: 'growth',
+  accommodation_module: 'accommodation_starter', // Any accommodation tier or CRMM growth+
+}
+
+// Accommodation tiers always get accommodation_module access
+function isAccommodationTier(tier: string): boolean {
+  return tier.startsWith('accommodation_')
 }
 
 export function checkFeatureAccess(tier: string, feature: Feature): FeatureCheckResult {
@@ -130,6 +170,12 @@ export function checkFeatureAccess(tier: string, feature: Feature): FeatureCheck
     return { allowed: false, reason: `Unknown feature: ${feature}` }
   }
 
+  // Accommodation tiers always have accommodation_module access
+  if (feature === 'accommodation_module' && isAccommodationTier(normalizedTier)) {
+    return { allowed: true }
+  }
+
+  // CRMM growth+ tiers also get accommodation access
   const tierLevel = TIER_HIERARCHY[normalizedTier] || 0
   const requiredLevel = TIER_HIERARCHY[requiredTier] || 0
 
@@ -168,6 +214,10 @@ export async function checkUsage(
   }
 
   const limit = limits[metric]
+  // If this metric has no limit defined for this tier, allow by default
+  if (limit === undefined) {
+    return { allowed: true, current: 0, limit: Infinity }
+  }
 
   // Get current usage
   const { data: usage, error: usageError } = await supabase
@@ -187,6 +237,8 @@ export async function checkUsage(
     email_sends: 'emails_sent_monthly',
     agent_invocations: 'agent_invocations_monthly',
     autopilot_runs: 'autopilot_runs_monthly',
+    bookings: 'bookings_monthly',
+    whatsapp_messages: 'whatsapp_messages_monthly',
   }
 
   const current = (usage as Record<string, number>)[metricColumn[metric]] || 0
@@ -196,7 +248,10 @@ export async function checkUsage(
   }
 
   // Find the next tier that allows more
-  const tierNames = ['core', 'growth', 'scale']
+  const isAccomTier = isAccommodationTier(tier)
+  const tierNames = isAccomTier
+    ? ['accommodation_starter', 'accommodation_growth', 'accommodation_safari']
+    : ['core', 'growth', 'scale']
   const currentIndex = tierNames.indexOf(tier)
   const upgradeTier = currentIndex < tierNames.length - 1 ? tierNames[currentIndex + 1] : undefined
 
@@ -222,6 +277,8 @@ export async function incrementUsage(
     email_sends: 'emails_sent_monthly',
     agent_invocations: 'agent_invocations_monthly',
     autopilot_runs: 'autopilot_runs_monthly',
+    bookings: 'bookings_monthly',
+    whatsapp_messages: 'whatsapp_messages_monthly',
   }
 
   const column = metricColumn[metric]
