@@ -1,7 +1,25 @@
 import { Octokit } from 'octokit';
+import { createClient } from '@supabase/supabase-js';
 import { CreatedResources } from '@/lib/provisioning/types';
 
 export const rollbackActions = {
+  async organization(organizationId: string): Promise<void> {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !serviceRoleKey || !organizationId) return;
+
+    console.log(`Rolling back: Deleting organization ${organizationId}`);
+    try {
+      const supabase = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      // CASCADE will delete users, tenant_modules, usage_metrics, etc.
+      await supabase.from('organizations').delete().eq('id', organizationId);
+    } catch (error) {
+      console.error(`Failed to rollback organization: ${error}`);
+    }
+  },
+
   async supabase(projectId: string): Promise<void> {
     const token = process.env.SUPABASE_MANAGEMENT_TOKEN;
     if (!token || !projectId) return;
@@ -68,10 +86,17 @@ export const rollbackActions = {
 export async function rollbackProvisioning(resources: CreatedResources): Promise<void> {
   console.log('Starting rollback...');
 
-  // Reverse order: N8N -> Vercel -> GitHub -> Supabase
+  // Reverse order: N8N -> Organization (cascades) -> Legacy infra
   if (resources.n8nWorkflowId) {
     await rollbackActions.n8n(resources.n8nWorkflowId);
   }
+
+  // Shared DB rollback (org deletion cascades to users, modules, etc.)
+  if (resources.organizationId) {
+    await rollbackActions.organization(resources.organizationId);
+  }
+
+  // Legacy: per-client infrastructure (for existing pre-migration clients)
   if (resources.vercelProjectId) {
     await rollbackActions.vercel(resources.vercelProjectId);
   }

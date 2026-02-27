@@ -10,6 +10,11 @@ export interface ProvisioningJob {
 }
 
 export interface CreatedResources {
+  // Shared DB provisioning (new)
+  organizationId?: string;
+  subdomain?: string;
+
+  // Legacy: per-client Supabase (kept for backwards compat)
   supabaseProjectId?: string;
   supabaseProjectRef?: string;
   supabaseAnonKey?: string;
@@ -19,6 +24,8 @@ export interface CreatedResources {
   githubRepoUrl?: string;
   vercelProjectId?: string;
   vercelDeploymentUrl?: string;
+
+  // Active: N8N + automations + onboarding
   n8nWorkflowId?: string;
   n8nWebhookUrl?: string;
   automationWorkflowIds?: string;
@@ -34,6 +41,7 @@ export interface ProvisioningResult {
 }
 
 export type ProvisioningStep =
+  | 'create-org'
   | 'supabase-project'
   | 'database-schema'
   | 'github-repo'

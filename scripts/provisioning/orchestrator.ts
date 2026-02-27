@@ -1,10 +1,7 @@
-import { ProvisioningJob, CreatedResources, ProvisioningResult } from '../../lib/provisioning/types';
+import { ProvisioningJob, CreatedResources } from '../../lib/provisioning/types';
 import { validateProvisioningEnv } from '../../lib/provisioning/config';
-import { ClientConfig, ClientModules, ClientBranding, ClientIntegrations, ClientDeployment, generateClientConfig, validateClientConfig, Tier } from '../../lib/provisioning/client-config';
-import { createSupabaseProject } from './steps/01-supabase';
-import { cloneSchemaToProject } from './steps/02-database';
-import { createGitHubRepo } from './steps/03-github';
-import { createVercelProject } from './steps/04-vercel';
+import { ClientModules, ClientBranding, ClientIntegrations, ClientDeployment, generateClientConfig, validateClientConfig, Tier } from '../../lib/provisioning/client-config';
+import { createOrganization } from './steps/01-create-org';
 import { createN8NWorkflow } from './steps/05-n8n';
 import { deployAutomations } from './steps/06-automations';
 import { sendOnboardingSequence } from './steps/07-onboarding';
@@ -16,6 +13,16 @@ export interface ProvisioningOrchestrator {
   createdResources: CreatedResources;
 }
 
+/**
+ * Provision a new client in the shared database.
+ *
+ * Simplified flow (shared DB architecture):
+ * Step 1: Create organization row + user + modules (replaces per-client Supabase)
+ * Step 2: Configure N8N webhooks
+ * Step 3: Deploy client-specific automations (non-fatal)
+ * Step 4: Send onboarding sequence (non-fatal)
+ * Step 5: Run QA checks (non-fatal)
+ */
 export async function provisionClient(
   clientId: string,
   clientName: string,
@@ -28,7 +35,7 @@ export async function provisionClient(
     deployment?: Partial<ClientDeployment>;
   }
 ): Promise<{ success: boolean; resources?: CreatedResources; error?: string }> {
-  // Validate env vars first
+  // Validate env vars
   const envCheck = validateProvisioningEnv();
   if (!envCheck.valid) {
     return {
@@ -37,7 +44,7 @@ export async function provisionClient(
     };
   }
 
-  // Normalize tier for config generation
+  // Normalize tier
   const normalizedTier: Tier = (['starter', 'core'].includes(tier) ? 'core'
     : ['professional', 'growth'].includes(tier) ? 'growth'
     : 'scale') as Tier;
@@ -61,47 +68,17 @@ export async function provisionClient(
   const resources: CreatedResources = {};
 
   try {
-    // Step 1: Create Supabase project
-    console.log('Step 1/8: Creating Supabase project...');
-    const supabaseResult = await createSupabaseProject(job);
-    if (!supabaseResult.success) {
-      throw new Error(`Supabase creation failed: ${supabaseResult.error}`);
+    // Step 1: Create organization + user + modules in shared DB
+    console.log('Step 1/5: Creating organization...');
+    const orgResult = await createOrganization(job);
+    if (!orgResult.success) {
+      throw new Error(`Organization creation failed: ${orgResult.error}`);
     }
-    Object.assign(resources, supabaseResult.data);
+    Object.assign(resources, orgResult.data);
     job.createdResources = { ...resources };
 
-    // Step 2: Clone database schema
-    console.log('Step 2/8: Cloning database schema...');
-    if (resources.supabaseDatabaseUrl) {
-      const schemaResult = await cloneSchemaToProject(
-        resources.supabaseDatabaseUrl,
-        resources.supabaseProjectRef || ''
-      );
-      if (!schemaResult.success) {
-        throw new Error(`Schema cloning failed: ${schemaResult.error}`);
-      }
-    }
-
-    // Step 3: Create GitHub repo
-    console.log('Step 3/8: Creating GitHub repository...');
-    const githubResult = await createGitHubRepo(job);
-    if (!githubResult.success) {
-      throw new Error(`GitHub creation failed: ${githubResult.error}`);
-    }
-    Object.assign(resources, githubResult.data);
-    job.createdResources = { ...resources };
-
-    // Step 4: Create Vercel deployment
-    console.log('Step 4/8: Creating Vercel deployment...');
-    const vercelResult = await createVercelProject(job, resources);
-    if (!vercelResult.success) {
-      throw new Error(`Vercel creation failed: ${vercelResult.error}`);
-    }
-    Object.assign(resources, vercelResult.data);
-    job.createdResources = { ...resources };
-
-    // Step 5: Configure N8N webhooks
-    console.log('Step 5/8: Configuring N8N webhooks...');
+    // Step 2: Configure N8N webhooks
+    console.log('Step 2/5: Configuring N8N webhooks...');
     const n8nResult = await createN8NWorkflow(job);
     if (!n8nResult.success) {
       throw new Error(`N8N configuration failed: ${n8nResult.error}`);
@@ -109,8 +86,8 @@ export async function provisionClient(
     Object.assign(resources, n8nResult.data);
     job.createdResources = { ...resources };
 
-    // Step 6: Deploy client-specific automations (non-fatal)
-    console.log('Step 6/8: Deploying client automations...');
+    // Step 3: Deploy client-specific automations (non-fatal)
+    console.log('Step 3/5: Deploying client automations...');
     try {
       const automationResult = await deployAutomations(job);
       if (automationResult.data) {
@@ -118,11 +95,11 @@ export async function provisionClient(
       }
       job.createdResources = { ...resources };
     } catch (automationError) {
-      console.warn('Step 6 warning (non-fatal):', automationError);
+      console.warn('Step 3 warning (non-fatal):', automationError);
     }
 
-    // Step 7: Send onboarding email sequence (non-fatal)
-    console.log('Step 7/8: Sending onboarding emails...');
+    // Step 4: Send onboarding email sequence (non-fatal)
+    console.log('Step 4/5: Sending onboarding emails...');
     try {
       const onboardingResult = await sendOnboardingSequence(job);
       if (onboardingResult.data) {
@@ -130,11 +107,11 @@ export async function provisionClient(
       }
       job.createdResources = { ...resources };
     } catch (emailError) {
-      console.warn('Step 7 warning (non-fatal):', emailError);
+      console.warn('Step 4 warning (non-fatal):', emailError);
     }
 
-    // Step 8: QA health checks (non-fatal, reports results)
-    console.log('Step 8/8: Running QA checks...');
+    // Step 5: QA health checks (non-fatal)
+    console.log('Step 5/5: Running QA checks...');
     try {
       const qaResult = await runQAChecks(job, resources);
       if (qaResult.data) {
@@ -147,7 +124,7 @@ export async function provisionClient(
         }
       }
     } catch (qaError) {
-      console.warn('Step 8 warning (non-fatal):', qaError);
+      console.warn('Step 5 warning (non-fatal):', qaError);
     }
 
     console.log('Provisioning complete!');

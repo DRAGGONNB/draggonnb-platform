@@ -250,6 +250,40 @@ export async function incrementUsage(
   }
 }
 
+// Check if a specific module is enabled for an organization (DB-backed)
+export async function checkModuleAccess(
+  organizationId: string,
+  moduleId: string
+): Promise<{ allowed: boolean; reason?: string }> {
+  const supabase = createAdminClient()
+
+  const { data } = await supabase
+    .from('tenant_modules')
+    .select('is_enabled')
+    .eq('organization_id', organizationId)
+    .eq('module_id', moduleId)
+    .single()
+
+  if (!data || !data.is_enabled) {
+    return { allowed: false, reason: `Module '${moduleId}' is not enabled for this organization` }
+  }
+
+  return { allowed: true }
+}
+
+// Get all enabled modules for an organization
+export async function getEnabledModules(organizationId: string): Promise<string[]> {
+  const supabase = createAdminClient()
+
+  const { data } = await supabase
+    .from('tenant_modules')
+    .select('module_id')
+    .eq('organization_id', organizationId)
+    .eq('is_enabled', true)
+
+  return (data || []).map((m: { module_id: string }) => m.module_id)
+}
+
 // Get AI generation limit for a subscription tier
 export function getGenerationLimit(tier: string): number {
   const normalized = normalizeTier(tier)

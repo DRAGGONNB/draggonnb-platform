@@ -2,13 +2,15 @@
 
 ## Multi-Client Architecture
 
-This is a template-based SaaS platform. The template repo (`DRAGGONNB/draggonnb-platform-template`) is the single source of truth for all code. Each client gets provisioned with:
-- Their own Supabase project (isolated DB + auth)
-- GitHub repo (forked from template)
-- Vercel deployment (linked to their repo)
+All clients share a single Supabase project with RLS-based tenant isolation. Each client gets provisioned with:
+- An organization row in the shared DB (with subdomain, tier, and modules)
+- A subdomain on `*.draggonnb.co.za` (wildcard DNS + Vercel wildcard domain)
+- Activated modules via `tenant_modules` table (DB-backed feature gating)
 - N8N workflows (cloned from template workflows in `n8n/`)
 
-Template changes flow downstream to clients via GitHub repo sync. Client-specific config lives in their repo's `client-config.json`, never in the template.
+Client-specific config lives in `tenant_modules.config` JSONB column. The `module_registry` table is the global catalog of available modules. Middleware resolves tenant context from subdomain on every request and injects it via headers (`x-tenant-id`, `x-tenant-tier`, `x-tenant-modules`).
+
+RLS policies use `get_user_org_id()` function (STABLE, cached per-query) for fast tenant isolation. All tables have `FORCE ROW LEVEL SECURITY` enabled.
 
 ## Role Definitions
 
@@ -75,7 +77,9 @@ After completing work that changes project state:
 
 ## Module Manifest
 
-The module manifest template lives at `scripts/provisioning/template/client-config.json`. Provisioning reads this to determine which modules to enable for a client (CRM, email, social, content, accommodation). Each module maps to feature flags, DB tables, and API routes.
+Module catalog lives in the `module_registry` table (Supabase). Per-tenant activation in `tenant_modules` table. Legacy `scripts/provisioning/template/client-config.json` retained for reference but DB is source of truth. Available modules: crm, email, social, content_studio, accommodation, ai_agents, analytics. Each module maps to route prefixes, DB tables, and tier requirements.
+
+Provisioning flow (5 steps): create-org (DB rows + modules) -> n8n-webhooks -> deploy-automations -> onboarding-sequence -> qa-checks. Rollback cascades via `DELETE FROM organizations WHERE id = ...`.
 
 ## Sub-Directory Build Specs
 
