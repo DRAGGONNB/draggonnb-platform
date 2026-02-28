@@ -54,3 +54,6 @@ Thumbs.db
 
 # credentials
 *-cred.json
+
+# provisioning results (generated)
+scripts/provisioning/clients/_results.json
