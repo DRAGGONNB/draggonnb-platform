@@ -1,5 +1,6 @@
 import { ProvisioningJob, ProvisioningResult } from '../../../lib/provisioning/types';
 import { Resend } from 'resend';
+import { sendTextMessage } from '../../../lib/whatsapp/client';
 
 export async function sendOnboardingSequence(job: ProvisioningJob): Promise<ProvisioningResult> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -66,6 +67,24 @@ export async function sendOnboardingSequence(job: ProvisioningJob): Promise<Prov
     }
   } catch (err) {
     console.warn('  Warning: failed to send first-automation email:', err);
+  }
+
+  // WhatsApp welcome message (non-fatal, requires phone number in job config)
+  const ownerPhone = (job.clientConfig as unknown as Record<string, unknown>)?.ownerPhone as string | undefined;
+  if (ownerPhone && process.env.WHATSAPP_ACCESS_TOKEN) {
+    try {
+      const subdomain = job.clientId;
+      const dashboardUrl = `https://${subdomain}.draggonnb.co.za/dashboard`;
+      await sendTextMessage(ownerPhone,
+        `Welcome to DraggonnB, ${job.clientName}!\n\n` +
+        `Your ${job.tier} plan is active and ready.\n\n` +
+        `Dashboard: ${dashboardUrl}\n\n` +
+        `Reply here anytime for support. We're here to help you grow!`
+      );
+      console.log(`  Sent WhatsApp welcome to ${ownerPhone}`);
+    } catch (waErr) {
+      console.warn('  Warning: failed to send WhatsApp welcome:', waErr);
+    }
   }
 
   return {

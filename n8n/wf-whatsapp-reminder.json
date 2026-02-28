@@ -1,0 +1,105 @@
+{
+  "name": "DraggonnB - WhatsApp Check-in Reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Daily 9 AM SAST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/accommodation_bookings?status=eq.confirmed&check_in=eq.{{$now.plus(1, 'day').toFormat('yyyy-MM-dd')}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-bookings",
+      "name": "Fetch Tomorrow Bookings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-batches",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v19.0/={{$env.WHATSAPP_PHONE_NUMBER_ID}}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.WHATSAPP_ACCESS_TOKEN}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{$json.guest_phone}}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"Reminder: Your stay is tomorrow!\\n\\nRef: {{$json.confirmation_code}}\\nCheck-in: {{$json.check_in}}\\n\\nPlease have your ID ready. If you need to make changes, reply to this message.\\n\\nSee you soon!\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-reminder",
+      "name": "Send WhatsApp Reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1000, 300]
+    }
+  ],
+  "connections": {
+    "Daily 9 AM SAST": {
+      "main": [
+        [{ "node": "Fetch Tomorrow Bookings", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Tomorrow Bookings": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [{ "node": "Send WhatsApp Reminder", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    { "name": "whatsapp" },
+    { "name": "accommodation" },
+    { "name": "cron" }
+  ]
+}

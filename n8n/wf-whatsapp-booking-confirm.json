@@ -1,0 +1,72 @@
+{
+  "name": "DraggonnB - WhatsApp Booking Confirmation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp/booking-confirm",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Booking Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v19.0/={{$env.WHATSAPP_PHONE_NUMBER_ID}}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.WHATSAPP_ACCESS_TOKEN}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{$json.guest_phone}}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"Booking Confirmed! \\n\\nRef: {{$json.confirmation_code}}\\nProperty: {{$json.property_name}}\\nCheck-in: {{$json.check_in}}\\nCheck-out: {{$json.check_out}}\\nGuests: {{$json.guest_count}}\\nTotal: {{$json.currency}} {{$json.total_amount}}\\n\\nWe look forward to welcoming you! Reply with your booking ref for updates.\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-confirmation",
+      "name": "Send WhatsApp Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"sent\", \"to\": $json.guest_phone } }}"
+      },
+      "id": "response",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Booking Webhook": {
+      "main": [
+        [{ "node": "Send WhatsApp Confirmation", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send WhatsApp Confirmation": {
+      "main": [
+        [{ "node": "Respond", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    { "name": "whatsapp" },
+    { "name": "accommodation" },
+    { "name": "notifications" }
+  ]
+}

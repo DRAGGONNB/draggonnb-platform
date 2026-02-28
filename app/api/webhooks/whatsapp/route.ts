@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
 import type { WhatsAppWebhookPayload } from '@/lib/whatsapp/types'
-import { handleIncomingMessage } from '@/lib/whatsapp/intake-flow'
+import { routeMessage } from '@/lib/whatsapp/router'
 
 // GET: Meta webhook verification
 export async function GET(request: Request) {
@@ -47,21 +47,16 @@ export async function POST(request: Request) {
         if (!messages) continue
 
         for (const message of messages) {
-          // Only handle text messages for intake flow
+          let text: string | null = null
+
           if (message.type === 'text' && message.text?.body) {
-            await handleIncomingMessage(
-              message.from,
-              message.text.body,
-              message.id
-            )
+            text = message.text.body
+          } else if (message.type === 'interactive' && message.interactive?.button_reply) {
+            text = message.interactive.button_reply.title
           }
-          // Handle interactive button replies
-          else if (message.type === 'interactive' && message.interactive?.button_reply) {
-            await handleIncomingMessage(
-              message.from,
-              message.interactive.button_reply.title,
-              message.id
-            )
+
+          if (text) {
+            await routeMessage(message.from, text, message.id)
           }
         }
       }
