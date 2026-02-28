@@ -1,222 +1,93 @@
-'use client'
-
-import { useState } from 'react'
-import Link from 'next/link'
 import {
-  Building2,
-  UtensilsCrossed,
-  Puzzle,
-  Check,
-  ArrowRight,
+  Calculator,
+  Hotel,
+  Home,
+  Briefcase,
+  ShoppingBag,
+  HeartPulse,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
-const tabs = [
-  { id: 'accommodation', label: 'Accommodation & Lodges', icon: Building2, comingSoon: false },
-  { id: 'restaurant', label: 'Restaurant & Events', icon: UtensilsCrossed, comingSoon: true },
-  { id: 'custom', label: 'Custom Solutions', icon: Puzzle, comingSoon: false },
-] as const
-
-type TabId = (typeof tabs)[number]['id']
-
-const accommodationFeaturesLive = [
-  'Property & unit inventory management',
-  'Guest database and profiles',
-  'Inquiry pipeline and tracking',
-  'Image gallery management',
-  'Property configuration',
-]
-
-const accommodationFeaturesExpanding = [
-  'Variable pricing engine (seasonal, per-person, per-unit)',
-  'Calendar + 3rd party booking sync',
-  'Guest portal with self-service',
-  'Booking confirmation & payment processing',
-  'Operations workflow & staff coordination',
-]
-
-const accommodationDomains = ['Inventory', 'Guests', 'Inquiries', 'Pricing', 'Bookings', 'Operations', 'Config']
-
-const restaurantFeatures = [
-  'Multi-entry API for POS/3rd party integration',
-  'Existing system integration (not rip-and-replace)',
-  'Staff SOPs via Telegram',
-  'Guest WhatsApp for bookings & pre-orders',
-  'Kitchen SOP management',
-  'Food temperature scanning & logging',
-  'Events coordination & checklists',
-  'Booking management',
-]
-
-const customFeatures = [
-  'AI agent lead scoring for your industry',
-  'MVP plan with mock designs before build',
-  'Your branding, your domain (white label)',
-  'Modular database -- pick the tables you need',
-  'CRM + Email + Social included in every build',
-  'API access for custom integrations',
+const industries = [
+  {
+    icon: Calculator,
+    title: 'Accounting Firms',
+    description:
+      'Manage client portfolios, automate follow-ups during tax season, and streamline onboarding. Track deadlines and send automated reminders.',
+    gradient: 'from-brand-crimson-500 to-brand-crimson-700',
+  },
+  {
+    icon: Hotel,
+    title: 'Hospitality',
+    description:
+      'Purpose-built accommodation module with property inventory, guest management, inquiry pipeline, and booking operations for lodges and guest houses.',
+    gradient: 'from-brand-crimson-600 to-brand-crimson-800',
+  },
+  {
+    icon: Home,
+    title: 'Real Estate',
+    description:
+      'Track property listings, manage buyer and seller pipelines, automate showing follow-ups, and send targeted campaigns to your prospect database.',
+    gradient: 'from-brand-gold-500 to-brand-crimson-500',
+  },
+  {
+    icon: Briefcase,
+    title: 'Professional Services',
+    description:
+      'From consulting to legal, manage client relationships, automate proposals, track billable engagements, and nurture leads through your pipeline.',
+    gradient: 'from-brand-crimson-400 to-brand-crimson-600',
+  },
+  {
+    icon: ShoppingBag,
+    title: 'Retail',
+    description:
+      'Build customer loyalty with targeted email campaigns, social media scheduling, and AI-generated content that drives repeat purchases.',
+    gradient: 'from-brand-crimson-500 to-brand-gold-500',
+  },
+  {
+    icon: HeartPulse,
+    title: 'Healthcare',
+    description:
+      'Patient communication, appointment follow-ups, and practice marketing. Automate patient engagement while maintaining a professional, caring presence.',
+    gradient: 'from-brand-crimson-400 to-brand-gold-500',
+  },
 ]
 
 export function IndustrySolutionsSection() {
-  const [activeTab, setActiveTab] = useState<TabId>('accommodation')
-
   return (
-    <section id="solutions" className="border-t border-white/10 bg-brand-charcoal-800/30 px-4 py-20 sm:px-6 lg:px-8">
+    <section id="industries" className="border-t border-white/10 bg-brand-charcoal-800/30 px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
+        <div className="mb-16 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+            Industry Solutions
+          </p>
+          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
             Built for{' '}
             <span className="gradient-text-brand">Your Industry</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
-            Deep, purpose-built modules -- not generic templates. Each solution includes
-            AI agents, staff communication, and complete operational workflows.
+            Whether you run a lodge, an accounting practice, or a retail business,
+            DraggonnB adapts to how you work with industry-specific modules and workflows.
           </p>
         </div>
 
-        {/* Tab Triggers */}
-        <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:justify-center sm:gap-0">
-          {tabs.map((tab) => {
-            const Icon = tab.icon
-            const isActive = activeTab === tab.id
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {industries.map((industry) => {
+            const Icon = industry.icon
             return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all sm:border-b-2 ${
-                  isActive
-                    ? 'border-brand-crimson-400 text-white'
-                    : 'border-transparent text-brand-charcoal-300 hover:text-white'
-                }`}
+              <div
+                key={industry.title}
+                className="group rounded-2xl border border-white/10 bg-brand-charcoal-800/60 p-6 transition-all hover-lift hover-glow-brand"
               >
-                <Icon className={`h-4 w-4 ${isActive ? 'text-brand-crimson-400' : ''}`} />
-                {tab.label}
-                {tab.comingSoon && (
-                  <span className="rounded-full bg-brand-gold-500/20 px-2 py-0.5 text-[10px] font-semibold text-brand-gold-400">
-                    Soon
-                  </span>
-                )}
-              </button>
+                <div
+                  className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${industry.gradient} shadow-lg`}
+                >
+                  <Icon className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-white">{industry.title}</h3>
+                <p className="text-sm leading-relaxed text-brand-charcoal-300">{industry.description}</p>
+              </div>
             )
           })}
-        </div>
-
-        {/* Tab Content */}
-        <div className="rounded-xl border border-brand-crimson-500/20 bg-brand-charcoal-800/60 p-6 backdrop-blur-sm sm:p-8 lg:p-10">
-          {activeTab === 'accommodation' && (
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div>
-                <h3 className="mb-5 text-xl font-semibold text-white">Property Operations</h3>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-crimson-400">Available Now</p>
-                <ul className="mb-6 space-y-3">
-                  {accommodationFeaturesLive.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm text-brand-charcoal-200">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-crimson-400" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-gold-400">Expanding</p>
-                <ul className="space-y-3">
-                  {accommodationFeaturesExpanding.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm text-brand-charcoal-300">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-charcoal-500" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <div className="mb-4 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-brand-crimson-500/20 bg-brand-crimson-500/10 px-3 py-1 text-xs text-brand-crimson-300">35-table schema</span>
-                  <span className="rounded-full border border-brand-crimson-500/20 bg-brand-crimson-500/10 px-3 py-1 text-xs text-brand-crimson-300">7 operational domains</span>
-                  <span className="rounded-full border border-brand-crimson-500/20 bg-brand-crimson-500/10 px-3 py-1 text-xs text-brand-crimson-300">Game Lodges</span>
-                  <span className="rounded-full border border-brand-crimson-500/20 bg-brand-crimson-500/10 px-3 py-1 text-xs text-brand-crimson-300">Guest Houses</span>
-                </div>
-                <p className="mb-6 text-sm leading-relaxed text-brand-charcoal-300">
-                  From a single guest house to a multi-property game lodge, the accommodation
-                  module provides a 35-table database foundation covering inventory, guests, and
-                  inquiries today -- with pricing, bookings, payments, and operations expanding
-                  in upcoming releases.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {accommodationDomains.map((domain) => (
-                    <span key={domain} className="rounded bg-brand-charcoal-700 px-2.5 py-1 text-xs text-brand-charcoal-200">
-                      {domain}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'restaurant' && (
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div>
-                <div className="mb-5 flex items-center gap-3">
-                  <h3 className="text-xl font-semibold text-white">Kitchen to Table Operations</h3>
-                  <span className="rounded-full bg-brand-gold-500/20 px-3 py-1 text-xs font-semibold text-brand-gold-400">Coming Soon</span>
-                </div>
-                <ul className="space-y-3">
-                  {restaurantFeatures.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm text-brand-charcoal-300">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-charcoal-500" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="mb-6 text-sm leading-relaxed text-brand-charcoal-300">
-                  Purpose-built for South African restaurants, event venues, and hospitality
-                  groups. Integrates with your existing POS and streamlines kitchen-to-table
-                  operations. This module is currently in development -- register your interest
-                  to get early access.
-                </p>
-                <div className="mb-6 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-brand-charcoal-500/30 bg-brand-charcoal-700/50 px-3 py-1 text-xs text-brand-charcoal-300">POS Integration</span>
-                  <span className="rounded-full border border-brand-charcoal-500/30 bg-brand-charcoal-700/50 px-3 py-1 text-xs text-brand-charcoal-300">Kitchen SOPs</span>
-                  <span className="rounded-full border border-brand-charcoal-500/30 bg-brand-charcoal-700/50 px-3 py-1 text-xs text-brand-charcoal-300">Events</span>
-                  <span className="rounded-full border border-brand-charcoal-500/30 bg-brand-charcoal-700/50 px-3 py-1 text-xs text-brand-charcoal-300">Restaurants</span>
-                  <span className="rounded-full border border-brand-charcoal-500/30 bg-brand-charcoal-700/50 px-3 py-1 text-xs text-brand-charcoal-300">Venues</span>
-                </div>
-                <Button asChild variant="outline" className="rounded-lg border-brand-gold-500/40 bg-transparent text-brand-gold-400 hover:bg-brand-gold-500/10 hover:text-brand-gold-300">
-                  <Link href="/qualify">
-                    Register Interest
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'custom' && (
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div>
-                <h3 className="mb-5 text-xl font-semibold text-white">Your Business, Your Rules</h3>
-                <ul className="space-y-3">
-                  {customFeatures.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm text-brand-charcoal-200">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-crimson-400" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="mb-6 text-sm leading-relaxed text-brand-charcoal-300">
-                  Every business is different. We build custom modules on top of the DraggonnB
-                  platform, giving you the speed of SaaS with the flexibility of a custom build.
-                </p>
-                <Button asChild className="btn-brand rounded-lg">
-                  <Link href="/qualify">
-                    Tell Us What You Need
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </section>

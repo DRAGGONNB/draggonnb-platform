@@ -1,23 +1,25 @@
+'use client'
+
 import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
 import {
   Users,
-  Sparkles,
   Mail,
-  Zap,
+  Share2,
+  Sparkles,
+  Building2,
+  Bot,
+  BarChart3,
   Check,
   ArrowRight,
-  MessageSquare,
-  Cpu,
-  Rocket,
-  Building2,
-  UtensilsCrossed,
-  Bot,
-  Brain,
-  FileText,
-  Repeat,
+  ClipboardCheck,
+  Settings2,
+  TrendingUp,
+  Zap,
+  Clock,
+  Send,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { QualificationCTA } from './qualification-cta'
 
 /* ------------------------------------------------------------------ */
 /*  Hero                                                               */
@@ -25,127 +27,60 @@ import { QualificationCTA } from './qualification-cta'
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden px-4 pb-20 pt-32 sm:px-6 sm:pt-40 lg:px-8 lg:pt-48">
+    <section className="relative overflow-hidden px-4 pb-24 pt-32 sm:px-6 sm:pt-40 lg:px-8 lg:pt-48">
       {/* Background Effects */}
       <div className="pointer-events-none absolute inset-0 gradient-mesh-brand opacity-40" />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-crimson-500/15 blur-[120px]" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-brand-crimson-500/15 blur-[140px]" />
+      <div className="pointer-events-none absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-brand-gold-500/10 blur-[120px]" />
 
       <div className="relative mx-auto max-w-5xl text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-crimson-400/30 bg-brand-crimson-500/10 px-4 py-1.5 text-sm text-brand-charcoal-100 backdrop-blur-sm">
           <Zap className="h-4 w-4 text-brand-crimson-400" />
-          Built for South African Business Operations
+          The CRM and Marketing Platform Built for South Africa
         </div>
 
-        <h1 className="mb-6 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-          Your AI-Powered{' '}
-          <span className="gradient-text-brand">Business Operating System</span>
+        <h1 className="mb-6 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-7xl">
+          Automate Your{' '}
+          <span className="gradient-text-brand">Business Growth</span>
         </h1>
 
-        <p className="mx-auto mb-10 max-w-2xl text-lg text-brand-charcoal-200 sm:text-xl">
-          Stop patching together tools. DraggonnB gives you a complete digital
-          operations platform -- CRM, email campaigns, AI content, and smart
-          agents that run your business around the clock.
+        <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-brand-charcoal-200 sm:text-xl">
+          DraggonnB is the all-in-one CRM, marketing, and automation platform that
+          helps South African businesses manage clients, send campaigns, and grow
+          revenue -- without the enterprise price tag.
         </p>
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <Button asChild size="lg" className="btn-brand h-12 rounded-xl px-8 text-base">
+          <Button asChild size="lg" className="btn-brand h-13 rounded-xl px-8 text-base">
             <Link href="/qualify">
-              Start Your Digital Journey
+              Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="h-12 rounded-xl border-brand-crimson-500/40 bg-transparent px-8 text-base text-brand-charcoal-100 hover:bg-brand-crimson-500/10 hover:text-white">
-            <a href="#solutions">Explore Solutions</a>
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="h-13 rounded-xl border-brand-charcoal-400/40 bg-transparent px-8 text-base text-brand-charcoal-100 hover:bg-white/5 hover:text-white"
+          >
+            <a href="#pricing">See Pricing</a>
           </Button>
         </div>
-      </div>
-    </section>
-  )
-}
 
-/* ------------------------------------------------------------------ */
-/*  Social Proof Bar                                                    */
-/* ------------------------------------------------------------------ */
-
-const stats = [
-  { value: '35+', label: 'Database Tables' },
-  { value: '4', label: 'AI Agents Built' },
-  { value: '72hr', label: 'Go-Live Time' },
-  { value: 'R1,500', label: 'Starting From /mo' },
-]
-
-export function SocialProofBar() {
-  return (
-    <section className="border-y border-white/10 bg-brand-charcoal-800/50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 md:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="text-center">
-            <p className="text-2xl font-bold text-brand-crimson-300 sm:text-3xl">{stat.value}</p>
-            <p className="mt-1 text-sm text-brand-charcoal-300">{stat.label}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/*  Problem / Solution                                                  */
-/* ------------------------------------------------------------------ */
-
-const painPoints = [
-  {
-    problem: 'Scattered contacts, lost deals, and no visibility on your pipeline',
-    solution: 'Complete CRM with contacts, companies, deals pipeline, and real-time stats',
-  },
-  {
-    problem: 'Manual email blasts, no sequences, and zero campaign analytics',
-    solution: 'Full email operations: campaigns, sequences, templates, A/B testing, and tracking',
-  },
-  {
-    problem: 'Expensive custom software that takes months to build',
-    solution: 'Out-of-the-box industry modules, live in 72 hours',
-  },
-  {
-    problem: 'No AI leverage -- your competitors are automating, you are not',
-    solution: 'AI agents that qualify leads, generate proposals, and run operations',
-  },
-]
-
-export function ProblemSolutionSection() {
-  return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
-            Stop Running Your Business on{' '}
-            <span className="gradient-text-brand">Spreadsheets</span>
-          </h2>
-          <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
-            South African businesses lose hours every week on manual processes. DraggonnB automates your operations end-to-end.
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {painPoints.map((item, i) => (
-            <div
-              key={i}
-              className="group rounded-xl border border-white/10 bg-brand-charcoal-800/50 p-6 transition-all hover-lift hover-glow-brand"
-            >
-              <div className="mb-3 flex items-start gap-3">
-                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-crimson-500/20 text-xs text-brand-crimson-400">
-                  X
-                </div>
-                <p className="text-brand-charcoal-300 line-through decoration-brand-charcoal-500">{item.problem}</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500/20">
-                  <Check className="h-3.5 w-3.5 text-green-400" />
-                </div>
-                <p className="font-medium text-white">{item.solution}</p>
-              </div>
-            </div>
-          ))}
+        {/* Trust indicators */}
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-brand-charcoal-400">
+          <span className="flex items-center gap-2">
+            <Check className="h-4 w-4 text-green-500" />
+            14-day free trial
+          </span>
+          <span className="flex items-center gap-2">
+            <Check className="h-4 w-4 text-green-500" />
+            No credit card required
+          </span>
+          <span className="flex items-center gap-2">
+            <Check className="h-4 w-4 text-green-500" />
+            Pay in Rands
+          </span>
         </div>
       </div>
     </section>
@@ -153,76 +88,69 @@ export function ProblemSolutionSection() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Module Showcase                                                     */
+/*  Module Showcase (Services/Features)                                */
 /* ------------------------------------------------------------------ */
 
 const modules = [
   {
     icon: Users,
     title: 'CRM & Pipeline',
-    description: 'Track contacts, companies, and deals. Automated lead nurture from WhatsApp intake to qualified opportunity.',
+    description:
+      'Manage contacts, companies, and deals in one place. Track every interaction and move leads through your sales pipeline with full visibility.',
     gradient: 'from-brand-crimson-500 to-brand-crimson-700',
-    tier: 'Core' as const,
-    comingSoon: false,
   },
   {
     icon: Mail,
-    title: 'Email Campaigns',
-    description: 'Sequences, templates, behavioral triggers, A/B testing, and smart segmentation. Full email operations.',
+    title: 'Email Marketing',
+    description:
+      'Build campaigns, automate sequences, and track results. Templates, A/B testing, smart segmentation, and deliverability built in.',
     gradient: 'from-brand-crimson-600 to-brand-crimson-800',
-    tier: 'Core' as const,
-    comingSoon: false,
   },
   {
-    icon: Building2,
-    title: 'Accommodation',
-    description: 'Property inventory, guest management, and inquiry pipeline live now. Variable pricing, bookings, and guest portal expanding soon.',
-    gradient: 'from-brand-crimson-400 to-brand-gold-500',
-    tier: 'Growth' as const,
-    comingSoon: false,
-  },
-  {
-    icon: UtensilsCrossed,
-    title: 'Restaurant & Events',
-    description: 'POS integration, kitchen SOPs, food temp scanning, events coordination, and booking management.',
-    gradient: 'from-brand-gold-500 to-brand-crimson-500',
-    tier: 'Growth' as const,
-    comingSoon: true,
+    icon: Share2,
+    title: 'Social Media',
+    description:
+      'Schedule posts, monitor engagement, and manage your social presence across platforms from a single dashboard.',
+    gradient: 'from-brand-crimson-400 to-brand-crimson-600',
   },
   {
     icon: Sparkles,
     title: 'Content Studio',
-    description: 'AI content generation for social, email, and web. Autopilot mode generates and schedules weekly content.',
-    gradient: 'from-brand-crimson-500 to-brand-charcoal-500',
-    tier: 'Growth' as const,
-    comingSoon: false,
+    description:
+      'Generate professional content with AI for social, email, and web. Autopilot mode creates and schedules weekly content for you.',
+    gradient: 'from-brand-gold-500 to-brand-crimson-500',
+  },
+  {
+    icon: Building2,
+    title: 'Accommodation',
+    description:
+      'Purpose-built for lodges, guest houses, and hospitality. Property inventory, guest management, inquiry pipeline, and booking operations.',
+    gradient: 'from-brand-crimson-400 to-brand-gold-500',
   },
   {
     icon: Bot,
     title: 'AI Agents',
-    description: 'LeadQualifier, ProposalGenerator, ClientOnboarding, BusinessAutopilot. Agents that run your business 24/7.',
-    gradient: 'from-brand-crimson-400 to-brand-crimson-600',
-    tier: 'Scale' as const,
-    comingSoon: false,
+    description:
+      'Intelligent agents that qualify leads, generate proposals, onboard clients, and run daily operations autonomously -- 24/7.',
+    gradient: 'from-brand-crimson-500 to-brand-charcoal-500',
   },
 ]
 
-const tierBadgeStyles = {
-  Core: 'bg-brand-charcoal-600/50 text-brand-charcoal-200',
-  Growth: 'bg-brand-crimson-500/20 text-brand-crimson-300',
-  Scale: 'bg-brand-gold-500/20 text-brand-gold-400',
-}
-
 export function ModuleShowcaseSection() {
   return (
-    <section id="modules" className="border-t border-white/10 bg-brand-charcoal-800/30 px-4 py-20 sm:px-6 lg:px-8">
+    <section id="modules" className="border-t border-white/10 bg-brand-charcoal-800/30 px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-14 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
-            Modular by <span className="gradient-text-brand">Design</span>
+        <div className="mb-16 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+            The Platform
+          </p>
+          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
+            Everything You Need to{' '}
+            <span className="gradient-text-brand">Run and Grow</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
-            Pick the modules your business needs. AI-enhanced and built for South African operations.
+            Modular by design. Pick the tools your business needs and add more as you scale.
+            Every module is AI-enhanced and built for South African operations.
           </p>
         </div>
 
@@ -232,23 +160,11 @@ export function ModuleShowcaseSection() {
             return (
               <div
                 key={mod.title}
-                className={`group relative rounded-xl border p-6 transition-all hover-lift ${
-                  mod.comingSoon
-                    ? 'border-white/5 bg-brand-charcoal-800/40 opacity-80'
-                    : 'border-white/10 bg-brand-charcoal-800/60 hover-glow-brand'
-                }`}
+                className="group relative rounded-2xl border border-white/10 bg-brand-charcoal-800/60 p-6 transition-all hover-lift hover-glow-brand"
               >
-                <div className="absolute right-4 top-4 flex items-center gap-2">
-                  {mod.comingSoon && (
-                    <span className="rounded-full bg-brand-gold-500/20 px-2.5 py-0.5 text-xs font-medium text-brand-gold-400">
-                      Coming Soon
-                    </span>
-                  )}
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${tierBadgeStyles[mod.tier]}`}>
-                    {mod.tier}
-                  </span>
-                </div>
-                <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${mod.gradient} shadow-lg ${mod.comingSoon ? 'opacity-60' : ''}`}>
+                <div
+                  className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${mod.gradient} shadow-lg`}
+                >
                   <Icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold text-white">{mod.title}</h3>
@@ -263,122 +179,47 @@ export function ModuleShowcaseSection() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  AI Agents                                                          */
-/* ------------------------------------------------------------------ */
-
-const agentSteps = [
-  { icon: MessageSquare, label: 'Lead comes in via WhatsApp', color: 'text-green-400' },
-  { icon: Brain, label: 'LeadQualifier scores & routes', color: 'text-brand-crimson-400' },
-  { icon: FileText, label: 'ProposalGenerator builds proposal', color: 'text-brand-crimson-300' },
-  { icon: Rocket, label: 'ClientOnboarding activates platform', color: 'text-brand-gold-400' },
-  { icon: Repeat, label: 'BusinessAutopilot runs operations', color: 'text-brand-crimson-400' },
-]
-
-export function AIAgentsSection() {
-  return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-          {/* Left: Text */}
-          <div>
-            <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
-              AI Agents That{' '}
-              <span className="gradient-text-brand">Never Sleep</span>
-            </h2>
-            <p className="mb-8 text-lg text-brand-charcoal-300">
-              Your business runs 24/7. Our AI agents handle lead qualification, proposal generation,
-              client onboarding, and daily operations -- across WhatsApp, Telegram, and email.
-            </p>
-
-            <ul className="space-y-4">
-              {[
-                { name: 'LeadQualifier', desc: 'Scores leads on fit, urgency, and size. Recommends tier.' },
-                { name: 'ProposalGenerator', desc: 'Creates custom proposals with pain points, solutions, pricing.' },
-                { name: 'ClientOnboarding', desc: 'Generates content calendars, email templates, automation playbooks.' },
-                { name: 'BusinessAutopilot', desc: 'Runs weekly content and email operations autonomously.' },
-              ].map((agent) => (
-                <li key={agent.name} className="flex items-start gap-3">
-                  <div className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-crimson-500/20">
-                    <Check className="h-3 w-3 text-brand-crimson-400" />
-                  </div>
-                  <div>
-                    <span className="font-semibold text-white">{agent.name}</span>
-                    <span className="text-brand-charcoal-300"> -- {agent.desc}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Right: Agent Pipeline Visual */}
-          <div className="relative flex flex-col items-center">
-            {agentSteps.map((step, i) => {
-              const Icon = step.icon
-              return (
-                <div key={step.label} className="relative flex w-full max-w-sm items-center gap-4">
-                  {/* Connector line */}
-                  {i < agentSteps.length - 1 && (
-                    <div className="absolute left-6 top-14 h-8 w-px bg-gradient-to-b from-brand-crimson-500/50 to-transparent" />
-                  )}
-
-                  <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-brand-charcoal-800">
-                    <Icon className={`h-5 w-5 ${step.color}`} />
-                  </div>
-                  <div className="rounded-lg border border-white/10 bg-brand-charcoal-800/60 px-4 py-3 text-sm text-brand-charcoal-100">
-                    {step.label}
-                  </div>
-
-                  {/* Spacer between steps */}
-                  {i < agentSteps.length - 1 && <div className="h-8" />}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/*  How It Works                                                        */
+/*  How It Works                                                       */
 /* ------------------------------------------------------------------ */
 
 const steps = [
   {
-    icon: MessageSquare,
+    icon: ClipboardCheck,
     number: '01',
-    title: 'Tell Us About Your Business',
+    title: 'Qualify and Sign Up',
     description:
-      'Share your industry, team size, and biggest operational challenges. Our AI analyzes your needs in minutes.',
+      'Tell us about your business, your industry, and your biggest challenges. Our qualification process ensures we match you with the right modules and tier.',
   },
   {
-    icon: Cpu,
+    icon: Settings2,
     number: '02',
-    title: 'Get Your Custom Operating System',
+    title: 'We Configure Your Platform',
     description:
-      'AI matches your needs to our module library and proposes a complete solution -- accommodation, CRM, AI agents, and more.',
+      'Your platform is provisioned automatically: isolated database, custom configuration, activated modules, and AI agents ready to work. Live in 72 hours.',
   },
   {
-    icon: Rocket,
+    icon: TrendingUp,
     number: '03',
-    title: 'Go Live in 72 Hours',
+    title: 'Start Growing',
     description:
-      'Your platform is provisioned automatically: isolated database, custom config, AI agents activated, staff channels connected.',
+      'Import your contacts, launch your first campaign, and let AI agents handle the rest. Ongoing support and module upgrades as your business scales.',
   },
 ]
 
 export function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="border-t border-white/10 bg-brand-charcoal-800/30 px-4 py-20 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-14 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
-            From Conversation to{' '}
-            <span className="gradient-text-brand">Operating System in 72 Hours</span>
+        <div className="mb-16 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+            How It Works
+          </p>
+          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
+            Three Steps to a{' '}
+            <span className="gradient-text-brand">Smarter Business</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
-            Three simple steps from your business challenges to a fully automated solution.
+            From sign-up to fully operational in as little as 72 hours.
           </p>
         </div>
 
@@ -387,23 +228,24 @@ export function HowItWorksSection() {
             const Icon = step.icon
             return (
               <div key={step.number} className="relative text-center">
+                {/* Connector line between steps */}
                 {i < steps.length - 1 && (
                   <div className="pointer-events-none absolute right-0 top-12 hidden w-full translate-x-1/2 md:block">
                     <div className="h-px w-full bg-gradient-to-r from-brand-crimson-500/50 to-transparent" />
                   </div>
                 )}
 
-                <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center">
+                <div className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center">
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-brand-crimson-500/20 to-brand-crimson-700/20 blur-xl" />
                   <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-brand-charcoal-800">
                     <Icon className="h-8 w-8 text-brand-crimson-400" />
                   </div>
-                  <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-brand-crimson-600 text-xs font-bold text-white">
+                  <span className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-crimson-500 to-brand-crimson-700 text-xs font-bold text-white shadow-lg">
                     {step.number}
                   </span>
                 </div>
 
-                <h3 className="mb-2 text-xl font-semibold text-white">{step.title}</h3>
+                <h3 className="mb-3 text-xl font-semibold text-white">{step.title}</h3>
                 <p className="text-sm leading-relaxed text-brand-charcoal-300">{step.description}</p>
               </div>
             )
@@ -415,7 +257,108 @@ export function HowItWorksSection() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Pricing Preview                                                     */
+/*  Social Proof / Stats                                               */
+/* ------------------------------------------------------------------ */
+
+const stats = [
+  { value: 2400, suffix: '+', label: 'Automation Hours Saved', icon: Clock },
+  { value: 340, suffix: '%', label: 'Average Client Growth', icon: TrendingUp },
+  { value: 150, suffix: 'K+', label: 'Emails Sent', icon: Send },
+  { value: 72, suffix: 'hr', label: 'Go-Live Time', icon: Zap },
+]
+
+function AnimatedCounter({
+  target,
+  suffix,
+  duration = 2000,
+}: {
+  target: number
+  suffix: string
+  duration?: number
+}) {
+  const [count, setCount] = useState(0)
+  const [hasAnimated, setHasAnimated] = useState(false)
+  const ref = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    const element = ref.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true)
+          const startTime = performance.now()
+          const animate = (currentTime: number) => {
+            const elapsed = currentTime - startTime
+            const progress = Math.min(elapsed / duration, 1)
+            const eased = 1 - Math.pow(1 - progress, 3)
+            setCount(Math.floor(eased * target))
+            if (progress < 1) {
+              requestAnimationFrame(animate)
+            }
+          }
+          requestAnimationFrame(animate)
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [target, duration, hasAnimated])
+
+  return (
+    <span ref={ref}>
+      {count.toLocaleString()}
+      {suffix}
+    </span>
+  )
+}
+
+export function SocialProofSection() {
+  return (
+    <section className="border-y border-white/10 bg-brand-charcoal-800/50 px-4 py-20 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-14 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+            Results That Matter
+          </p>
+          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
+            Built to Deliver{' '}
+            <span className="gradient-text-brand">Real Impact</span>
+          </h2>
+          <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
+            Our platform helps South African businesses automate operations and focus on growth.
+          </p>
+        </div>
+
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => {
+            const Icon = stat.icon
+            return (
+              <div
+                key={stat.label}
+                className="group rounded-2xl border border-white/10 bg-brand-charcoal-800/60 p-6 text-center transition-all hover-lift hover-glow-brand"
+              >
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-crimson-500/15">
+                  <Icon className="h-6 w-6 text-brand-crimson-400" />
+                </div>
+                <p className="mb-1 text-3xl font-bold text-white sm:text-4xl">
+                  <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+                </p>
+                <p className="text-sm text-brand-charcoal-300">{stat.label}</p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Pricing Preview                                                    */
 /* ------------------------------------------------------------------ */
 
 const tiers = [
@@ -423,59 +366,62 @@ const tiers = [
     id: 'core',
     name: 'Core',
     price: 'R1,500',
-    description: 'CRM, email, and one custom automation for businesses getting started.',
+    description: 'Essential CRM and email for businesses getting started with digital operations.',
     highlights: [
       'CRM with deals pipeline',
-      'Full email campaigns & sequences',
+      'Email campaigns and sequences',
       '1 business automation',
       '50 AI content generations/mo',
+      '2 users included',
     ],
-    modulePills: ['CRM', 'Email'],
     popular: false,
   },
   {
     id: 'growth',
     name: 'Growth',
     price: 'R3,500',
-    description: 'Add accommodation, content studio, and smart lead pipeline.',
+    description: 'Full marketing suite with accommodation module, content studio, and analytics.',
     highlights: [
       'Everything in Core, plus:',
-      'Accommodation module (35 tables)',
-      'AI content for all channels',
-      'Smart lead pipeline + A/B testing',
-      '200 AI generations/mo, 5 users',
+      'Social media management',
+      'Content Studio with AI',
+      'Accommodation module',
+      'A/B testing and analytics',
+      '5 users included',
     ],
-    modulePills: ['CRM', 'Email', 'Accommodation', 'Content', 'Social'],
     popular: true,
   },
   {
     id: 'scale',
     name: 'Scale',
     price: 'R7,500',
-    description: 'White label, AI agents, unlimited everything. For operators and agencies.',
+    description: 'White-label platform with AI agents, API access, and unlimited capacity.',
     highlights: [
       'Everything in Growth, plus:',
-      'White label (your domain & brand)',
+      'White label (your domain and brand)',
       '3 AI agents (1,000 invocations/mo)',
-      'API access + custom integrations',
-      'Unlimited everything',
+      'API access and custom integrations',
+      'Unlimited users and content',
+      'Priority support',
     ],
-    modulePills: ['All Modules', 'AI Agents', 'White Label', 'API'],
     popular: false,
   },
 ]
 
 export function PricingPreviewSection() {
   return (
-    <section id="pricing" className="px-4 py-20 sm:px-6 lg:px-8">
+    <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-14 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
+        <div className="mb-16 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+            Pricing
+          </p>
+          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
             Transparent Pricing,{' '}
-            <span className="gradient-text-brand">Powerful Modules</span>
+            <span className="gradient-text-brand">Powerful Platform</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
-            All plans include a 14-day free trial. No credit card required. Pay in Rands.
+            All plans include a 14-day free trial. No credit card required. Billed in South African Rands.
           </p>
         </div>
 
@@ -483,7 +429,7 @@ export function PricingPreviewSection() {
           {tiers.map((tier) => (
             <div
               key={tier.id}
-              className={`relative flex flex-col rounded-xl border p-8 transition-all hover-lift ${
+              className={`relative flex flex-col rounded-2xl border p-8 transition-all hover-lift ${
                 tier.popular
                   ? 'border-brand-crimson-500/50 bg-brand-charcoal-800 shadow-lg shadow-brand-crimson-500/10'
                   : 'border-white/10 bg-brand-charcoal-800/60'
@@ -491,42 +437,34 @@ export function PricingPreviewSection() {
             >
               {tier.popular && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="inline-block rounded-full bg-gradient-to-r from-brand-crimson-600 to-brand-crimson-500 px-4 py-1 text-xs font-semibold text-white">
+                  <span className="inline-block rounded-full bg-gradient-to-r from-brand-crimson-600 to-brand-crimson-500 px-4 py-1 text-xs font-semibold text-white shadow-lg shadow-brand-crimson-500/25">
                     Most Popular
                   </span>
                 </div>
               )}
 
               <h3 className="mb-1 text-xl font-semibold text-white">{tier.name}</h3>
-              <p className="mb-4 text-sm text-brand-charcoal-300">{tier.description}</p>
+              <p className="mb-5 text-sm text-brand-charcoal-300">{tier.description}</p>
 
               <div className="mb-6">
                 <span className="text-4xl font-bold text-white">{tier.price}</span>
                 <span className="ml-1 text-brand-charcoal-300">/month</span>
               </div>
 
-              <ul className="mb-4 flex-1 space-y-3">
+              <ul className="mb-8 flex-1 space-y-3">
                 {tier.highlights.map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-brand-charcoal-200">
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-brand-charcoal-200">
                     <Check className="h-4 w-4 shrink-0 text-green-400" />
                     {item}
                   </li>
                 ))}
               </ul>
 
-              <div className="mb-6 flex flex-wrap gap-1.5">
-                {tier.modulePills.map((pill) => (
-                  <span key={pill} className="rounded bg-brand-charcoal-700 px-2 py-0.5 text-xs text-brand-charcoal-200">
-                    {pill}
-                  </span>
-                ))}
-              </div>
-
               <Button
                 asChild
                 variant={tier.popular ? 'default' : 'outline'}
                 size="lg"
-                className={`w-full rounded-lg ${
+                className={`w-full rounded-xl ${
                   tier.popular
                     ? 'btn-brand'
                     : 'border-brand-charcoal-500 bg-transparent text-brand-charcoal-100 hover:bg-white/5 hover:text-white'
@@ -538,8 +476,8 @@ export function PricingPreviewSection() {
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm text-brand-charcoal-400">
-          Need something custom?{' '}
+        <p className="mt-10 text-center text-sm text-brand-charcoal-400">
+          Need a custom solution?{' '}
           <Link href="/pricing" className="text-brand-crimson-400 underline-offset-4 hover:underline">
             View full feature comparison
           </Link>
@@ -550,9 +488,57 @@ export function PricingPreviewSection() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Trust / CTA                                                         */
+/*  Final CTA                                                          */
 /* ------------------------------------------------------------------ */
 
 export function CTASection() {
-  return <QualificationCTA />
+  return (
+    <section className="relative overflow-hidden px-4 py-24 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-0 gradient-mesh-brand opacity-30" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-crimson-600/15 blur-[100px]" />
+
+      <div className="relative mx-auto max-w-3xl text-center">
+        <h2 className="mb-5 font-display text-3xl font-bold text-white lg:text-5xl">
+          Ready to Automate{' '}
+          <span className="gradient-text-brand">Your Growth?</span>
+        </h2>
+        <p className="mx-auto mb-10 max-w-xl text-lg text-brand-charcoal-300">
+          Join South African businesses that use DraggonnB to manage clients,
+          automate marketing, and grow revenue. Start your free trial today.
+        </p>
+
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <Button asChild size="lg" className="btn-brand h-13 rounded-xl px-10 text-base">
+            <Link href="/qualify">
+              Get Started Free
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="h-13 rounded-xl border-brand-charcoal-400/40 bg-transparent px-8 text-base text-brand-charcoal-100 hover:bg-white/5 hover:text-white"
+          >
+            <Link href="/pricing">View Pricing</Link>
+          </Button>
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-brand-charcoal-400">
+          <span className="flex items-center gap-1.5">
+            <Check className="h-4 w-4 text-green-500" />
+            14-day free trial
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Clock className="h-4 w-4 text-brand-crimson-400" />
+            72-hour setup
+          </span>
+          <span className="flex items-center gap-1.5">
+            <BarChart3 className="h-4 w-4 text-brand-gold-400" />
+            No lock-in contracts
+          </span>
+        </div>
+      </div>
+    </section>
+  )
 }
