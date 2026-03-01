@@ -24,6 +24,7 @@ export interface CreatedResources {
   automationWorkflowIds?: string;
   onboardingEmailIds?: string;
   qaResult?: string;
+  billingSubscriptionId?: string;
 }
 
 export interface ProvisioningResult {
@@ -42,5 +43,6 @@ export type ProvisioningStep =
   | 'deploy-automations'
   | 'onboarding-sequence'
   | 'qa-check'
+  | 'billing-setup'
   | 'register-client'
   | 'finalize';

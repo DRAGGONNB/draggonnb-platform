@@ -1,0 +1,87 @@
+[{
+  "id": "billingCycle01",
+  "name": "DraggonnB - Monthly Billing Cycle",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 2 1 * *" }] }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "id": "cron-billing",
+      "name": "1st of Month 02:00 SAST"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  ts.id AS subscription_id,\n  ts.organization_id,\n  ts.plan_id,\n  ts.current_period_start,\n  ts.current_period_end,\n  bp.name AS plan_name,\n  bp.price_zar AS base_price_cents,\n  o.name AS org_name\nFROM tenant_subscriptions ts\nJOIN billing_plans bp ON bp.id = ts.plan_id\nJOIN organizations o ON o.id = ts.organization_id\nWHERE ts.status IN ('active', 'trialing')\n  AND ts.current_period_end <= CURRENT_DATE;",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [250, 0],
+      "id": "fetch-due-subs",
+      "name": "Fetch Due Subscriptions",
+      "credentials": { "postgres": { "id": "draggonnb-supabase-pg", "name": "DraggonnB Supabase PG" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  ue.dimension,\n  COUNT(*)::INTEGER AS used,\n  COALESCE(pl.included_quantity, 0) AS included,\n  GREATEST(0, COUNT(*)::INTEGER - COALESCE(pl.included_quantity, 0)) AS overage_units,\n  COALESCE(pl.overage_rate_zar, 0) AS overage_rate,\n  GREATEST(0, COUNT(*)::INTEGER - COALESCE(pl.included_quantity, 0)) * COALESCE(pl.overage_rate_zar, 0) AS overage_cost_cents\nFROM usage_events ue\nJOIN plan_limits pl ON pl.plan_id = '{{ $json.plan_id }}' AND pl.dimension = ue.dimension\nWHERE ue.organization_id = '{{ $json.organization_id }}'\n  AND ue.created_at >= '{{ $json.current_period_start }}'\n  AND ue.created_at < '{{ $json.current_period_end }}'\nGROUP BY ue.dimension, pl.included_quantity, pl.overage_rate_zar;",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [500, 0],
+      "id": "calc-overage",
+      "name": "Calculate Overage Per Dimension",
+      "credentials": { "postgres": { "id": "draggonnb-supabase-pg", "name": "DraggonnB Supabase PG" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sub = $('Fetch Due Subscriptions').item.json;\nconst overageRows = $input.all().map(i => i.json);\n\nconst totalOverageCents = overageRows.reduce((sum, r) => sum + Number(r.overage_cost_cents || 0), 0);\nconst basePriceCents = Number(sub.base_price_cents);\nconst totalCents = basePriceCents + totalOverageCents;\n\nconst invoice = {\n  organization_id: sub.organization_id,\n  subscription_id: sub.subscription_id,\n  org_name: sub.org_name,\n  plan_name: sub.plan_name,\n  period_start: sub.current_period_start,\n  period_end: sub.current_period_end,\n  base_price_cents: basePriceCents,\n  overage_cents: totalOverageCents,\n  total_cents: totalCents,\n  overage_breakdown: overageRows.filter(r => Number(r.overage_units) > 0),\n  base_display: 'R' + (basePriceCents / 100).toLocaleString('en-ZA', { minimumFractionDigits: 2 }),\n  overage_display: 'R' + (totalOverageCents / 100).toLocaleString('en-ZA', { minimumFractionDigits: 2 }),\n  total_display: 'R' + (totalCents / 100).toLocaleString('en-ZA', { minimumFractionDigits: 2 }),\n};\n\nreturn [{ json: invoice }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 0],
+      "id": "build-invoice",
+      "name": "Build Invoice Summary"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Log invoice to subscription_history\nINSERT INTO subscription_history (\n  organization_id, transaction_id, amount, status, payment_method, notes, created_at\n) VALUES (\n  '{{ $json.organization_id }}',\n  'inv-{{ $json.organization_id }}-' || TO_CHAR(NOW(), 'YYYYMMDD'),\n  {{ $json.total_cents }}::NUMERIC / 100,\n  'pending',\n  'payfast',\n  'Monthly invoice: {{ $json.plan_name }} ({{ $json.base_display }}) + Overage ({{ $json.overage_display }}) = {{ $json.total_display }}',\n  NOW()\n)\nRETURNING id;\n\n-- Reset billing period\n-- UPDATE tenant_subscriptions\n-- SET current_period_start = current_period_end,\n--     current_period_end = (current_period_end + INTERVAL '1 month')::DATE,\n--     updated_at = NOW()\n-- WHERE id = '{{ $json.subscription_id }}';",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1000, 0],
+      "id": "log-invoice",
+      "name": "Log Invoice & Reset Period",
+      "credentials": { "postgres": { "id": "draggonnb-supabase-pg", "name": "DraggonnB Supabase PG" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Reset usage alerts for new billing period\nSELECT seed_usage_alerts(\n  '{{ $json.organization_id }}'::UUID,\n  CURRENT_DATE\n);",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1250, 0],
+      "id": "reset-alerts",
+      "name": "Seed New Period Alerts",
+      "credentials": { "postgres": { "id": "draggonnb-supabase-pg", "name": "DraggonnB Supabase PG" } }
+    }
+  ],
+  "connections": {
+    "1st of Month 02:00 SAST": { "main": [[{ "node": "Fetch Due Subscriptions", "type": "main", "index": 0 }]] },
+    "Fetch Due Subscriptions": { "main": [[{ "node": "Calculate Overage Per Dimension", "type": "main", "index": 0 }]] },
+    "Calculate Overage Per Dimension": { "main": [[{ "node": "Build Invoice Summary", "type": "main", "index": 0 }]] },
+    "Build Invoice Summary": { "main": [[{ "node": "Log Invoice & Reset Period", "type": "main", "index": 0 }]] },
+    "Log Invoice & Reset Period": { "main": [[{ "node": "Seed New Period Alerts", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Africa/Johannesburg" }
+}]

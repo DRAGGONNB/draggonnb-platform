@@ -1,0 +1,45 @@
+[{
+  "id": "creditExpiry01",
+  "name": "DraggonnB - Credit Expiry Cleanup",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 0 * * *" }] }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "id": "cron-expiry",
+      "name": "Daily Midnight SAST"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE tenant_credits\nSET status = 'expired'\nWHERE status = 'active'\n  AND expires_at <= NOW()\nRETURNING id, organization_id, dimension, credits_remaining, expires_at;",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [250, 0],
+      "id": "expire-credits",
+      "name": "Expire Old Credits",
+      "credentials": { "postgres": { "id": "draggonnb-supabase-pg", "name": "DraggonnB Supabase PG" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const expired = $input.all().map(i => i.json);\nif (expired.length === 0) {\n  return [{ json: { message: 'No credits expired today', count: 0 } }];\n}\n\nconst summary = expired.reduce((acc, c) => {\n  const key = `${c.organization_id}:${c.dimension}`;\n  if (!acc[key]) acc[key] = { organization_id: c.organization_id, dimension: c.dimension, expired_count: 0, wasted_credits: 0 };\n  acc[key].expired_count++;\n  acc[key].wasted_credits += Number(c.credits_remaining);\n  return acc;\n}, {});\n\nreturn [{ json: { message: `${expired.length} credit records expired`, count: expired.length, summary: Object.values(summary) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 0],
+      "id": "summarize",
+      "name": "Summarize Expired"
+    }
+  ],
+  "connections": {
+    "Daily Midnight SAST": { "main": [[{ "node": "Expire Old Credits", "type": "main", "index": 0 }]] },
+    "Expire Old Credits": { "main": [[{ "node": "Summarize Expired", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Africa/Johannesburg" }
+}]

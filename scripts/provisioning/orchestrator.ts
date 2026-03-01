@@ -9,6 +9,7 @@ import { createN8NWorkflow } from './steps/05-n8n';
 import { deployAutomations } from './steps/06-automations';
 import { sendOnboardingSequence } from './steps/07-onboarding';
 import { runQAChecks } from './steps/08-qa-check';
+import { setupBilling } from './steps/09-billing';
 import { rollbackProvisioning } from './rollback';
 
 export interface ProvisioningOrchestrator {
@@ -62,7 +63,7 @@ export async function provisionClient(
 
   try {
     // Step 1: Create Supabase project
-    console.log('Step 1/8: Creating Supabase project...');
+    console.log('Step 1/9: Creating Supabase project...');
     const supabaseResult = await createSupabaseProject(job);
     if (!supabaseResult.success) {
       throw new Error(`Supabase creation failed: ${supabaseResult.error}`);
@@ -71,7 +72,7 @@ export async function provisionClient(
     job.createdResources = { ...resources };
 
     // Step 2: Clone database schema
-    console.log('Step 2/8: Cloning database schema...');
+    console.log('Step 2/9: Cloning database schema...');
     if (resources.supabaseDatabaseUrl) {
       const schemaResult = await cloneSchemaToProject(
         resources.supabaseDatabaseUrl,
@@ -83,7 +84,7 @@ export async function provisionClient(
     }
 
     // Step 3: Create GitHub repo
-    console.log('Step 3/8: Creating GitHub repository...');
+    console.log('Step 3/9: Creating GitHub repository...');
     const githubResult = await createGitHubRepo(job);
     if (!githubResult.success) {
       throw new Error(`GitHub creation failed: ${githubResult.error}`);
@@ -92,7 +93,7 @@ export async function provisionClient(
     job.createdResources = { ...resources };
 
     // Step 4: Create Vercel deployment
-    console.log('Step 4/8: Creating Vercel deployment...');
+    console.log('Step 4/9: Creating Vercel deployment...');
     const vercelResult = await createVercelProject(job, resources);
     if (!vercelResult.success) {
       throw new Error(`Vercel creation failed: ${vercelResult.error}`);
@@ -101,7 +102,7 @@ export async function provisionClient(
     job.createdResources = { ...resources };
 
     // Step 5: Configure N8N webhooks
-    console.log('Step 5/8: Configuring N8N webhooks...');
+    console.log('Step 5/9: Configuring N8N webhooks...');
     const n8nResult = await createN8NWorkflow(job);
     if (!n8nResult.success) {
       throw new Error(`N8N configuration failed: ${n8nResult.error}`);
@@ -110,7 +111,7 @@ export async function provisionClient(
     job.createdResources = { ...resources };
 
     // Step 6: Deploy client-specific automations (non-fatal)
-    console.log('Step 6/8: Deploying client automations...');
+    console.log('Step 6/9: Deploying client automations...');
     try {
       const automationResult = await deployAutomations(job);
       if (automationResult.data) {
@@ -122,7 +123,7 @@ export async function provisionClient(
     }
 
     // Step 7: Send onboarding email sequence (non-fatal)
-    console.log('Step 7/8: Sending onboarding emails...');
+    console.log('Step 7/9: Sending onboarding emails...');
     try {
       const onboardingResult = await sendOnboardingSequence(job);
       if (onboardingResult.data) {
@@ -134,7 +135,7 @@ export async function provisionClient(
     }
 
     // Step 8: QA health checks (non-fatal, reports results)
-    console.log('Step 8/8: Running QA checks...');
+    console.log('Step 8/9: Running QA checks...');
     try {
       const qaResult = await runQAChecks(job, resources);
       if (qaResult.data) {
@@ -148,6 +149,18 @@ export async function provisionClient(
       }
     } catch (qaError) {
       console.warn('Step 8 warning (non-fatal):', qaError);
+    }
+
+    // Step 9: Setup billing subscription (non-fatal)
+    console.log('Step 9/9: Setting up billing...');
+    try {
+      const billingResult = await setupBilling(job);
+      if (billingResult.data) {
+        Object.assign(resources, billingResult.data);
+      }
+      job.createdResources = { ...resources };
+    } catch (billingError) {
+      console.warn('Step 9 warning (non-fatal):', billingError);
     }
 
     console.log('Provisioning complete!');
