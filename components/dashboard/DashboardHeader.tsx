@@ -14,8 +14,9 @@ const newActions = [
 
 const breadcrumbMap: Record<string, string[]> = {
   '/dashboard': ['Dashboard', 'Overview'],
-  '/autopilot': ['Autopilot', 'Calendar'],
-  '/autopilot/settings': ['Autopilot', 'Settings'],
+  '/autopilot': ['AI Agents', 'Autopilot'],
+  '/autopilot/settings': ['AI Agents', 'Settings'],
+  '/autopilot/workflows': ['AI Agents', 'Workflows'],
   '/crm': ['CRM', 'Overview'],
   '/crm/contacts': ['CRM', 'Contacts'],
   '/crm/deals': ['CRM', 'Deals'],
@@ -53,7 +54,7 @@ export function DashboardHeader() {
             <input
               type="text"
               placeholder="Search everything..."
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-600 placeholder-gray-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-600 placeholder-gray-400 transition-all focus:border-brand-crimson-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-crimson-400/20"
             />
           </div>
 
@@ -62,7 +63,7 @@ export function DashboardHeader() {
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5"
+                className="rounded-lg bg-brand-crimson-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-crimson-600 hover:shadow-md"
               >
                 + New
               </button>
@@ -93,7 +94,7 @@ export function DashboardHeader() {
               <HelpCircle className="h-4 w-4" />
             </button>
 
-            <button className="h-10 w-10 rounded-full border border-gray-200 bg-gradient-to-br from-blue-600 to-blue-800 transition-all hover:shadow-lg">
+            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-crimson-500 text-sm font-bold text-white transition-all hover:bg-brand-crimson-600">
               <span className="sr-only">User menu</span>
             </button>
           </div>

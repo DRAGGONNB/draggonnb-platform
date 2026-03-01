@@ -15,7 +15,7 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: "DraggonnB - AI-Powered Business Operating System",
+  title: "DraggonnB OS - AI-Powered Business Operating System",
   description: "Complete digital operations platform for South African businesses. Accommodation, restaurant, and custom industry modules with AI agents built in.",
 }
 
