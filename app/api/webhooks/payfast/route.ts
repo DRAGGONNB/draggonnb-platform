@@ -106,7 +106,17 @@ export async function POST(request: NextRequest) {
     // Initialize Supabase admin client (bypasses RLS for webhook handler)
     const supabase = createAdminClient()
 
-    // Step 5: Handle different payment statuses
+    // Step 5: Detect bolt-on purchase vs subscription payment
+    const isBoltOn = itnData.custom_str2 === 'bolt-on'
+    const boltOnPackSlug = itnData.custom_str3
+
+    if (isBoltOn && payment_status === 'COMPLETE' && boltOnPackSlug) {
+      return await handleBoltOnPayment(
+        supabase, organizationId, boltOnPackSlug, pf_payment_id, amount_gross, itnData
+      )
+    }
+
+    // SUBSCRIPTION PAYMENT FLOW
     if (payment_status === 'COMPLETE') {
       // Payment successful - activate subscription
       const { error: updateError } = await supabase
@@ -289,4 +299,92 @@ function getNextBillingDate(): string {
   const today = new Date()
   const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate())
   return nextMonth.toISOString().split('T')[0] // YYYY-MM-DD
+}
+
+/**
+ * Handle bolt-on credit pack purchase.
+ * Provisions credits to tenant_credits after successful PayFast payment.
+ */
+async function handleBoltOnPayment(
+  supabase: ReturnType<typeof createAdminClient>,
+  organizationId: string,
+  packSlug: string,
+  pfPaymentId: string,
+  amountGross: string,
+  itnData: Record<string, string>
+) {
+  // Lookup the credit pack
+  const { data: pack, error: packError } = await supabase
+    .from('credit_packs')
+    .select('*')
+    .eq('slug', packSlug)
+    .eq('is_active', true)
+    .single()
+
+  if (packError || !pack) {
+    console.error(`[BoltOn] Credit pack not found: ${packSlug}`)
+    return NextResponse.json({ error: 'Credit pack not found' }, { status: 400 })
+  }
+
+  // Validate amount matches pack price
+  const expectedAmount = pack.price_zar / 100
+  if (Math.abs(parseFloat(amountGross) - expectedAmount) > 0.01) {
+    console.error(`[BoltOn] Amount mismatch: expected R${expectedAmount}, got R${amountGross}`)
+    return NextResponse.json({ error: 'Amount mismatch' }, { status: 400 })
+  }
+
+  // Calculate expiry: end of current billing period + 1 period (rollover)
+  const { data: sub } = await supabase
+    .from('tenant_subscriptions')
+    .select('current_period_end')
+    .eq('organization_id', organizationId)
+    .in('status', ['active', 'trialing'])
+    .single()
+
+  // Default: 2 months from now if no subscription
+  const periodEnd = sub?.current_period_end
+    ? new Date(sub.current_period_end)
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  const expiresAt = new Date(periodEnd)
+  expiresAt.setMonth(expiresAt.getMonth() + 1) // +1 period rollover
+
+  // Insert credits into tenant_credits
+  const { error: creditError } = await supabase
+    .from('tenant_credits')
+    .insert({
+      organization_id: organizationId,
+      credit_pack_id: pack.id,
+      dimension: pack.dimension,
+      credits_purchased: pack.credit_quantity,
+      credits_remaining: pack.credit_quantity,
+      source: 'purchase',
+      source_metadata: { pack_slug: packSlug, pf_payment_id: pfPaymentId },
+      expires_at: expiresAt.toISOString(),
+      payment_reference: pfPaymentId,
+      status: 'active',
+    })
+
+  if (creditError) {
+    console.error('[BoltOn] Failed to provision credits:', creditError)
+    return NextResponse.json({ error: 'Failed to provision credits' }, { status: 500 })
+  }
+
+  // Log transaction in subscription_history
+  await supabase
+    .from('subscription_history')
+    .insert({
+      organization_id: organizationId,
+      transaction_id: pfPaymentId,
+      amount_gross: parseFloat(amountGross),
+      amount_fee: parseFloat(itnData.amount_fee || '0'),
+      amount_net: parseFloat(itnData.amount_net || amountGross),
+      status: 'completed',
+      payment_method: 'payfast',
+      notes: `Bolt-on: ${pack.name} (${pack.credit_quantity} ${pack.dimension})`,
+      payfast_response: itnData,
+    })
+
+  console.log(`[BoltOn] Credits provisioned: ${pack.credit_quantity} ${pack.dimension} for org ${organizationId}`)
+
+  return NextResponse.json({ success: true, message: 'Bolt-on credits provisioned' }, { status: 200 })
 }
