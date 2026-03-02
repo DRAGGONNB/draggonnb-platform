@@ -101,9 +101,9 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
           <div className="text-center text-gray-400 text-sm mt-8">
             <p className="font-medium mb-1">Ask your Autopilot anything</p>
             <p className="text-xs">
-              "Create a post about our spring sale"<br />
-              "Draft a follow-up email for new subscribers"<br />
-              "Score this lead: tech company, 50 employees"
+              &quot;Create a post about our spring sale&quot;<br />
+              &quot;Draft a follow-up email for new subscribers&quot;<br />
+              &quot;Score this lead: tech company, 50 employees&quot;
             </p>
           </div>
         )}
