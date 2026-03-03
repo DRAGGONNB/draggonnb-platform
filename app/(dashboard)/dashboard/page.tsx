@@ -107,11 +107,11 @@ export default async function DashboardPage() {
   ]
 
   const quickActions = [
-    { label: 'New Contact', href: '/crm/contacts?action=new', icon: UserPlus, color: 'bg-brand-crimson-50 text-brand-crimson-600 hover:bg-brand-crimson-100' },
+    { label: 'New Contact', href: '/crm/contacts?action=new', icon: UserPlus, color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
     { label: 'New Deal', href: '/crm/deals?action=new', icon: Briefcase, color: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' },
-    { label: 'Send Email', href: '/email/campaigns', icon: Send, color: 'bg-brand-charcoal-50 text-brand-charcoal-400 hover:bg-brand-charcoal-100' },
+    { label: 'Send Email', href: '/email/campaigns', icon: Send, color: 'bg-purple-50 text-purple-600 hover:bg-purple-100' },
     { label: 'Generate Content', href: '/content-generator', icon: Sparkles, color: 'bg-amber-50 text-amber-600 hover:bg-amber-100' },
-    { label: 'View Reports', href: '/email/analytics', icon: BarChart3, color: 'bg-brand-crimson-50 text-brand-crimson-600 hover:bg-brand-crimson-100' },
+    { label: 'View Reports', href: '/email/analytics', icon: BarChart3, color: 'bg-rose-50 text-rose-600 hover:bg-rose-100' },
   ]
 
   return (
@@ -153,8 +153,8 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-gray-500">Total Contacts</p>
                 <p className="mt-1 text-3xl font-bold text-gray-900">{contactsCount}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-crimson-50">
-                <Users className="h-5 w-5 text-brand-crimson-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50">
+                <Users className="h-5 w-5 text-blue-600" />
               </div>
             </div>
             <div className="mt-3 flex items-center text-xs text-gray-500">
@@ -188,8 +188,8 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-gray-500">Posts Published</p>
                 <p className="mt-1 text-3xl font-bold text-gray-900">{emailsSent}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-charcoal-50">
-                <Mail className="h-5 w-5 text-brand-charcoal-400" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-50">
+                <Mail className="h-5 w-5 text-purple-600" />
               </div>
             </div>
             <div className="mt-3 flex items-center text-xs text-gray-500">
@@ -258,7 +258,7 @@ export default async function DashboardPage() {
               <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
                 {[
                   { label: 'Lead', count: data.deals.filter((d) => d.stage === 'lead').length, color: 'bg-gray-100 text-gray-700' },
-                  { label: 'Qualified', count: data.deals.filter((d) => d.stage === 'qualified').length, color: 'bg-brand-crimson-100 text-brand-crimson-700' },
+                  { label: 'Qualified', count: data.deals.filter((d) => d.stage === 'qualified').length, color: 'bg-blue-100 text-blue-700' },
                   { label: 'Proposal', count: data.deals.filter((d) => d.stage === 'proposal').length, color: 'bg-yellow-100 text-yellow-700' },
                   { label: 'Negotiation', count: data.deals.filter((d) => d.stage === 'negotiation').length, color: 'bg-orange-100 text-orange-700' },
                   { label: 'Won', count: data.deals.filter((d) => d.stage === 'won').length, color: 'bg-green-100 text-green-700' },

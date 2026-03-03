@@ -51,7 +51,7 @@ interface Deal {
 
 const STAGES = [
   { value: 'lead', label: 'Lead', color: 'bg-gray-100 text-gray-700', headerBg: 'bg-gray-50 border-gray-200', dotColor: 'bg-gray-400' },
-  { value: 'qualified', label: 'Qualified', color: 'bg-brand-crimson-100 text-brand-crimson-700', headerBg: 'bg-brand-crimson-50 border-brand-crimson-200', dotColor: 'bg-brand-crimson-400' },
+  { value: 'qualified', label: 'Qualified', color: 'bg-blue-100 text-blue-700', headerBg: 'bg-blue-50 border-blue-200', dotColor: 'bg-blue-400' },
   { value: 'proposal', label: 'Proposal', color: 'bg-yellow-100 text-yellow-700', headerBg: 'bg-yellow-50 border-yellow-200', dotColor: 'bg-yellow-400' },
   { value: 'negotiation', label: 'Negotiation', color: 'bg-orange-100 text-orange-700', headerBg: 'bg-orange-50 border-orange-200', dotColor: 'bg-orange-400' },
   { value: 'won', label: 'Won', color: 'bg-green-100 text-green-700', headerBg: 'bg-green-50 border-green-200', dotColor: 'bg-green-500' },
@@ -271,8 +271,8 @@ export default function DealsPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="shadow-sm">
           <div className="flex items-center gap-4 p-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-crimson-50">
-              <TrendingUp className="h-5 w-5 text-brand-crimson-600" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Total Pipeline</p>
@@ -293,8 +293,8 @@ export default function DealsPage() {
         </Card>
         <Card className="shadow-sm">
           <div className="flex items-center gap-4 p-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-charcoal-50">
-              <Target className="h-5 w-5 text-brand-charcoal-400" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-50">
+              <Target className="h-5 w-5 text-purple-600" />
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Win Rate</p>

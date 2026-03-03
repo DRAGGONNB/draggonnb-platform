@@ -110,7 +110,7 @@ async function getCRMData(organizationId: string) {
 
 const STAGE_COLORS: Record<string, string> = {
   lead: 'bg-gray-100 text-gray-700',
-  qualified: 'bg-brand-crimson-100 text-brand-crimson-700',
+  qualified: 'bg-blue-100 text-blue-700',
   proposal: 'bg-yellow-100 text-yellow-700',
   negotiation: 'bg-orange-100 text-orange-700',
   won: 'bg-green-100 text-green-700',
@@ -129,8 +129,8 @@ const STAGE_LABELS: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-green-50 text-green-700',
   inactive: 'bg-gray-100 text-gray-600',
-  lead: 'bg-brand-crimson-50 text-brand-crimson-700',
-  customer: 'bg-brand-charcoal-50 text-brand-charcoal-400',
+  lead: 'bg-blue-50 text-blue-700',
+  customer: 'bg-purple-50 text-purple-700',
 }
 
 export default async function CRMPage() {
@@ -180,8 +180,8 @@ export default async function CRMPage() {
                   <p className="text-sm font-medium text-gray-500">Total Contacts</p>
                   <p className="mt-1 text-3xl font-bold text-gray-900">{stats.contacts}</p>
                 </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-crimson-50">
-                  <Users className="h-6 w-6 text-brand-crimson-600" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50">
+                  <Users className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
               {stats.newContacts > 0 && (
@@ -205,8 +205,8 @@ export default async function CRMPage() {
                   <p className="text-sm font-medium text-gray-500">Companies</p>
                   <p className="mt-1 text-3xl font-bold text-gray-900">{stats.companies}</p>
                 </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-charcoal-50">
-                  <Building2 className="h-6 w-6 text-brand-charcoal-400" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-50">
+                  <Building2 className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
               <div className="mt-5 flex items-center text-xs font-medium text-primary group-hover:underline">
