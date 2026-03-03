@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-01)
 
 **Core value:** Complete multi-tenant B2B operating system for South African SMEs. Shared Supabase DB with RLS-based tenant isolation, wildcard subdomain routing, DB-backed module gating, automated provisioning.
-**Current focus:** Full UI rebrand to DraggonnB OS identity complete. Dashboard, CRM, landing page, sidebar, and header all converted to brand-crimson/charcoal light theme.
+**Current focus:** Design reverted to original dark theme with blue/purple palette. Light crimson rebrand rolled back per owner decision.
 
 ## Current Position
 
-Phase: UI Rebrand & DraggonnB OS Identity (complete)
-Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Architecture restructure to shared DB + RLS complete. UI rebrand complete.
+Phase: Design revert complete, ready for provisioning
+Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Architecture restructure to shared DB + RLS complete. Design reverted to original dark theme.
 Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-mvp.vercel.app
-Last activity: 2026-03-01 -- Session 26: Full UI rebrand to DraggonnB OS
-Progress: All UI pages rebranded. Ready for first client provisioning test.
+Last activity: 2026-03-03 -- Session 27: Revert to original dark theme
+Progress: Dark theme restored. Merged to main via GitHub. Ready for first client provisioning test.
 
 ## Accumulated Context
 
@@ -26,8 +26,9 @@ Progress: All UI pages rebranded. Ready for first client provisioning test.
 - Error catalogue as JSON knowledge base (.planning/errors/catalogue.json)
 - No autonomous sub-agents per client until 20+ clients
 - Ops dashboard tables designed but deferred until 5+ clients
-- Brand identity: brand-crimson (HSL 348) primary, brand-charcoal secondary, light theme
-- Landing page: light white/gray-50 theme (CTA section stays dark for contrast)
+- Brand identity: reverted to original dark charcoal theme with blue/purple accents
+- Landing page: dark charcoal background (original design)
+- Sidebar: emoji icons with blue active states (original design)
 - AI Agents surfaced as dedicated sidebar section (Autopilot, AI Workflows, Agent Settings)
 
 ### What Was Built (Session 26 -- 2026-03-01)
@@ -82,9 +83,27 @@ Progress: All UI pages rebranded. Ready for first client provisioning test.
 
 ## Session Continuity
 
-Last session: 2026-03-01 (Session 26)
-Stopped at: Full UI rebrand complete. All changes committed and pushed.
-Resume with: Save actual logo PNG. Verify Vercel build. First provisioning test.
+Last session: 2026-03-03 (Session 27)
+Stopped at: Design revert complete. Merged to main via GitHub. Vercel deploying.
+Resume with: Verify Vercel deploy succeeded. First provisioning test.
+
+### Session 27 Summary (2026-03-03)
+**What was accomplished:**
+1. Reviewed project status (STATE.md, ROADMAP.md, error catalogue, git log)
+2. Reverted 3 design commits (5bebac3, 7701954, 91ba4cd) that changed dark->light theme
+3. Restored original dark charcoal landing page, emoji sidebar with blue/purple accents, blue dashboard/CRM palette
+4. 15 files restored to pre-rebrand state
+5. Pushed to feature branch, owner merged to main via GitHub
+
+**Git commits this session:**
+- `1595f42` revert: restore original dark theme and blue/purple color palette
+
+**Files changed:** 15 files
+
+**What to do next session:**
+1. Verify Vercel deploy succeeded with dark theme
+2. Save actual logo PNG to public/logo.png
+3. First end-to-end provisioning test
 
 ### Session 26 Summary (2026-03-01)
 **What was accomplished:**
@@ -95,21 +114,13 @@ Resume with: Save actual logo PNG. Verify Vercel build. First provisioning test.
 5. Landing page converted from dark charcoal to light white/crimson theme
 6. Zero TypeScript errors in all modified files
 
-**Git commits this session:**
+**Git commits:**
 - `8f41fb9` feat: redesign UI, fix bugs, add onboarding wizard and ops CRUD
 - `96a7913` feat: redesign CRM companies and deals pages
 - `8f234c1` fix: minor polish on dashboard and CRM page formatting
-- `5bebac3` style: rebrand dashboard and CRM to DraggonnB logo palette
-- `7701954` style: rebrand sidebar and header to DraggonnB OS logo palette
-- `91ba4cd` style: convert landing page from dark to light brand theme
-
-**Files changed:** 17+ files, 3000+ lines added/modified
-
-**What to do next session:**
-1. Save actual logo PNG to public/logo.png
-2. Verify Vercel build succeeded
-3. Test login flow -> dashboard to verify rebrand
-4. First end-to-end provisioning test
+- `5bebac3` style: rebrand dashboard and CRM to DraggonnB logo palette (REVERTED in S27)
+- `7701954` style: rebrand sidebar and header to DraggonnB OS logo palette (REVERTED in S27)
+- `91ba4cd` style: convert landing page from dark to light brand theme (REVERTED in S27)
 
 ### Previous Sessions
 - Session 25 (2026-02-14): Architecture restructure discussion
