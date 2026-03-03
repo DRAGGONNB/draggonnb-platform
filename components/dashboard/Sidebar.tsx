@@ -2,99 +2,55 @@
 
 import { cn } from '@/lib/utils/cn'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import {
-  LayoutDashboard,
-  Bot,
-  Users,
-  Mail,
-  Send,
-  RefreshCw,
-  FileText,
-  Target,
-  BarChart3,
-  Sparkles,
-  Smartphone,
-  Building2,
-  Home,
-  ClipboardList,
-  UserCircle,
-  Link2,
-  CreditCard,
-  ArrowUpRight,
-  Cpu,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react'
 
-interface NavItem {
-  name: string
-  href: string
-  icon: LucideIcon
-  badge: string | null
-  badgeColor: string
-}
-
-interface NavSection {
-  section: string
-  items: NavItem[]
-}
-
-const navigation: NavSection[] = [
+const navigation = [
   {
     section: 'Main',
     items: [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, badge: null, badgeColor: '' },
-      { name: 'CRM', href: '/crm', icon: Users, badge: null, badgeColor: '' },
-      { name: 'Email Hub', href: '/email', icon: Mail, badge: null, badgeColor: '' },
-    ],
-  },
-  {
-    section: 'AI Agents',
-    items: [
-      { name: 'Autopilot', href: '/autopilot', icon: Bot, badge: 'NEW', badgeColor: 'bg-brand-crimson-500' },
-      { name: 'AI Workflows', href: '/autopilot/workflows', icon: Zap, badge: null, badgeColor: '' },
-      { name: 'Agent Settings', href: '/autopilot/settings', icon: Cpu, badge: null, badgeColor: '' },
+      { name: 'Dashboard', href: '/dashboard', icon: '📊', badge: null },
+      { name: 'Autopilot', href: '/autopilot', icon: '🤖', badge: 'NEW', badgeColor: 'bg-gradient-to-r from-purple-500 to-purple-600' },
+      { name: 'CRM', href: '/crm', icon: '👥', badge: null },
+      { name: 'Email Hub', href: '/email', icon: '📧', badge: null },
     ],
   },
   {
     section: 'Email Marketing',
     items: [
-      { name: 'Campaigns', href: '/email/campaigns', icon: Send, badge: null, badgeColor: '' },
-      { name: 'Sequences', href: '/email/sequences', icon: RefreshCw, badge: null, badgeColor: '' },
-      { name: 'Templates', href: '/email/templates', icon: FileText, badge: null, badgeColor: '' },
-      { name: 'Outreach', href: '/email/outreach', icon: Target, badge: null, badgeColor: '' },
-      { name: 'Analytics', href: '/email/analytics', icon: BarChart3, badge: null, badgeColor: '' },
+      { name: 'Campaigns', href: '/email/campaigns', icon: '📨', badge: null },
+      { name: 'Sequences', href: '/email/sequences', icon: '🔄', badge: null },
+      { name: 'Templates', href: '/email/templates', icon: '📝', badge: null },
+      { name: 'Outreach', href: '/email/outreach', icon: '🎯', badge: null },
+      { name: 'Analytics', href: '/email/analytics', icon: '📈', badge: null },
     ],
   },
   {
     section: 'Content Studio',
     items: [
-      { name: 'Content Studio', href: '/content-generator', icon: Sparkles, badge: null, badgeColor: '' },
-      { name: 'Email Content', href: '/content-generator/email', icon: Mail, badge: null, badgeColor: '' },
-      { name: 'Social Content', href: '/content-generator/social', icon: Smartphone, badge: null, badgeColor: '' },
+      { name: 'Content Studio', href: '/content-generator', icon: '✨', badge: null },
+      { name: 'Email Content', href: '/content-generator/email', icon: '📧', badge: null },
+      { name: 'Social Content', href: '/content-generator/social', icon: '📱', badge: null },
     ],
   },
   {
     section: 'Accommodation',
     items: [
-      { name: 'Overview', href: '/accommodation', icon: Building2, badge: 'NEW', badgeColor: 'bg-brand-crimson-500' },
-      { name: 'Properties', href: '/accommodation/properties', icon: Home, badge: null, badgeColor: '' },
-      { name: 'Inquiries', href: '/accommodation/inquiries', icon: ClipboardList, badge: null, badgeColor: '' },
-      { name: 'Guests', href: '/accommodation/guests', icon: UserCircle, badge: null, badgeColor: '' },
+      { name: 'Overview', href: '/accommodation', icon: '🏨', badge: 'NEW', badgeColor: 'bg-gradient-to-r from-blue-500 to-blue-600' },
+      { name: 'Properties', href: '/accommodation/properties', icon: '🏠', badge: null },
+      { name: 'Inquiries', href: '/accommodation/inquiries', icon: '📋', badge: null },
+      { name: 'Guests', href: '/accommodation/guests', icon: '👤', badge: null },
     ],
   },
   {
     section: 'Settings',
     items: [
-      { name: 'Social Accounts', href: '/settings/social', icon: Link2, badge: null, badgeColor: '' },
+      { name: 'Social Accounts', href: '/settings/social', icon: '🔗', badge: null },
     ],
   },
   {
     section: 'Account',
     items: [
-      { name: 'Billing', href: '/billing', icon: CreditCard, badge: null, badgeColor: '' },
+      { name: 'Pricing', href: '/pricing', icon: '💳', badge: null },
     ],
   },
 ]
@@ -126,65 +82,52 @@ export function Sidebar({ usageStats }: SidebarProps) {
   const aiPercentage = (usage.aiGenerationsUsed / usage.aiGenerationsLimit) * 100
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white">
-      <div className="flex h-full flex-col">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-white">
+      <div className="flex h-full flex-col overflow-y-auto py-6">
         {/* Logo */}
-        <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
-          {/* Replace /logo.svg with /logo.png when you add your actual logo file */}
-          <Image
-            src="/logo.svg"
-            alt="DraggonnB"
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-lg object-contain"
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-bold leading-tight tracking-tight">
-              <span className="text-brand-charcoal-500">DRAGGON</span>
-              <span className="text-brand-crimson-500">NB</span>
-            </span>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-              Operating System
-            </span>
+        <div className="mb-8 px-6">
+          <div className="bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-base font-bold text-transparent">
+            🚀 DraggonnB POWER CRM
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-6 px-3">
           {navigation.map((section) => (
             <div key={section.section}>
               {section.section !== 'Main' && (
-                <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                <div className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
                   {section.section}
                 </div>
               )}
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {section.items.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
-                  const Icon = item.icon
+                  const isActive = pathname === item.href
                   return (
                     <Link
-                      key={item.name + item.href}
+                      key={item.name}
                       href={item.href}
                       className={cn(
-                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all',
+                        'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                         isActive
-                          ? 'border-l-[3px] border-brand-crimson-500 bg-brand-crimson-50 text-brand-crimson-700'
+                          ? 'border-l-3 bg-blue-50 text-blue-600 border-l-4 border-blue-600'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       )}
                     >
-                      <Icon
+                      <span
                         className={cn(
-                          'h-4 w-4 flex-shrink-0',
-                          isActive ? 'text-brand-crimson-600' : 'text-gray-400 group-hover:text-gray-600'
+                          'flex h-5 w-5 items-center justify-center rounded text-xs',
+                          isActive && 'bg-gradient-to-br from-blue-600 to-blue-700 text-white'
                         )}
-                      />
+                      >
+                        {item.icon}
+                      </span>
                       <span className="flex-1">{item.name}</span>
                       {item.badge && (
                         <span
                           className={cn(
-                            'rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white',
-                            item.badgeColor || 'bg-brand-crimson-500'
+                            'rounded-full px-2 py-0.5 text-[10px] font-semibold text-white',
+                            item.badgeColor || 'bg-gradient-to-r from-orange-500 to-orange-600'
                           )}
                         >
                           {item.badge}
@@ -199,42 +142,41 @@ export function Sidebar({ usageStats }: SidebarProps) {
         </nav>
 
         {/* Usage Stats Footer */}
-        <div className="border-t border-gray-100 bg-gray-50/50 px-5 py-5">
-          <div className="space-y-3">
+        <div className="border-t bg-gray-50 px-6 py-6">
+          <div className="space-y-4">
             <div>
-              <div className="mb-1.5 flex items-center justify-between text-[11px] font-medium text-gray-500">
+              <div className="mb-1 flex items-center justify-between text-xs font-medium">
                 <span>Posts This Month</span>
-                <span className="text-gray-700">
+                <span>
                   {usage.postsUsed} / {usage.postsLimit}
                 </span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                 <div
-                  className="h-full rounded-full bg-brand-crimson-400 transition-all"
+                  className="h-full bg-gradient-to-r from-blue-600 to-blue-700"
                   style={{ width: `${postsPercentage}%` }}
                 />
               </div>
             </div>
             <div>
-              <div className="mb-1.5 flex items-center justify-between text-[11px] font-medium text-gray-500">
+              <div className="mb-1 flex items-center justify-between text-xs font-medium">
                 <span>AI Generations</span>
-                <span className="text-gray-700">
+                <span>
                   {usage.aiGenerationsUsed} / {usage.aiGenerationsLimit}
                 </span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                 <div
-                  className="h-full rounded-full bg-brand-charcoal-300 transition-all"
+                  className="h-full bg-gradient-to-r from-blue-600 to-blue-700"
                   style={{ width: `${aiPercentage}%` }}
                 />
               </div>
             </div>
             <Link
-              href="/billing"
-              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-crimson-500 px-4 py-2 text-center text-xs font-semibold text-white shadow-sm transition-all hover:bg-brand-crimson-600 hover:shadow-md"
+              href="/pricing"
+              className="mt-3 block w-full rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-orange-500/30 transition-all hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5"
             >
               Upgrade Plan
-              <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
         </div>

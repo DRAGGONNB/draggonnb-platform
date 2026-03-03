@@ -24,7 +24,7 @@ interface CRMPipelineChartProps {
 
 const STAGE_COLORS = [
   '#9ca3af', // Lead - gray
-  '#bb1b3b', // Qualified - brand crimson
+  '#3b82f6', // Qualified - blue
   '#eab308', // Proposal - yellow
   '#f97316', // Negotiation - orange
   '#22c55e', // Won - green

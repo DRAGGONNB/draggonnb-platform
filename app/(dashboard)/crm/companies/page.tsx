@@ -78,7 +78,7 @@ const MOCK_COMPANIES: Company[] = [
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   active: { label: 'Active', className: 'bg-green-50 text-green-700 hover:bg-green-50' },
-  prospect: { label: 'Prospect', className: 'bg-brand-crimson-50 text-brand-crimson-700 hover:bg-brand-crimson-50' },
+  prospect: { label: 'Prospect', className: 'bg-blue-50 text-blue-700 hover:bg-blue-50' },
   inactive: { label: 'Inactive', className: 'bg-gray-100 text-gray-600 hover:bg-gray-100' },
 }
 

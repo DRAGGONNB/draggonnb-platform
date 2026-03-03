@@ -64,7 +64,7 @@ export function LandingFooter() {
           <div className="lg:col-span-2">
             <Link href="/" className="mb-4 inline-flex items-baseline gap-1.5">
               <span className="font-display text-xl font-bold gradient-text-brand">DraggonnB</span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-charcoal-400">OS</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-charcoal-400">CRMM</span>
             </Link>
             <p className="mb-6 max-w-xs text-sm leading-relaxed text-brand-charcoal-400">
               The all-in-one CRM and marketing platform built for South African businesses.

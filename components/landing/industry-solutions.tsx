@@ -27,7 +27,7 @@ const industries = [
     title: 'Real Estate',
     description:
       'Track property listings, manage buyer and seller pipelines, automate showing follow-ups, and send targeted campaigns to your prospect database.',
-    gradient: 'from-amber-500 to-brand-crimson-500',
+    gradient: 'from-brand-gold-500 to-brand-crimson-500',
   },
   {
     icon: Briefcase,
@@ -41,30 +41,30 @@ const industries = [
     title: 'Retail',
     description:
       'Build customer loyalty with targeted email campaigns, social media scheduling, and AI-generated content that drives repeat purchases.',
-    gradient: 'from-brand-crimson-500 to-amber-500',
+    gradient: 'from-brand-crimson-500 to-brand-gold-500',
   },
   {
     icon: HeartPulse,
     title: 'Healthcare',
     description:
       'Patient communication, appointment follow-ups, and practice marketing. Automate patient engagement while maintaining a professional, caring presence.',
-    gradient: 'from-brand-crimson-400 to-amber-500',
+    gradient: 'from-brand-crimson-400 to-brand-gold-500',
   },
 ]
 
 export function IndustrySolutionsSection() {
   return (
-    <section id="industries" className="border-t border-gray-200 bg-gray-50 px-4 py-24 sm:px-6 lg:px-8">
+    <section id="industries" className="border-t border-white/10 bg-brand-charcoal-800/30 px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-500">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
             Industry Solutions
           </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-gray-900 lg:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
             Built for{' '}
             <span className="gradient-text-brand">Your Industry</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
             Whether you run a lodge, an accounting practice, or a retail business,
             DraggonnB adapts to how you work with industry-specific modules and workflows.
           </p>
@@ -76,15 +76,15 @@ export function IndustrySolutionsSection() {
             return (
               <div
                 key={industry.title}
-                className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1"
+                className="group rounded-2xl border border-white/10 bg-brand-charcoal-800/60 p-6 transition-all hover-lift hover-glow-brand"
               >
                 <div
-                  className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${industry.gradient} shadow-md`}
+                  className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${industry.gradient} shadow-lg`}
                 >
                   <Icon className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-gray-900">{industry.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{industry.description}</p>
+                <h3 className="mb-2 text-lg font-semibold text-white">{industry.title}</h3>
+                <p className="text-sm leading-relaxed text-brand-charcoal-300">{industry.description}</p>
               </div>
             )
           })}

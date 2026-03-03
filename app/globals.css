@@ -16,9 +16,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Primary (Brand Crimson) */
-    --primary: 348 75% 42%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary (Brand Blue) */
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
     --primary-50: 214 100% 97%;
     --primary-100: 214 95% 93%;
     --primary-200: 213 97% 87%;
@@ -177,7 +177,7 @@
     /* Border & Input */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 348 75% 42%;
+    --ring: 222.2 84% 4.9%;
 
     /* Brand Colors - Crimson/Burgundy (Landing Page) */
     --brand-crimson-50: 348 100% 97%;
