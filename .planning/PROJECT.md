@@ -1,116 +1,81 @@
-# DraggonnB CRMM — Base SaaS Template
+# DraggonnB OS -- AI-Powered Business Operating System
 
 ## What This Is
 
-A production-ready B2B automation SaaS platform targeting South African SMEs. DraggonnB CRMM (Client Relationship & Marketing Management) is the **base template** that every new client gets — CRM, email marketing, AI content generation, social media automation, analytics, and payments — all in one platform. Each client gets an isolated deployment (separate Supabase project, GitHub repo, Vercel deployment) with client-specific customizations built on top of this base.
+A production-ready multi-tenant B2B operating system targeting South African SMEs. DraggonnB OS provides CRM, email marketing, AI content generation, social media automation, accommodation management, AI agents, analytics, and payments -- all in one platform. All clients share a single Supabase project with RLS-based tenant isolation. Each client gets a subdomain on *.draggonnb.co.za with DB-backed module gating.
 
 ## Core Value
 
-**A complete, working end-to-end business automation platform that can be cloned and deployed for a new client within 48-72 hours.** Every module must work — CRM, email, content, payments, dashboard — because this is the foundation every client deployment inherits.
+**A complete, working multi-tenant business automation platform where new clients are provisioned with a database row, a subdomain, and activated modules -- live in under an hour.** Every module works: CRM, email, content, payments, dashboard, accommodation, AI agents.
 
-## Requirements
+## Architecture
 
-### Validated
+- **Multi-tenant:** Shared Supabase DB with RLS policies using `get_user_org_id()` (STABLE, cached per-query)
+- **Routing:** Wildcard DNS on `*.draggonnb.co.za`, middleware resolves tenant from subdomain, injects `x-tenant-id`/`x-tenant-tier`/`x-tenant-modules` headers
+- **Module gating:** `module_registry` (global catalog) + `tenant_modules` (per-tenant activation) tables
+- **Provisioning:** 5-step saga: create-org -> n8n-webhooks -> deploy-automations -> onboarding-sequence -> qa-checks
+- **AI ops:** N8N for deterministic automation, Claude API via BaseAgent for intelligent ops, build-time Claude Code
 
-- ✓ Next.js 14 App Router with TypeScript — existing
-- ✓ Supabase Auth (login, signup, password reset, session management) — existing
-- ✓ Multi-tenant architecture with organization_id isolation — existing
-- ✓ CRM module: contacts CRUD with search/filter — existing
-- ✓ CRM module: deals pipeline CRUD — existing
-- ✓ CRM module: companies CRUD — existing
-- ✓ Email module: campaign management UI (create, list, edit) — existing
-- ✓ Email module: template management UI — existing
-- ✓ Email module: sequence management UI — existing
-- ✓ Email module: send API with usage limits, tracking, unsubscribe — existing (scaffolded)
-- ✓ PayFast integration: checkout flow with 3 tiers (R1,500/R3,500/R7,500) — existing (sandbox)
-- ✓ PayFast ITN webhook with 3-step validation — existing
-- ✓ Dashboard page with charts (recharts) — existing (mock data)
-- ✓ Sidebar navigation and dashboard layout — existing
-- ✓ shadcn/ui component library (32 components) — existing
-- ✓ Middleware auth session refresh — existing
-- ✓ Vercel deployment with auto-deploy from GitHub — existing
-- ✓ N8N webhook client code (content gen, analytics, provisioning) — existing (scaffolded)
+## Tech Stack
 
-### Active
+- Next.js 14.2.33 App Router, TypeScript, Tailwind CSS, shadcn/ui
+- Supabase (DB + Auth), Resend (email), PayFast (payments), N8N (workflows)
+- Vercel (hosting), GitHub (code), Gitea (state docs)
+- Recharts (charts), Lucide React (icons)
 
-- [ ] Enable Supabase RLS policies (CRITICAL security blocker)
-- [ ] Fix signup flow: organization_id not linked to user record
-- [ ] Fix middleware to protect all dashboard routes (not just /dashboard)
-- [ ] Create admin Supabase client for webhooks (PayFast, Resend) that bypass RLS
-- [ ] Wire dashboard to real Supabase data (replace all mock/hardcoded values)
-- [ ] Configure and test Resend email integration end-to-end
-- [ ] Build proper marketing landing page
-- [ ] Self-host N8N on Hostinger VPS (migrate from N8N Cloud)
-- [ ] Activate N8N workflows (content generator, queue processor, analytics collector)
-- [ ] Connect social media APIs (Facebook/Instagram, LinkedIn) via N8N
-- [ ] Build automated client provisioning (clone repo, create Supabase project, deploy to Vercel)
-- [ ] Fix campaign send to target contacts (not team users)
-- [ ] Fix environment variable mismatches for N8N
-- [ ] Secure email tracking (sign unsubscribe tokens, validate redirect URLs)
-- [ ] Fix PayFast webhook to use service role key
-- [ ] Remove hardcoded setup API secret
-- [ ] Production PayFast merchant account setup
-- [ ] Add test framework and critical path tests
+## Brand Identity
 
-### Out of Scope
+- **Primary:** Brand Crimson (HSL 348, 75%, 42%) -- buttons, active states, accents
+- **Secondary:** Brand Charcoal (HSL 220) -- text, dark elements, secondary accents
+- **Theme:** Light (white/gray-50 backgrounds, crimson accents)
+- **Logo:** Charcoal + crimson split icon with "DRAGGONNB Operating System" text
+- **Landing page:** Light theme with dark CTA section for contrast
 
-- Mobile native apps — responsive web sufficient for MVP
-- Dark mode — configured but not priority for launch
-- White-label branding — Enterprise tier future feature
-- Bank SMS detection — awaits SMS gateway partnership
-- Voice AI agents — Phase 2+ feature
-- Admin panel — manage via Supabase dashboard initially
-- Advanced ML analytics — basic reporting sufficient for launch
-- Multi-language support — English only for South African market
-- CI/CD pipeline — manual deploys via Vercel for now
+## Modules
 
-## Context
+| Module | Status | Tier |
+|--------|--------|------|
+| CRM (contacts, companies, deals) | Complete | Core |
+| Email Marketing (campaigns, sequences, templates, outreach) | Complete | Core |
+| Content Studio (AI generation, social/email content) | Complete | Core |
+| Social Media (scheduling, publishing) | Complete | Growth |
+| Accommodation (properties, guests, inquiries) | Complete | Growth |
+| AI Agents (Autopilot, workflows, settings) | Complete | Scale |
+| Analytics (dashboard stats, pipeline charts) | Complete | Core |
+| Payments (PayFast, 3 tiers) | Complete | Core |
 
-**Existing codebase:** ~55-60% complete. 24 pages, 26 API routes, 33 components deployed at https://draggonnb-mvp.vercel.app. Build passes. Core architecture is sound but has critical bugs (signup flow, middleware protection) and security gaps (no RLS).
+## Infrastructure
 
-**Business model:** R1,500-R7,500/month per client. Target: 30 clients in 6 months. First client is waiting — urgency to ship.
+- **Supabase project:** `psqfgzbjbgqrmjskdavs`
+- **Vercel:** `draggonnb-mvp` auto-deploys from main
+- **N8N:** draggonn-b.app.n8n.cloud (migrating to self-hosted on VPS)
+- **VPS:** Hostinger with SSH access (`ssh hostinger-vps`)
+- **Gitea:** git.draggonnb.online:3030 (state docs)
+- **GitHub:** DRAGGONNB/draggonnb-platform
 
-**Infrastructure available:**
-- Supabase project: `psqfgzbjbgqrmjskdavs`
-- N8N Cloud: https://draggonn-b.app.n8n.cloud (migrating to self-hosted)
-- Hostinger VPS: Ready with SSH access
-- Vercel: Project `draggonnb-mvp` auto-deploys from main
-- API keys available: Anthropic Claude
+## Missing Credentials
 
-**API keys NOT yet available:**
-- Resend API key
-- Social media platform credentials (Facebook, Instagram, LinkedIn)
-- Production PayFast merchant credentials
+- Resend API key (email delivery)
+- Facebook/Instagram OAuth credentials (social publishing)
+- LinkedIn OAuth credentials (social publishing)
+- PayFast production passphrase (live payments)
 
-**Critical bugs identified in codebase audit:**
-1. Signup creates org but doesn't link user to it (organization_id null)
-2. Middleware only protects /dashboard, not /crm, /email, etc.
-3. PayFast webhook uses anon key (will fail when RLS enabled)
-4. Campaign send targets team users instead of contacts
-5. Dashboard shows hardcoded fake data
+## Completion Status
+
+- v1 Roadmap: 7/7 phases complete (security, core modules, landing, N8N, social, provisioning, testing)
+- v2 BOS: Phases A-E complete (CLAUDE.md hierarchy, error catalogue, provisioning hardening, build reviewer, AI ops)
+- Architecture restructure: Shared DB + RLS migration complete
+- UI Rebrand: Complete (all pages converted to DraggonnB OS brand identity)
+- **Next milestone:** First end-to-end client provisioning test
 
 ## Constraints
 
-- **Tech stack**: Next.js 14, Supabase, TailwindCSS, TypeScript — locked, too much existing code to change
-- **Payment**: PayFast only — South African market requirement, no Stripe/international
-- **Currency**: ZAR (South African Rand) — all pricing in Rand
-- **Hosting**: Vercel for app, Hostinger VPS for N8N self-hosted
-- **Timeline**: First client waiting — ship production-ready base ASAP
-- **Budget**: Minimize per-client infrastructure costs (Supabase free/hobby tier, Vercel free tier)
-- **Compliance**: POPI Act (South African data protection) — per-client data isolation addresses this
-- **AI**: Anthropic Claude via N8N workflows (not direct SDK integration in Next.js)
-
-## Key Decisions
-
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Separate Supabase project per client | Complete data isolation, simpler security, POPI compliance | ✓ Good |
-| PayFast for payments (not Yoco/Stripe) | SA market standard, native ZAR, recurring subscriptions built-in | — Pending |
-| Self-host N8N on Hostinger VPS | More control, no monthly N8N Cloud fee, already have VPS | — Pending |
-| Next.js App Router (not Pages) | Modern patterns, Server Components, better for new development | ✓ Good |
-| shadcn/ui components | Flexible, customizable, no vendor lock-in, already 32 components installed | ✓ Good |
-| Claude AI via N8N (not direct SDK) | Keeps AI logic in workflows, easier to modify without code deploys | — Pending |
-| Automated client provisioning | Required for 48-72hr turnaround promise, scales beyond manual | — Pending |
+- **Tech stack:** Next.js 14, Supabase, TailwindCSS, TypeScript -- locked
+- **Payment:** PayFast only (SA market requirement)
+- **Currency:** ZAR (South African Rand)
+- **Hosting:** Vercel for app, Hostinger VPS for N8N
+- **Compliance:** POPI Act (SA data protection) -- RLS-based tenant isolation
+- **AI:** Claude API via N8N workflows + BaseAgent for per-call ops
 
 ---
-*Last updated: 2026-02-02 after initialization*
+*Last updated: 2026-03-01 after Session 26 UI rebrand*

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserOrg } from '@/lib/auth/get-user-org'
 import { getClientProfile, upsertClientProfile } from '@/lib/autopilot/client-profile'

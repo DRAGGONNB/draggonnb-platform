@@ -26,7 +26,7 @@ interface Inquiry {
 
 const STAGES = ['new', 'contacted', 'quoted', 'confirmed', 'checked_in', 'checked_out', 'closed', 'cancelled']
 const STAGE_COLORS: Record<string, string> = {
-  new: 'bg-brand-crimson-100 text-brand-crimson-700',
+  new: 'bg-blue-100 text-blue-700',
   contacted: 'bg-yellow-100 text-yellow-700',
   quoted: 'bg-purple-100 text-purple-700',
   confirmed: 'bg-green-100 text-green-700',

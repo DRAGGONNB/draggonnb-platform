@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { createClient } from '@/lib/supabase/server'

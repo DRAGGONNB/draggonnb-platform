@@ -1,0 +1,157 @@
+{
+  "plans": [
+    {
+      "id": "core",
+      "display_name": "Core",
+      "description": "Essential business automation for small teams",
+      "price_zar": 150000,
+      "frequency": "monthly",
+      "payfast_item_code": "DRG-CORE",
+      "sort_order": 1,
+      "features": [
+        "Social CRM (contacts, companies, deals pipeline)",
+        "Complete email management (campaigns, sequences, templates, tracking)",
+        "1 custom business automation",
+        "30 social posts per month",
+        "50 AI content generations",
+        "1,000 emails per month",
+        "3 social accounts",
+        "2 team users"
+      ],
+      "limits": {
+        "social_posts": 30,
+        "ai_generations": 50,
+        "email_sends": 1000,
+        "social_accounts": 3,
+        "team_users": 2,
+        "custom_automations": 1,
+        "ai_agents": 0,
+        "agent_invocations": 0
+      }
+    },
+    {
+      "id": "growth",
+      "display_name": "Growth",
+      "description": "Advanced automation with AI-powered content and lead management",
+      "price_zar": 350000,
+      "frequency": "monthly",
+      "payfast_item_code": "DRG-GROWTH",
+      "sort_order": 2,
+      "features": [
+        "Everything in Core, plus:",
+        "3+ business automations from template library",
+        "AI content generation for all channels",
+        "Advanced email automation (behavioral triggers, A/B testing, smart segmentation)",
+        "Smart lead pipeline (social engagement to CRM to automated nurture)",
+        "100 social posts per month",
+        "200 AI content generations",
+        "10,000 emails per month",
+        "10 social accounts",
+        "5 team users"
+      ],
+      "limits": {
+        "social_posts": 100,
+        "ai_generations": 200,
+        "email_sends": 10000,
+        "social_accounts": 10,
+        "team_users": 5,
+        "custom_automations": 3,
+        "ai_agents": 0,
+        "agent_invocations": 0
+      }
+    },
+    {
+      "id": "scale",
+      "display_name": "Scale",
+      "description": "Unlimited operations with AI agents and white-label branding",
+      "price_zar": 750000,
+      "frequency": "monthly",
+      "payfast_item_code": "DRG-SCALE",
+      "sort_order": 3,
+      "features": [
+        "Everything in Growth, plus:",
+        "White label (custom domain, branding, remove DraggonnB branding)",
+        "AI agents for client operations (customer support bot, lead responder, content autopilot)",
+        "Unlimited social posts, AI generations, emails",
+        "Unlimited social accounts and team users",
+        "API access and custom integrations",
+        "3 AI agents included (1,000 invocations/month)"
+      ],
+      "limits": {
+        "social_posts": -1,
+        "ai_generations": -1,
+        "email_sends": -1,
+        "social_accounts": -1,
+        "team_users": -1,
+        "custom_automations": -1,
+        "ai_agents": 3,
+        "agent_invocations": 1000
+      }
+    }
+  ],
+  "credit_packs": [
+    {
+      "id": "ai-50",
+      "display_name": "50 AI Generations",
+      "description": "Top up AI content generation credits",
+      "metric": "ai_generations",
+      "credit_amount": 50,
+      "price_zar": 15000,
+      "min_tier": null
+    },
+    {
+      "id": "ai-200",
+      "display_name": "200 AI Generations",
+      "description": "Bulk AI content generation credits",
+      "metric": "ai_generations",
+      "credit_amount": 200,
+      "price_zar": 45000,
+      "min_tier": null
+    },
+    {
+      "id": "posts-50",
+      "display_name": "50 Social Posts",
+      "description": "Extra social media posting credits",
+      "metric": "social_posts",
+      "credit_amount": 50,
+      "price_zar": 20000,
+      "min_tier": null
+    },
+    {
+      "id": "posts-200",
+      "display_name": "200 Social Posts",
+      "description": "Bulk social media posting credits",
+      "metric": "social_posts",
+      "credit_amount": 200,
+      "price_zar": 60000,
+      "min_tier": null
+    },
+    {
+      "id": "emails-5k",
+      "display_name": "5,000 Emails",
+      "description": "Extra email sending credits",
+      "metric": "email_sends",
+      "credit_amount": 5000,
+      "price_zar": 25000,
+      "min_tier": null
+    },
+    {
+      "id": "emails-20k",
+      "display_name": "20,000 Emails",
+      "description": "Bulk email sending credits",
+      "metric": "email_sends",
+      "credit_amount": 20000,
+      "price_zar": 75000,
+      "min_tier": null
+    },
+    {
+      "id": "agents-500",
+      "display_name": "500 Agent Invocations",
+      "description": "Top up AI agent invocation credits",
+      "metric": "agent_invocations",
+      "credit_amount": 500,
+      "price_zar": 50000,
+      "min_tier": "scale"
+    }
+  ]
+}

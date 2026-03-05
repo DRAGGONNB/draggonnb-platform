@@ -332,7 +332,7 @@ export default function AutopilotPage() {
                   {layoutData.campaign_id && (
                     <Link
                       href={`/email/campaigns`}
-                      className="inline-flex items-center gap-1 text-sm text-brand-crimson-600 hover:underline"
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
                     >
                       <ExternalLink className="h-3 w-3" />
                       Open in Email Editor
@@ -355,7 +355,7 @@ export default function AutopilotPage() {
                   <Label className="text-xs text-gray-500">Hashtags</Label>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {selectedItem.hashtags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs text-brand-crimson-600">
+                      <Badge key={tag} variant="outline" className="text-xs text-blue-600">
                         #{tag}
                       </Badge>
                     ))}

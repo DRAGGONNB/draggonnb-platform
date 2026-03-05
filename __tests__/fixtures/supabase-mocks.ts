@@ -174,3 +174,55 @@ export function mockUserWithoutOrganization(userId: string = 'test-user-id') {
     }),
   }
 }
+
+/**
+ * Build x-tenant-* headers for middleware testing
+ */
+export function mockTenantHeaders(
+  orgId: string = 'test-org-id',
+  tier: string = 'core',
+  modules: string[] = ['crm', 'email', 'analytics']
+) {
+  return {
+    'x-tenant-id': orgId,
+    'x-tenant-subdomain': 'testclient',
+    'x-tenant-tier': tier,
+    'x-tenant-modules': modules.join(','),
+  }
+}
+
+/**
+ * Create a mock admin Supabase client (bypasses RLS)
+ */
+export function createMockAdminClient(overrides: Record<string, unknown> = {}) {
+  return {
+    from: vi.fn((table: string) => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          eq: vi.fn(() => ({
+            data: [],
+            error: null,
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          })),
+          limit: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          })),
+        })),
+      })),
+      insert: vi.fn(() => ({
+        select: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({ data: { id: 'new-id' }, error: null }),
+        })),
+      })),
+      update: vi.fn(() => ({
+        eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+      })),
+      delete: vi.fn(() => ({
+        eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+      })),
+    })),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    ...overrides,
+  }
+}

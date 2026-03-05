@@ -274,7 +274,7 @@ export default function AutopilotSettingsPage() {
             <Label>Social Platforms</Label>
             <div className="flex gap-2 mt-1">
               {PLATFORMS.map((p) => (
-                <button key={p.value} type="button" onClick={() => togglePlatform(p.value)} className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${form.preferred_platforms.includes(p.value) ? 'border-brand-crimson-500 bg-brand-crimson-50 text-brand-crimson-700' : 'border-gray-200 text-gray-500'}`}>
+                <button key={p.value} type="button" onClick={() => togglePlatform(p.value)} className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${form.preferred_platforms.includes(p.value) ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'}`}>
                   {p.label}
                 </button>
               ))}

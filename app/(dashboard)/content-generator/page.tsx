@@ -35,16 +35,16 @@ export default function ContentStudioPage() {
       </div>
 
       <Link href="/autopilot">
-        <div className="mb-6 rounded-lg border border-brand-crimson-200 bg-gradient-to-r from-brand-crimson-50 to-brand-gold-400/10 p-4 hover:shadow-md transition-shadow cursor-pointer">
+        <div className="mb-6 rounded-lg border border-purple-200 bg-gradient-to-r from-purple-50 to-amber-50/30 p-4 hover:shadow-md transition-shadow cursor-pointer">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Bot className="h-5 w-5 text-brand-crimson-600" />
+              <Bot className="h-5 w-5 text-purple-600" />
               <div>
-                <p className="font-semibold text-brand-crimson-900">Want content created automatically?</p>
-                <p className="text-sm text-brand-crimson-600">Try Business Autopilot — AI generates your weekly content calendar</p>
+                <p className="font-semibold text-purple-900">Want content created automatically?</p>
+                <p className="text-sm text-purple-600">Try Business Autopilot — AI generates your weekly content calendar</p>
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-brand-crimson-400" />
+            <ArrowRight className="h-5 w-5 text-purple-400" />
           </div>
         </div>
       </Link>

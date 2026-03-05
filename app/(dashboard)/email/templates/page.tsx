@@ -35,7 +35,7 @@ import type { EmailTemplate, TemplateCategory } from '@/lib/email/types'
 
 const categoryColors: Record<TemplateCategory, string> = {
   welcome: 'bg-green-500/10 text-green-500',
-  newsletter: 'bg-brand-crimson-500/10 text-brand-crimson-500',
+  newsletter: 'bg-blue-500/10 text-blue-500',
   promotional: 'bg-purple-500/10 text-purple-500',
   transactional: 'bg-orange-500/10 text-orange-500',
   general: 'bg-gray-500/10 text-gray-500',

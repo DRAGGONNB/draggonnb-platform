@@ -173,8 +173,8 @@ export default function SequenceDetailPage({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-brand-crimson-100 rounded-lg">
-                <GitBranch className="h-5 w-5 text-brand-crimson-600" />
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <GitBranch className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Steps</p>
@@ -289,18 +289,18 @@ export default function SequenceDetailPage({
                 <div
                   key={step.id}
                   className={`border rounded-lg p-4 ${
-                    step.step_type === 'email' ? 'bg-brand-crimson-50/50' : 'bg-orange-50/50'
+                    step.step_type === 'email' ? 'bg-blue-50/50' : 'bg-orange-50/50'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div
                         className={`p-2 rounded-lg ${
-                          step.step_type === 'email' ? 'bg-brand-crimson-100' : 'bg-orange-100'
+                          step.step_type === 'email' ? 'bg-blue-100' : 'bg-orange-100'
                         }`}
                       >
                         {step.step_type === 'email' ? (
-                          <Mail className="h-4 w-4 text-brand-crimson-600" />
+                          <Mail className="h-4 w-4 text-blue-600" />
                         ) : (
                           <Clock className="h-4 w-4 text-orange-600" />
                         )}
@@ -340,7 +340,7 @@ export default function SequenceDetailPage({
                           <p className="text-muted-foreground">Opens</p>
                         </div>
                         <div className="text-center">
-                          <p className="font-medium text-brand-crimson-600">
+                          <p className="font-medium text-blue-600">
                             {step.stats.sent > 0
                               ? Math.round((step.stats.clicked / step.stats.sent) * 100)
                               : 0}

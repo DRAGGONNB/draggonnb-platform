@@ -67,7 +67,7 @@ export function CalendarGrid({ entries, onApprove, onReject, onEdit, onItemClick
     return (
       <div className="text-center py-16 text-gray-400">
         <p className="text-lg font-medium mb-2">No content this week</p>
-        <p className="text-sm">Click "Generate This Week" to create your content calendar</p>
+        <p className="text-sm">Click &quot;Generate This Week&quot; to create your content calendar</p>
       </div>
     )
   }

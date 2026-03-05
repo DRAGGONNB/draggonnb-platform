@@ -408,13 +408,13 @@ function SequenceBuilderContent() {
                   {/* Step Header */}
                   <div
                     className={`flex items-center gap-3 p-3 ${
-                      step.step_type === 'email' ? 'bg-brand-crimson-50' : 'bg-orange-50'
+                      step.step_type === 'email' ? 'bg-blue-50' : 'bg-orange-50'
                     }`}
                   >
                     <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                     <div className="flex-1 flex items-center gap-2">
                       {step.step_type === 'email' ? (
-                        <Mail className="h-4 w-4 text-brand-crimson-600" />
+                        <Mail className="h-4 w-4 text-blue-600" />
                       ) : (
                         <Clock className="h-4 w-4 text-orange-600" />
                       )}

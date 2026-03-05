@@ -1,4 +1,4 @@
-# DraggonnB CRMM - Operating System
+# DraggonnB OS - Operating System
 
 ## Multi-Client Architecture
 
@@ -28,7 +28,7 @@ RLS policies use `get_user_org_id()` function (STABLE, cached per-query) for fas
 
 ## Source of Truth
 
-- **Code:** GitHub (`DRAGGONNB/draggonnb-platform-template`, main branch)
+- **Code:** GitHub (`DRAGGONNB/draggonnb-platform`, main branch)
 - **State/Docs:** Gitea VPS (`draggonnb/platform-crmm` at git.draggonnb.online)
 - **Infra:** Gitea VPS (`draggonnb/ops-hub`)
 - **Deploy:** Vercel (`draggonnb-mvp`)
@@ -98,7 +98,25 @@ Three sub-directory CLAUDE.md files provide build specs for extending the platfo
 | Build-time AI | Claude Code (this tool) | Per-session, developer time | Per-session |
 | Advisory | OpenClaw (read-only Gitea) | Strategic suggestions | Existing |
 
-No autonomous sub-agents per client until 20+ clients with proven patterns. Current agents: LeadQualifierAgent, ProposalGeneratorAgent, ClientOnboardingAgent. Future: Anthropic Agent SDK when scale justifies it.
+No autonomous sub-agents per client until 20+ clients with proven patterns. Current agents: LeadQualifierAgent, ProposalGeneratorAgent. Future: Anthropic Agent SDK when scale justifies it.
+
+## Auth & User Record Pattern
+
+Protected pages call `getUserOrg()` from `lib/auth/get-user-org.ts`. This function:
+1. Gets authenticated user via `supabase.auth.getUser()`
+2. Queries `users` table with org join (tries user client, then admin client for RLS bypass)
+3. Auto-creates missing user/org records via `createAdminClient()` (service role) if row is missing
+4. Returns `{ data: UserOrg, error }` -- never redirects, never throws
+
+Pages render inline error states (not redirects) when `getUserOrg()` fails. This prevents redirect loops with middleware. Error boundaries (`error.tsx`) catch unexpected throws.
+
+## Testing
+
+241 tests (Vitest). Test config in `vitest.config.ts` with jsdom environment for `__tests__/components/**`.
+- Unit tests: security, API routes, agents, tier gating
+- Component render tests: dashboard, CRM, autopilot, sidebar, template editor
+- Integration tests: dashboard data flow, user/org auto-creation
+- Libraries: `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`
 
 ## Build Reviewer
 

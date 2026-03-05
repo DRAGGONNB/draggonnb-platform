@@ -166,5 +166,33 @@
     "files_affected": [],
     "recurring": false,
     "tags": ["gitea", "port-mapping", "docker", "connection-refused"]
+  },
+  {
+    "id": "ERR-013",
+    "timestamp": "2026-03-05",
+    "session": 28,
+    "category": "runtime",
+    "source": "nextjs",
+    "error_message": "Dashboard shows blank page / CRM redirects back to dashboard",
+    "root_cause": "Pages called redirect('/login') when getUserOrg() failed. Middleware sees authenticated user and redirects back to /dashboard, creating infinite redirect loop.",
+    "resolution": "Replaced redirect('/login') with inline error state JSX showing 'Unable to load' message with 'Sign Out & Retry' link. Added error.tsx boundaries.",
+    "prevention": "Never redirect to /login from protected pages. Always render inline error states. Use error boundaries for unexpected throws.",
+    "files_affected": ["app/(dashboard)/dashboard/page.tsx", "app/(dashboard)/crm/page.tsx", "app/(dashboard)/dashboard/error.tsx", "app/(dashboard)/crm/error.tsx"],
+    "recurring": false,
+    "tags": ["redirect-loop", "middleware", "error-state", "auth"]
+  },
+  {
+    "id": "ERR-014",
+    "timestamp": "2026-03-05",
+    "session": 28,
+    "category": "runtime",
+    "source": "supabase",
+    "error_message": "getUserOrg() returns 'User not found' for authenticated users",
+    "root_cause": "RLS policies on users table prevent anon client from reading/inserting rows when no row exists yet. Signup created auth user but org/user record creation failed due to RLS.",
+    "resolution": "Used createAdminClient() (service role) to bypass RLS for user record lookup, auto-creation of missing user+org records, and signup flow.",
+    "prevention": "Always use admin client (service role) for operations that create or repair user/org records. Never rely on anon client for users table writes.",
+    "files_affected": ["lib/auth/get-user-org.ts", "lib/auth/actions.ts"],
+    "recurring": true,
+    "tags": ["rls", "chicken-and-egg", "admin-client", "user-record", "auth"]
   }
 ]

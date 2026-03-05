@@ -70,8 +70,34 @@ export function TemplateEditor({
       // Type assertion for loadDesign method
       const editor = emailEditorRef.current as unknown as {
         loadDesign: (design: Record<string, unknown>) => void
+        registerCallback: (type: string, callback: (...args: unknown[]) => void) => void
       }
       editor.loadDesign(initialData.editor_json)
+    }
+
+    // Register custom image upload handler to prevent browser default drag-drop
+    if (emailEditorRef.current) {
+      const editor = emailEditorRef.current as unknown as {
+        registerCallback: (type: string, callback: (...args: unknown[]) => void) => void
+      }
+      editor.registerCallback('image', (file: unknown, done: unknown) => {
+        const fileData = file as { attachments: File[] }
+        const doneCb = done as (data: { progress: number; url?: string }) => void
+
+        if (!fileData.attachments || fileData.attachments.length === 0) {
+          return
+        }
+
+        const attachment = fileData.attachments[0]
+        const reader = new FileReader()
+
+        reader.onload = () => {
+          // Use base64 data URL as the image source
+          doneCb({ progress: 100, url: reader.result as string })
+        }
+
+        reader.readAsDataURL(attachment)
+      })
     }
   }, [initialData?.editor_json])
 

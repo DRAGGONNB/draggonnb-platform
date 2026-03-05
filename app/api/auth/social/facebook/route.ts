@@ -3,12 +3,17 @@ import { cookies } from 'next/headers'
 import { getFacebookAuthUrl } from '@/lib/social/facebook'
 import { getUserOrg } from '@/lib/auth/get-user-org'
 
+// This route uses cookies() and env vars — must be dynamic
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
     // Verify user is authenticated
     const { data: userOrg, error } = await getUserOrg()
     if (error || !userOrg) {
-      return NextResponse.redirect(new URL('/login', process.env.NEXT_PUBLIC_APP_URL))
+      return NextResponse.redirect(new URL('/login', appUrl))
     }
 
     // Generate state for CSRF protection
@@ -29,8 +34,9 @@ export async function GET() {
     return NextResponse.redirect(authUrl)
   } catch (error) {
     console.error('Facebook OAuth init error:', error)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     return NextResponse.redirect(
-      new URL('/settings/social?error=oauth_init_failed', process.env.NEXT_PUBLIC_APP_URL)
+      new URL('/settings/social?error=oauth_init_failed', appUrl)
     )
   }
 }

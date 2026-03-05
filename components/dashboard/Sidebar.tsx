@@ -90,7 +90,7 @@ export function Sidebar({ usageStats }: SidebarProps) {
         {/* Logo */}
         <div className="mb-8 px-6">
           <div className="bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-base font-bold text-transparent">
-            🚀 DraggonnB POWER CRM
+            🚀 DraggonnB OS
           </div>
         </div>
 

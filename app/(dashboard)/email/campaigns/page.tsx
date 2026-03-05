@@ -38,7 +38,7 @@ import type { EmailCampaign, CampaignStatus } from '@/lib/email/types'
 
 const statusColors: Record<CampaignStatus, string> = {
   draft: 'bg-gray-500/10 text-gray-500',
-  scheduled: 'bg-brand-crimson-500/10 text-brand-crimson-500',
+  scheduled: 'bg-blue-500/10 text-blue-500',
   sending: 'bg-yellow-500/10 text-yellow-500',
   sent: 'bg-green-500/10 text-green-500',
   paused: 'bg-orange-500/10 text-orange-500',

@@ -1,11 +1,9 @@
 import { LandingNav } from '@/components/landing/nav'
 import {
   HeroSection,
-  SocialProofBar,
-  ProblemSolutionSection,
   ModuleShowcaseSection,
-  AIAgentsSection,
   HowItWorksSection,
+  SocialProofSection,
   PricingPreviewSection,
   CTASection,
 } from '@/components/landing/sections'
@@ -18,12 +16,10 @@ export default function Home() {
       <LandingNav />
       <main>
         <HeroSection />
-        <SocialProofBar />
-        <ProblemSolutionSection />
-        <IndustrySolutionsSection />
         <ModuleShowcaseSection />
-        <AIAgentsSection />
         <HowItWorksSection />
+        <IndustrySolutionsSection />
+        <SocialProofSection />
         <PricingPreviewSection />
         <CTASection />
       </main>

@@ -152,8 +152,8 @@ export default function AnalyticsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-brand-crimson-100 rounded-lg">
-                <Send className="h-5 w-5 text-brand-crimson-600" />
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Send className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Emails Sent</p>
@@ -431,7 +431,7 @@ export default function AnalyticsPage() {
                         </div>
                         <div>
                           <span className="text-muted-foreground">Rate:</span>{' '}
-                          <span className="font-medium text-brand-crimson-600">
+                          <span className="font-medium text-blue-600">
                             {completionRate}%
                           </span>
                         </div>

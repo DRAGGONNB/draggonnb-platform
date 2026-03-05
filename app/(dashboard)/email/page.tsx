@@ -113,7 +113,7 @@ export default function EmailDashboardPage() {
       description: 'Design a new email template',
       icon: FileText,
       href: '/email/templates/editor',
-      color: 'text-brand-crimson-500',
+      color: 'text-blue-500',
     },
     {
       title: 'New Campaign',
@@ -140,7 +140,7 @@ export default function EmailDashboardPage() {
 
   const statusColors: Record<string, string> = {
     queued: 'bg-gray-100 text-gray-600',
-    sent: 'bg-brand-crimson-100 text-brand-crimson-600',
+    sent: 'bg-blue-100 text-blue-600',
     delivered: 'bg-green-100 text-green-600',
     opened: 'bg-purple-100 text-purple-600',
     clicked: 'bg-indigo-100 text-indigo-600',
@@ -177,8 +177,8 @@ export default function EmailDashboardPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-brand-crimson-500/10">
-                  <Mail className="h-6 w-6 text-brand-crimson-500" />
+                <div className="p-3 rounded-full bg-blue-500/10">
+                  <Mail className="h-6 w-6 text-blue-500" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Emails Sent</p>
