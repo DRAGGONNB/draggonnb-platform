@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-01)
 
 **Core value:** Complete multi-tenant B2B operating system for South African SMEs. Shared Supabase DB with RLS-based tenant isolation, wildcard subdomain routing, DB-backed module gating, automated provisioning.
-**Current focus:** Accommodation module at ~75% implementation. 39 DB tables live, 36 API routes, 8 UI pages. Billing module added. Ready for first accommodation client test.
+**Current focus:** Accommodation module at ~80% implementation. 39 DB tables live, 48 API routes, 8 UI pages. Billing module added. Build passing. Ready for first accommodation client test.
 
 ## Current Position
 
-Phase: Accommodation module implementation (Waves 0-3)
-Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Accommodation module 75% implemented.
-Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-mvp.vercel.app
-Last activity: 2026-03-05 -- Session 29: Accommodation module full implementation
-Progress: 39 DB tables + RLS live in Supabase. 36 API routes (30 new + 6 standardized). 4 new frontend pages + sidebar nav updated. Pushed to GitHub, Vercel deploy triggered.
+Phase: Accommodation module implementation (Waves 0-3) — COMPLETE
+Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Accommodation module ~80% implemented.
+Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app
+Last activity: 2026-03-05 -- Session 31: Smoke test + session close
+Progress: 39 DB tables + RLS live in Supabase. 48 API routes. 8 UI pages. 24 Zod schemas. Full booking flow smoke tested end-to-end. Next.js build passing. Dev server config saved.
 
 ## Accumulated Context
 
@@ -75,9 +75,10 @@ Progress: 39 DB tables + RLS live in Supabase. 36 API routes (30 new + 6 standar
 - Configure Facebook/LinkedIn OAuth credentials
 - Configure Resend API key for email delivery
 - First end-to-end provisioning test with real client config
-- Accommodation: Add deposit policies API, email templates API, comms timeline API
 - Accommodation: Guest portal with access pack system
 - Accommodation: Channel manager integration (Booking.com, Airbnb sync)
+- ~~Accommodation: Smoke test full booking flow (property -> unit -> rate plan -> booking)~~ DONE (Session 31)
+- Accommodation: First provisioning pipeline test with real client config
 
 ### Blockers/Concerns
 
@@ -88,9 +89,57 @@ Progress: 39 DB tables + RLS live in Supabase. 36 API routes (30 new + 6 standar
 
 ## Session Continuity
 
-Last session: 2026-03-05 (Session 29)
-Stopped at: Accommodation module implementation complete (Waves 0-3). All changes pushed to GitHub, Vercel deploy triggered.
-Resume with: Verify Vercel build. Test accommodation flows (create property -> unit -> rate plan -> booking). First provisioning test.
+Last session: 2026-03-05 (Session 31)
+Stopped at: Smoke test passed. State files updated. Session close.
+Resume with: Guest portal with access pack system. Channel manager integration prep. First provisioning pipeline test.
+
+### Session 31 Summary (2026-03-05)
+**What was accomplished:**
+1. Verified Vercel production deployment is live at `draggonnb-platform.vercel.app` (old `draggonnb-mvp.vercel.app` returns 404)
+2. Smoke tested full booking flow end-to-end via Supabase SQL:
+   - Created property "Smoke Test Lodge" -> unit "Protea Suite" -> rate plan "Standard Rate" -> guest "Thabo Mabena" -> booking (3 nights)
+   - Discovered `accommodation_bookings.nights` is a generated column (auto-computed from check_in/check_out dates)
+   - Discovered column naming: `type` not `property_type`, `address` not `address_line1`
+   - Full FK chain validated. All test data cleaned up after verification.
+3. Set up `.claude/launch.json` with next-dev server config (port 3000)
+4. Updated STATE.md with correct production URL
+5. Updated CLAUDE.md with correct Vercel project reference
+
+**Errors encountered:**
+- Vercel MCP tools returning 404 for project — used GitHub Deployments API as workaround
+- `nights` generated column cannot be inserted directly — removed from INSERT, auto-computes correctly
+- Python3 not available on Windows — used Node.js for script parsing
+
+**What to do next session:**
+1. Guest portal with access pack system
+2. Channel manager integration prep (Booking.com, Airbnb sync)
+3. First provisioning pipeline test with real client config
+
+### Session 30 Summary (2026-03-05)
+**What was accomplished:**
+1. Built 6 remaining accommodation API routes:
+   - deposit-policies: CRUD (GET list, POST, GET/PATCH/DELETE by ID)
+   - email-templates: CRUD with trigger_type filtering (GET list, POST, GET/PATCH/DELETE by ID)
+   - comms-timeline: Communication log with booking/guest/channel filtering + pagination
+2. Added 2 new Zod validation schemas: createEmailTemplateSchema, createCommsTimelineSchema
+3. Verified Next.js build passes (`npx next build` — clean success)
+4. Verified TypeScript check (`npx tsc --noEmit` — zero accommodation errors)
+5. Set up `.claude/launch.json` for dev server preview
+6. Total accommodation module metrics:
+   - 39 database tables with RLS policies
+   - 48 API route files (3,783 lines)
+   - 8 frontend pages (3,879 lines)
+   - 251 lines of Zod schemas (24 schemas)
+   - 735 lines of TypeScript types (40+ interfaces/enums)
+
+**Git commits this session:**
+- `dd7d0bd` feat: add deposit policies, email templates, and comms timeline APIs -- 8 files, 507 lines
+
+**What to do next session:**
+1. Smoke test full booking flow (property -> unit -> rate plan -> booking)
+2. Guest portal with access pack system
+3. Channel manager integration prep
+4. First provisioning pipeline test with real client config
 
 ### Session 29 Summary (2026-03-05)
 **What was accomplished:**

@@ -31,7 +31,7 @@ RLS policies use `get_user_org_id()` function (STABLE, cached per-query) for fas
 - **Code:** GitHub (`DRAGGONNB/draggonnb-platform`, main branch)
 - **State/Docs:** Gitea VPS (`draggonnb/platform-crmm` at git.draggonnb.online)
 - **Infra:** Gitea VPS (`draggonnb/ops-hub`)
-- **Deploy:** Vercel (`draggonnb-mvp`)
+- **Deploy:** Vercel (`draggonnb-platform` — live at draggonnb-platform.vercel.app)
 - **Workflows:** N8N on VPS (`n8n.srv1114684.hstgr.cloud`)
 - **Errors:** `.planning/errors/catalogue.json` (local + synced to Gitea)
 
