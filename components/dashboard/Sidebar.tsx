@@ -39,6 +39,9 @@ const navigation = [
       { name: 'Properties', href: '/accommodation/properties', icon: '🏠', badge: null },
       { name: 'Inquiries', href: '/accommodation/inquiries', icon: '📋', badge: null },
       { name: 'Guests', href: '/accommodation/guests', icon: '👤', badge: null },
+      { name: 'Bookings', href: '/accommodation/bookings', icon: '📅', badge: null },
+      { name: 'Calendar', href: '/accommodation/calendar', icon: '📆', badge: null },
+      { name: 'Operations', href: '/accommodation/operations', icon: '🔧', badge: null },
     ],
   },
   {

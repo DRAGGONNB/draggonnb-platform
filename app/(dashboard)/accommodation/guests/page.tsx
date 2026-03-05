@@ -49,6 +49,7 @@ export default function GuestsPage() {
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchGuests() }, [search])
 
   const handleCreate = async () => {

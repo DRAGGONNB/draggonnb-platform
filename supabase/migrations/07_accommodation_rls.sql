@@ -64,25 +64,25 @@ BEGIN
 
     -- SELECT
     EXECUTE format(
-      'CREATE POLICY "Org members can select %s" ON %I FOR SELECT TO authenticated USING (organization_id IN (SELECT organization_id FROM users WHERE id = auth.uid()));',
+      'CREATE POLICY "Org members can select %s" ON %I FOR SELECT TO authenticated USING (organization_id = get_user_org_id());',
       tbl, tbl
     );
 
     -- INSERT
     EXECUTE format(
-      'CREATE POLICY "Org members can insert %s" ON %I FOR INSERT TO authenticated WITH CHECK (organization_id IN (SELECT organization_id FROM users WHERE id = auth.uid()));',
+      'CREATE POLICY "Org members can insert %s" ON %I FOR INSERT TO authenticated WITH CHECK (organization_id = get_user_org_id());',
       tbl, tbl
     );
 
     -- UPDATE
     EXECUTE format(
-      'CREATE POLICY "Org members can update %s" ON %I FOR UPDATE TO authenticated USING (organization_id IN (SELECT organization_id FROM users WHERE id = auth.uid())) WITH CHECK (organization_id IN (SELECT organization_id FROM users WHERE id = auth.uid()));',
+      'CREATE POLICY "Org members can update %s" ON %I FOR UPDATE TO authenticated USING (organization_id = get_user_org_id()) WITH CHECK (organization_id = get_user_org_id());',
       tbl, tbl
     );
 
     -- DELETE
     EXECUTE format(
-      'CREATE POLICY "Org members can delete %s" ON %I FOR DELETE TO authenticated USING (organization_id IN (SELECT organization_id FROM users WHERE id = auth.uid()));',
+      'CREATE POLICY "Org members can delete %s" ON %I FOR DELETE TO authenticated USING (organization_id = get_user_org_id());',
       tbl, tbl
     );
   END LOOP;

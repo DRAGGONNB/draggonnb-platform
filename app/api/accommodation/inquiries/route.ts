@@ -1,28 +1,19 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { checkFeatureAccess } from '@/lib/tier/feature-gate'
+import { getAccommodationAuth, isAuthError } from '@/lib/accommodation/api-helpers'
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
-    if (!userData?.organization_id) return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
-
-    const { data: org } = await supabase.from('organizations').select('subscription_tier').eq('id', userData.organization_id).single()
-    const access = checkFeatureAccess(org?.subscription_tier || 'core', 'accommodation_module')
-    if (!access.allowed) return NextResponse.json({ error: access.reason }, { status: 403 })
+    const auth = await getAccommodationAuth()
+    if (isAuthError(auth)) return auth
 
     const { searchParams } = new URL(request.url)
     const stage = searchParams.get('stage')
     const propertyId = searchParams.get('property_id')
 
-    let query = supabase
+    let query = auth.supabase
       .from('accommodation_inquiries')
       .select('*, accommodation_properties(name), accommodation_units(name)', { count: 'exact' })
-      .eq('organization_id', userData.organization_id)
+      .eq('organization_id', auth.organizationId)
       .order('created_at', { ascending: false })
 
     if (stage) query = query.eq('stage', stage)
@@ -40,16 +31,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
-    if (!userData?.organization_id) return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
-
-    const { data: org } = await supabase.from('organizations').select('subscription_tier').eq('id', userData.organization_id).single()
-    const access = checkFeatureAccess(org?.subscription_tier || 'core', 'accommodation_module')
-    if (!access.allowed) return NextResponse.json({ error: access.reason }, { status: 403 })
+    const auth = await getAccommodationAuth()
+    if (isAuthError(auth)) return auth
 
     const body = await request.json()
     const { property_id, unit_id, guest_name, guest_email, guest_phone, check_in_date, check_out_date, guests_count, quoted_price, source, special_requests } = body
@@ -58,10 +41,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Guest name is required' }, { status: 400 })
     }
 
-    const { data: inquiry, error } = await supabase
+    const { data: inquiry, error } = await auth.supabase
       .from('accommodation_inquiries')
       .insert({
-        organization_id: userData.organization_id,
+        organization_id: auth.organizationId,
         property_id: property_id || null,
         unit_id: unit_id || null,
         guest_name,
@@ -73,7 +56,7 @@ export async function POST(request: Request) {
         quoted_price: quoted_price || null,
         source: source || 'direct',
         special_requests: special_requests || null,
-        created_by: user.id,
+        created_by: auth.userId,
       })
       .select()
       .single()

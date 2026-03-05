@@ -64,6 +64,7 @@ export default function InquiriesPage() {
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchInquiries() }, [filterStage])
 
   const handleCreate = async () => {

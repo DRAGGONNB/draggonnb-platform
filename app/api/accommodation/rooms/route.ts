@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAccommodationAuth, isAuthError } from '@/lib/accommodation/api-helpers'
+import { createRoomSchema } from '@/lib/accommodation/schemas'
 
 export async function GET(request: Request) {
   try {
@@ -33,26 +34,16 @@ export async function POST(request: Request) {
     if (isAuthError(auth)) return auth
 
     const body = await request.json()
-    const { unit_id, name, room_code, room_type, bed_config, max_guests, has_ensuite, amenities, description, sort_order } = body
-
-    if (!unit_id || !name) {
-      return NextResponse.json({ error: 'Unit ID and name are required' }, { status: 400 })
+    const parsed = createRoomSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
     }
 
     const { data: room, error } = await auth.supabase
       .from('accommodation_rooms')
       .insert({
-        unit_id,
         organization_id: auth.organizationId,
-        name,
-        room_code: room_code || null,
-        room_type: room_type || 'bedroom',
-        bed_config: bed_config || 'double',
-        max_guests: max_guests || 2,
-        has_ensuite: has_ensuite || false,
-        amenities: amenities || [],
-        description: description || null,
-        sort_order: sort_order || 0,
+        ...parsed.data,
       })
       .select()
       .single()

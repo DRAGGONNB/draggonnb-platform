@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS accommodation_bookings (
   cancellation_policy_id UUID REFERENCES accommodation_cancellation_policies(id),
   special_requests TEXT,
   internal_notes TEXT,
-  created_by UUID REFERENCES users(id),
+  created_by UUID REFERENCES auth.users(id),
   confirmed_at TIMESTAMPTZ,
   cancelled_at TIMESTAMPTZ,
   cancellation_reason TEXT,
@@ -488,7 +488,7 @@ CREATE TABLE IF NOT EXISTS accommodation_readiness_status (
   room_id UUID REFERENCES accommodation_rooms(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'dirty'
     CHECK (status IN ('dirty', 'cleaning', 'inspected', 'ready', 'maintenance')),
-  assigned_to UUID REFERENCES users(id),
+  assigned_to UUID REFERENCES auth.users(id),
   last_status_change TIMESTAMPTZ DEFAULT now(),
   notes TEXT,
   updated_at TIMESTAMPTZ DEFAULT now(),
@@ -525,7 +525,7 @@ CREATE TABLE IF NOT EXISTS accommodation_checklist_instances (
   unit_id UUID NOT NULL REFERENCES accommodation_units(id),
   room_id UUID REFERENCES accommodation_rooms(id),
   booking_id UUID REFERENCES accommodation_bookings(id),
-  assigned_to UUID REFERENCES users(id),
+  assigned_to UUID REFERENCES auth.users(id),
   status TEXT NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending', 'in_progress', 'completed', 'skipped')),
   items_completed JSONB DEFAULT '[]',
@@ -547,7 +547,7 @@ CREATE TABLE IF NOT EXISTS accommodation_issues (
   property_id UUID NOT NULL REFERENCES accommodation_properties(id) ON DELETE CASCADE,
   unit_id UUID REFERENCES accommodation_units(id),
   room_id UUID REFERENCES accommodation_rooms(id),
-  reported_by UUID REFERENCES users(id),
+  reported_by UUID REFERENCES auth.users(id),
   title TEXT NOT NULL,
   description TEXT,
   priority TEXT NOT NULL DEFAULT 'medium'
@@ -581,7 +581,7 @@ CREATE TABLE IF NOT EXISTS accommodation_tasks (
     CHECK (task_type IN ('turnover', 'maintenance', 'guest_request', 'inspection', 'general')),
   title TEXT NOT NULL,
   description TEXT,
-  assigned_to UUID REFERENCES users(id),
+  assigned_to UUID REFERENCES auth.users(id),
   priority TEXT NOT NULL DEFAULT 'medium'
     CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
   status TEXT NOT NULL DEFAULT 'pending'
@@ -589,7 +589,7 @@ CREATE TABLE IF NOT EXISTS accommodation_tasks (
   due_date DATE,
   due_time TIME,
   completed_at TIMESTAMPTZ,
-  completed_by UUID REFERENCES users(id),
+  completed_by UUID REFERENCES auth.users(id),
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
@@ -739,7 +739,7 @@ CREATE TABLE IF NOT EXISTS accommodation_comms_timeline (
   direction TEXT NOT NULL DEFAULT 'outbound' CHECK (direction IN ('inbound', 'outbound', 'system')),
   subject TEXT,
   content TEXT,
-  sent_by UUID REFERENCES users(id),
+  sent_by UUID REFERENCES auth.users(id),
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT now()
 );

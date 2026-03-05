@@ -1,28 +1,20 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { checkFeatureAccess } from '@/lib/tier/feature-gate'
+import { getAccommodationAuth, isAuthError } from '@/lib/accommodation/api-helpers'
+import { createGuestSchema } from '@/lib/accommodation/schemas'
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
-    if (!userData?.organization_id) return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
-
-    const { data: org } = await supabase.from('organizations').select('subscription_tier').eq('id', userData.organization_id).single()
-    const access = checkFeatureAccess(org?.subscription_tier || 'core', 'accommodation_module')
-    if (!access.allowed) return NextResponse.json({ error: access.reason }, { status: 403 })
+    const auth = await getAccommodationAuth()
+    if (isAuthError(auth)) return auth
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
     const vip = searchParams.get('vip')
 
-    let query = supabase
+    let query = auth.supabase
       .from('accommodation_guests')
       .select('*', { count: 'exact' })
-      .eq('organization_id', userData.organization_id)
+      .eq('organization_id', auth.organizationId)
       .order('created_at', { ascending: false })
 
     if (search) {
@@ -45,30 +37,20 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const { data: userData } = await supabase.from('users').select('organization_id').eq('id', user.id).single()
-    if (!userData?.organization_id) return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
+    const auth = await getAccommodationAuth()
+    if (isAuthError(auth)) return auth
 
     const body = await request.json()
-    const { first_name, last_name, email, phone, nationality, notes } = body
-
-    if (!first_name || !last_name) {
-      return NextResponse.json({ error: 'First and last name are required' }, { status: 400 })
+    const parsed = createGuestSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
     }
 
-    const { data: guest, error } = await supabase
+    const { data: guest, error } = await auth.supabase
       .from('accommodation_guests')
       .insert({
-        organization_id: userData.organization_id,
-        first_name,
-        last_name,
-        email: email || null,
-        phone: phone || null,
-        nationality: nationality || null,
-        notes: notes || null,
+        organization_id: auth.organizationId,
+        ...parsed.data,
       })
       .select()
       .single()

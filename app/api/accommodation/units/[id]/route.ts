@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAccommodationAuth, isAuthError } from '@/lib/accommodation/api-helpers'
+import { updateUnitSchema } from '@/lib/accommodation/schemas'
 
 export async function GET(_request: Request, { params }: { params: { id: string } }) {
   try {
@@ -30,28 +31,15 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (isAuthError(auth)) return auth
 
     const body = await request.json()
-    const { name, type, unit_code, bedrooms, bathrooms, max_guests, max_adults, max_children, max_capacity, has_rooms, size_sqm, floor_level, base_price_per_night, amenities, description, status, sort_order } = body
+    const parsed = updateUnitSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+    }
 
     const { data: unit, error } = await auth.supabase
       .from('accommodation_units')
       .update({
-        ...(name !== undefined && { name }),
-        ...(type !== undefined && { type }),
-        ...(unit_code !== undefined && { unit_code }),
-        ...(bedrooms !== undefined && { bedrooms }),
-        ...(bathrooms !== undefined && { bathrooms }),
-        ...(max_guests !== undefined && { max_guests }),
-        ...(max_adults !== undefined && { max_adults }),
-        ...(max_children !== undefined && { max_children }),
-        ...(max_capacity !== undefined && { max_capacity }),
-        ...(has_rooms !== undefined && { has_rooms }),
-        ...(size_sqm !== undefined && { size_sqm }),
-        ...(floor_level !== undefined && { floor_level }),
-        ...(base_price_per_night !== undefined && { base_price_per_night }),
-        ...(amenities !== undefined && { amenities }),
-        ...(description !== undefined && { description }),
-        ...(status !== undefined && { status }),
-        ...(sort_order !== undefined && { sort_order }),
+        ...parsed.data,
         updated_at: new Date().toISOString(),
       })
       .eq('id', params.id)
