@@ -118,6 +118,59 @@ app/api/
   leads/capture/route.ts          -- POST (public, no auth)
 ```
 
+### Accommodation API Routes (94 routes total)
+
+Base module (48 routes):
+```
+app/api/accommodation/
+  properties/route.ts, [id]/route.ts
+  units/route.ts, [id]/route.ts
+  rate-plans/route.ts, [id]/route.ts, rate-plan-prices/...
+  bookings/route.ts, [id]/route.ts, booking-segments/..., cancel/...
+  guests/route.ts, [id]/route.ts
+  payments/route.ts, charge-line-items/...
+  tasks/route.ts, issues/route.ts, readiness/route.ts
+  (+ deposit-policies, email-templates, comms-timeline, etc.)
+```
+
+Automation layer (46 routes):
+```
+  -- Phase 1: Guest Communications
+  automation-rules/route.ts, [id]/route.ts
+  message-queue/route.ts, [id]/route.ts
+  comms-log/route.ts, [id]/route.ts
+  send-message/route.ts, templates/route.ts
+  process-queue/route.ts, events/route.ts
+
+  -- Phase 2: Payments
+  payment-links/route.ts, [id]/route.ts
+  financial-snapshots/route.ts, generate/route.ts
+  payment-summary/route.ts, generate-payment-link/route.ts
+
+  -- Phase 3: Staff Ops
+  staff/route.ts, [id]/route.ts
+  telegram-channels/route.ts, [id]/route.ts
+  task-assignments/route.ts, [id]/route.ts
+  daily-brief/route.ts, webhooks/telegram-ops/route.ts
+
+  -- Phase 4: AI Agents
+  ai-configs/route.ts, [id]/route.ts
+  ai/generate-quote/route.ts, ai/concierge/route.ts
+  ai/analyze-review/route.ts, ai/pricing-analysis/route.ts
+  ai/sessions/route.ts
+
+  -- Phase 5: Costing & Stock
+  cost-categories/route.ts, [id]/route.ts
+  unit-costs/route.ts, [id]/route.ts
+  cost-defaults/route.ts, [id]/route.ts
+  stock-items/route.ts, [id]/route.ts
+  stock-movements/route.ts, [id]/route.ts
+  stock-alerts/route.ts, unit-profitability/route.ts, generate/route.ts
+  cost-summary/route.ts, stock-valuation/route.ts
+```
+
+All accommodation routes use `getAccommodationAuth()` from `lib/accommodation/api-helpers.ts` which returns `{ supabase, userId, organizationId }` with RLS-scoped client.
+
 Dynamic segments use `[param]` folders. Access via second argument:
 
 ```typescript

@@ -81,6 +81,24 @@ Module catalog lives in the `module_registry` table (Supabase). Per-tenant activ
 
 Provisioning flow (5 steps): create-org (DB rows + modules) -> n8n-webhooks -> deploy-automations -> onboarding-sequence -> qa-checks. Rollback cascades via `DELETE FROM organizations WHERE id = ...`.
 
+## Accommodation Automation Layer
+
+The accommodation module includes a full AI Automation & Operations Layer (5 phases, all complete):
+
+| Phase | Scope | Key Files |
+|-------|-------|-----------|
+| 1: Guest Comms | Event dispatcher + message queue + multi-channel sending | `lib/accommodation/events/dispatcher.ts`, `lib/accommodation/events/sender.ts` |
+| 2: Payments | PayFast link generation + payment tracking + financial snapshots | `lib/accommodation/payments/payfast-link.ts` |
+| 3: Staff Ops | Telegram ops bot + task assignments + department channels | `lib/accommodation/telegram/ops-bot.ts` |
+| 4: AI Agents | 4 agents (quoter, concierge, reviewer, pricer) extending BaseAgent | `lib/accommodation/agents/*.ts` |
+| 5: Costing | Per-unit cost tracking + stock inventory + profitability reports | Auto-cost in `dispatcher.ts` |
+
+**DB tables:** 54 total (39 base + 15 automation). **API routes:** 94 total (48 base + 46 automation).
+
+The event dispatcher (`emitBookingEvent()`) is the central integration point -- booking status changes trigger automation rules, guest messages, staff Telegram notifications, and auto-cost entries.
+
+**Supabase joined query pattern:** Supabase TypeScript types infer joined data as arrays. For many-to-one joins, cast through unknown: `(data.joined_table as unknown as { field: Type } | null)?.field`
+
 ## Sub-Directory Build Specs
 
 Three sub-directory CLAUDE.md files provide build specs for extending the platform:

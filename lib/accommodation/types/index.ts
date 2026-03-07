@@ -733,3 +733,317 @@ export interface PropertyConfigMap {
   default_meal_plan: MealPlan
   features: Record<string, boolean>
 }
+
+// ─── Domain 8: Automation & Communications ──────────────────────────────────
+
+export type AutomationTriggerEvent =
+  | 'booking_confirmed' | 'booking_cancelled'
+  | 'guest_checked_in' | 'guest_checked_out'
+  | 'payment_received' | 'deposit_due'
+  | 'check_in_24h' | 'check_out_reminder' | 'review_request'
+
+export type AutomationChannel = 'whatsapp' | 'email' | 'sms'
+export type MessageQueueStatus = 'pending' | 'sent' | 'failed' | 'cancelled'
+
+export interface AccommodationAutomationRule {
+  id: string
+  organization_id: string
+  name: string
+  trigger_event: AutomationTriggerEvent
+  channel: AutomationChannel
+  template_id: string | null
+  delay_minutes: number
+  is_active: boolean
+  conditions: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface AccommodationMessageQueue {
+  id: string
+  organization_id: string
+  rule_id: string | null
+  booking_id: string | null
+  guest_id: string | null
+  channel: AutomationChannel
+  recipient: string
+  template_data: Record<string, unknown>
+  scheduled_for: string
+  status: MessageQueueStatus
+  sent_at: string | null
+  error_message: string | null
+  created_at: string
+}
+
+export interface AccommodationCommsLog {
+  id: string
+  organization_id: string
+  booking_id: string | null
+  guest_id: string | null
+  channel: string
+  direction: 'outbound' | 'inbound'
+  message_type: string
+  recipient: string | null
+  content_summary: string | null
+  external_id: string | null
+  status: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+// ─── Domain 9: Payment Tracking & Financial ─────────────────────────────────
+
+export type PaymentLinkStatus = 'pending' | 'paid' | 'expired' | 'cancelled'
+export type AccommodationPaymentType = 'deposit' | 'balance' | 'additional_fee'
+
+export interface AccommodationPaymentLink {
+  id: string
+  organization_id: string
+  booking_id: string | null
+  amount: number
+  currency: string
+  payment_type: AccommodationPaymentType
+  gateway: string
+  gateway_reference: string | null
+  payment_url: string | null
+  expires_at: string | null
+  status: PaymentLinkStatus
+  paid_at: string | null
+  created_at: string
+}
+
+export interface AccommodationFinancialSnapshot {
+  id: string
+  organization_id: string
+  snapshot_date: string
+  total_revenue: number
+  total_outstanding: number
+  total_deposits_received: number
+  bookings_count: number
+  occupancy_rate: number
+  avg_daily_rate: number
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+// ─── Domain 10: Staff Operations & Telegram ──────────────────────────────────
+
+export type StaffDepartment = 'housekeeping' | 'maintenance' | 'front_desk' | 'management' | 'kitchen' | 'security'
+export type StaffShiftPattern = 'morning' | 'afternoon' | 'night' | 'flexible' | 'split'
+export type StaffPermission =
+  | 'manage_bookings'
+  | 'manage_guests'
+  | 'manage_payments'
+  | 'manage_staff'
+  | 'manage_units'
+  | 'manage_rates'
+  | 'view_reports'
+  | 'manage_housekeeping'
+  | 'manage_maintenance'
+  | 'manage_telegram'
+
+export interface AccommodationStaff {
+  id: string
+  organization_id: string
+  user_id: string | null
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null
+  department: StaffDepartment | null
+  role: string | null
+  telegram_chat_id: string | null
+  telegram_username: string | null
+  permissions: StaffPermission[]
+  shift_pattern: StaffShiftPattern | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface AccommodationTelegramChannel {
+  id: string
+  organization_id: string
+  department: StaffDepartment
+  channel_name: string | null
+  chat_id: string
+  bot_token: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export type TaskAssignmentStatus = 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'rejected'
+
+export interface AccommodationTaskAssignment {
+  id: string
+  organization_id: string
+  task_type: string
+  task_id: string
+  staff_id: string | null
+  assigned_by: string | null
+  assigned_at: string
+  accepted_at: string | null
+  started_at: string | null
+  completed_at: string | null
+  status: TaskAssignmentStatus
+  notes: string | null
+  photo_urls: string[]
+  telegram_message_id: string | null
+}
+
+// ─── Daily Brief Data ────────────────────────────────────────────────────────
+
+export interface DailyBriefData {
+  date: string
+  property_name?: string
+  arrivals: Array<{
+    guest_name: string
+    unit_name: string
+    check_in_date: string
+    guests_count: number
+    special_requests?: string
+    is_vip?: boolean
+  }>
+  departures: Array<{
+    guest_name: string
+    unit_name: string
+    check_out_date: string
+  }>
+  turnovers_needed: Array<{
+    unit_name: string
+    checkout_time?: string
+    next_checkin_time?: string
+  }>
+  occupancy: {
+    total_units: number
+    occupied: number
+    arriving: number
+    departing: number
+    rate_percent: number
+  }
+  pending_tasks: {
+    housekeeping: number
+    maintenance: number
+  }
+  overdue_payments: number
+  notes?: string[]
+}
+
+// ─── Domain 11: AI Agent Configuration ──────────────────────────────────────
+
+export type AccommodationAgentType = 'quoter' | 'concierge' | 'reviewer' | 'pricer'
+
+export interface AccommodationAIConfig {
+  id: string
+  organization_id: string
+  agent_type: AccommodationAgentType
+  is_enabled: boolean
+  config: Record<string, unknown>
+  system_prompt_override: string | null
+  model_override: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ─── Domain 12: Per-Unit Costing & Stock/Inventory ───────────────────────────
+
+export type CostCategoryType = 'fixed' | 'variable' | 'per_guest' | 'per_night'
+
+export interface AccommodationCostCategory {
+  id: string
+  organization_id: string
+  name: string
+  category_type: CostCategoryType
+  default_amount: number | null
+  unit_of_measure: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface AccommodationUnitCost {
+  id: string
+  organization_id: string
+  unit_id: string
+  category_id: string
+  booking_id: string | null
+  amount: number
+  quantity: number
+  cost_date: string
+  notes: string | null
+  recorded_by: string | null
+  created_at: string
+  // Joined
+  category?: AccommodationCostCategory
+  unit?: { name: string }
+}
+
+export interface AccommodationCostDefault {
+  id: string
+  organization_id: string
+  property_type: string | null
+  unit_type: string | null
+  category_id: string
+  default_amount: number
+  created_at: string
+  // Joined
+  category?: AccommodationCostCategory
+}
+
+export type StockCategory = 'linen' | 'toiletry' | 'cleaning' | 'consumable' | 'equipment'
+export type StockMovementType = 'receipt' | 'issue' | 'adjustment' | 'write_off' | 'return'
+
+export interface AccommodationStockItem {
+  id: string
+  organization_id: string
+  name: string
+  sku: string | null
+  category: StockCategory
+  unit_of_measure: string
+  current_stock: number
+  min_stock_level: number
+  reorder_quantity: number | null
+  unit_cost: number | null
+  supplier: string | null
+  location: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface AccommodationStockMovement {
+  id: string
+  organization_id: string
+  stock_item_id: string
+  movement_type: StockMovementType
+  quantity: number
+  unit_id: string | null
+  booking_id: string | null
+  reference: string | null
+  notes: string | null
+  recorded_by: string | null
+  created_at: string
+  // Joined
+  stock_item?: AccommodationStockItem
+  unit?: { name: string }
+}
+
+export interface AccommodationUnitProfitability {
+  id: string
+  organization_id: string
+  unit_id: string
+  period_start: string
+  period_end: string
+  total_revenue: number
+  total_costs: number
+  gross_margin: number
+  margin_percentage: number
+  occupancy_days: number
+  total_days: number
+  occupancy_rate: number
+  revenue_per_available_day: number
+  cost_breakdown: Record<string, number>
+  created_at: string
+  // Joined
+  unit?: { name: string }
+}

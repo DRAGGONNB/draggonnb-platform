@@ -60,6 +60,17 @@ const result = await agent.run({
 - `LeadQualifierAgent` (`lead-qualifier.ts`): Scores leads on fit/urgency/size, recommends tier, identifies automatable processes
 - `ProposalGeneratorAgent` (`proposal-generator.ts`): Generates proposals with pain points, solutions, pricing, timeline
 
+### Accommodation AI Agents (lib/accommodation/agents/)
+
+Four specialized agents for accommodation operations, all extending `BaseAgent`:
+
+- `QuoterAgent` (`quoter-agent.ts`): Receives inquiry details, checks availability + rates, generates personalized quote email. Tools: `checkAvailability`, `calculateRate`, `getPropertyInfo`, `generateQuoteEmail`
+- `ConciergeAgent` (`concierge-agent.ts`): Answers guest questions about property, area, activities via WhatsApp. Tools: `getPropertyDetails`, `getActivities`, `getLocalInfo`, `composeResponse`
+- `ReviewerAgent` (`reviewer-agent.ts`): Analyzes guest reviews, generates response drafts, extracts sentiment/action items. Tools: `analyzeReview`, `generateResponse`, `extractActionItems`
+- `PricerAgent` (`pricer-agent.ts`): Analyzes occupancy patterns, suggests rate adjustments. Tools: `getOccupancyData`, `getCompetitorRates`, `suggestPricing`, `generateReport`
+
+Agent configs stored in `accommodation_ai_configs` table (per-org, per-agent-type). API routes at `app/api/accommodation/ai-configs/` and `app/api/accommodation/ai/`.
+
 ## Requirements
 
 - `ANTHROPIC_API_KEY` env var must be set

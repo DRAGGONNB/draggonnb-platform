@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAccommodationAuth, isAuthError } from '@/lib/accommodation/api-helpers'
 import { updateBookingSchema } from '@/lib/accommodation/schemas'
+import { emitBookingEvent, type BookingEvent } from '@/lib/accommodation/events/dispatcher'
 
 export async function GET(
   request: Request,
@@ -45,16 +46,31 @@ export async function PATCH(
       return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
     }
 
+    // Fetch current booking to detect status transitions
+    const { data: existing } = await auth.supabase
+      .from('accommodation_bookings')
+      .select('status')
+      .eq('id', id)
+      .eq('organization_id', auth.organizationId)
+      .single()
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+    }
+
+    const oldStatus = existing.status
+    const newStatus = parsed.data.status
+
     const updateData: Record<string, unknown> = {
       ...parsed.data,
       updated_at: new Date().toISOString(),
     }
 
     // Set timestamps on status transitions
-    if (parsed.data.status === 'confirmed') {
+    if (newStatus === 'confirmed') {
       updateData.confirmed_at = new Date().toISOString()
     }
-    if (parsed.data.status === 'cancelled') {
+    if (newStatus === 'cancelled') {
       updateData.cancelled_at = new Date().toISOString()
     }
 
@@ -68,6 +84,22 @@ export async function PATCH(
 
     if (error || !booking) {
       return NextResponse.json({ error: 'Failed to update booking' }, { status: 500 })
+    }
+
+    // Emit automation events on status transitions (fire-and-forget)
+    if (newStatus && newStatus !== oldStatus) {
+      const statusEventMap: Record<string, BookingEvent> = {
+        confirmed: 'booking_confirmed',
+        cancelled: 'booking_cancelled',
+        checked_in: 'guest_checked_in',
+        checked_out: 'guest_checked_out',
+      }
+      const event = statusEventMap[newStatus]
+      if (event) {
+        emitBookingEvent(auth.supabase, auth.organizationId, id, event).catch((err) =>
+          console.error(`Failed to emit ${event} for booking ${id}:`, err)
+        )
+      }
     }
 
     return NextResponse.json({ booking })

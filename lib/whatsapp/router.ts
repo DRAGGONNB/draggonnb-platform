@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { handleIncomingMessage as handleIntakeMessage } from './intake-flow'
 import { sendTextMessage, markAsRead } from './client'
+import { ConciergeAgent } from '@/lib/accommodation/agents/concierge-agent'
 
 type RouteResult = 'intake' | 'support' | 'booking_status' | 'unknown'
 
@@ -47,7 +48,7 @@ export async function routeMessage(
   // Check if phone belongs to a known org member or contact
   const orgContext = await lookupPhoneInOrg(phone)
   if (orgContext) {
-    await handleSupportMessage(phone, messageText, orgContext.organizationId)
+    await handleSupportMessage(phone, messageText, orgContext.organizationId, orgContext.guestId)
     return { phone, messageText, messageId, route: 'support', organizationId: orgContext.organizationId }
   }
 
@@ -56,7 +57,7 @@ export async function routeMessage(
   return { phone, messageText, messageId, route: 'intake' }
 }
 
-async function lookupPhoneInOrg(phone: string): Promise<{ organizationId: string } | null> {
+async function lookupPhoneInOrg(phone: string): Promise<{ organizationId: string; guestId?: string } | null> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!supabaseUrl || !serviceRoleKey) return null
@@ -68,7 +69,17 @@ async function lookupPhoneInOrg(phone: string): Promise<{ organizationId: string
   // Normalize phone: strip leading + and spaces
   const normalizedPhone = phone.replace(/[\s+\-()]/g, '')
 
-  // Check contacts table first (most likely source of known phone numbers)
+  // Check accommodation guests first (for concierge routing)
+  const { data: guest } = await supabase
+    .from('accommodation_guests')
+    .select('id, organization_id')
+    .eq('phone', normalizedPhone)
+    .limit(1)
+    .single()
+
+  if (guest) return { organizationId: guest.organization_id, guestId: guest.id }
+
+  // Check contacts table
   const { data: contact } = await supabase
     .from('contacts')
     .select('organization_id')
@@ -77,16 +88,6 @@ async function lookupPhoneInOrg(phone: string): Promise<{ organizationId: string
     .single()
 
   if (contact) return { organizationId: contact.organization_id }
-
-  // Check accommodation guests
-  const { data: guest } = await supabase
-    .from('accommodation_guests')
-    .select('organization_id')
-    .eq('phone', normalizedPhone)
-    .limit(1)
-    .single()
-
-  if (guest) return { organizationId: guest.organization_id }
 
   return null
 }
@@ -144,7 +145,8 @@ async function handleBookingLookup(phone: string, refId: string): Promise<boolea
 async function handleSupportMessage(
   phone: string,
   messageText: string,
-  organizationId: string
+  organizationId: string,
+  guestId?: string
 ): Promise<void> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -154,15 +156,79 @@ async function handleSupportMessage(
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  // Log the support message in comms timeline
-  await supabase.from('accommodation_comms_timeline').insert({
+  // Log inbound message to comms log
+  await supabase.from('accommodation_comms_log').insert({
     organization_id: organizationId,
     channel: 'whatsapp',
     direction: 'inbound',
-    content: messageText,
-    metadata: { phone },
+    message_type: 'guest_message',
+    recipient: phone,
+    content_summary: messageText.substring(0, 500),
+    metadata: { phone, guest_id: guestId },
   }).then(() => {}, () => {})
 
+  // Try ConciergeAgent if guest is known and agent is enabled
+  if (guestId) {
+    try {
+      const { data: config } = await supabase
+        .from('accommodation_ai_configs')
+        .select('is_enabled')
+        .eq('organization_id', organizationId)
+        .eq('agent_type', 'concierge')
+        .single()
+
+      // Run concierge if enabled (or if no config row exists — default to enabled)
+      if (!config || config.is_enabled) {
+        const agent = new ConciergeAgent()
+        const result = await agent.handleMessage({
+          organizationId,
+          message: messageText,
+          guestPhone: phone,
+          guestId,
+        })
+
+        const conciergeResponse = result.result as {
+          reply_text?: string
+          escalate_to_human?: boolean
+          category?: string
+        } | null
+
+        if (conciergeResponse?.reply_text) {
+          await sendTextMessage(phone, conciergeResponse.reply_text)
+
+          // Log outbound AI response
+          await supabase.from('accommodation_comms_log').insert({
+            organization_id: organizationId,
+            channel: 'whatsapp',
+            direction: 'outbound',
+            message_type: 'concierge_response',
+            recipient: phone,
+            content_summary: conciergeResponse.reply_text.substring(0, 500),
+            metadata: {
+              phone,
+              guest_id: guestId,
+              agent_session_id: result.sessionId,
+              category: conciergeResponse.category,
+              tokens_used: result.tokensUsed,
+            },
+          }).then(() => {}, () => {})
+
+          // If agent flagged escalation, also notify staff
+          if (conciergeResponse.escalate_to_human) {
+            await sendTextMessage(phone,
+              `I've also notified our team about your request. Someone will follow up with you shortly.`
+            )
+          }
+
+          return // AI handled the message
+        }
+      }
+    } catch (error) {
+      console.error('ConciergeAgent error, falling back to generic response:', error)
+    }
+  }
+
+  // Fallback: generic response for non-guest contacts or when concierge is disabled/fails
   await sendTextMessage(phone,
     `Thanks for your message! Our team has been notified and will get back to you shortly.\n\n` +
     `For urgent matters, please call us directly.`

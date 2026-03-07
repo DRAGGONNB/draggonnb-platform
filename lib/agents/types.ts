@@ -16,6 +16,11 @@ export type AgentType =
   | 'content_autopilot'
   | 'business_autopilot'
   | 'client_onboarding'
+  // Accommodation agents
+  | 'accommodation_quoter'
+  | 'accommodation_concierge'
+  | 'accommodation_reviewer'
+  | 'accommodation_pricer'
 
 export type AgentStatus = 'active' | 'completed' | 'failed'
 
@@ -215,3 +220,63 @@ export type AutopilotCapability =
   | 'REFINE_POST'
   | 'SCORE_LEAD'
   | 'SUGGEST_CAMPAIGN'
+
+// ============================================================================
+// ACCOMMODATION AGENTS
+// ============================================================================
+
+export type AccommodationAgentType = 'quoter' | 'concierge' | 'reviewer' | 'pricer'
+
+export interface QuoteResult {
+  available: boolean
+  property_name: string
+  unit_type: string
+  check_in: string
+  check_out: string
+  nights: number
+  rate_per_night: number
+  total_amount: number
+  currency: string
+  inclusions: string[]
+  special_notes: string
+  quote_email_subject: string
+  quote_email_body: string
+}
+
+export interface ConciergeResponse {
+  reply_text: string
+  category: 'property_info' | 'area_info' | 'booking_help' | 'activities' | 'general'
+  confidence: number
+  suggested_actions: string[]
+  escalate_to_human: boolean
+}
+
+export interface ReviewAnalysis {
+  sentiment: 'positive' | 'neutral' | 'negative'
+  sentiment_score: number  // -1 to 1
+  key_themes: string[]
+  action_items: string[]
+  response_draft: string
+  priority: 'low' | 'medium' | 'high'
+}
+
+export interface PricingRecommendation {
+  unit_id: string
+  unit_name: string
+  current_rate: number
+  recommended_rate: number
+  change_percent: number
+  reason: string
+  confidence: number
+  period_start: string
+  period_end: string
+}
+
+export interface PricingAnalysisResult {
+  analysis_period: string
+  overall_occupancy: number
+  recommendations: PricingRecommendation[]
+  market_insights: string[]
+  revenue_impact_estimate: number
+  summary: string
+}

@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-01)
 
 **Core value:** Complete multi-tenant B2B operating system for South African SMEs. Shared Supabase DB with RLS-based tenant isolation, wildcard subdomain routing, DB-backed module gating, automated provisioning.
-**Current focus:** Accommodation module at ~80% implementation. 39 DB tables live, 48 API routes, 8 UI pages. Billing module added. Build passing. Ready for first accommodation client test.
+**Current focus:** Accommodation module at ~95% implementation. 54 DB tables live (39 base + 15 automation/ops), 94 API routes (48 base + 46 automation), 8 UI pages, 4 AI agents, 7 new libraries. Full 5-phase AI Automation & Operations Layer complete. Build passing. Ready for first accommodation client test.
 
 ## Current Position
 
-Phase: Accommodation module implementation (Waves 0-3) — COMPLETE
-Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Accommodation module ~80% implemented.
+Phase: Accommodation AI Automation & Operations Layer (5 phases) — COMPLETE
+Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Accommodation base ~80% + Automation Layer 100% complete.
 Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app
-Last activity: 2026-03-05 -- Session 31: Smoke test + session close
-Progress: 39 DB tables + RLS live in Supabase. 48 API routes. 8 UI pages. 24 Zod schemas. Full booking flow smoke tested end-to-end. Next.js build passing. Dev server config saved.
+Last activity: 2026-03-06 -- Session 33: Phase 5 complete + session close
+Progress: 54 DB tables + RLS live in Supabase. 94 API routes. 8 UI pages. 4 AI agents. 7 new libraries. Full 5-phase automation plan delivered. TypeScript build passing (0 errors).
 
 ## Accumulated Context
 
@@ -79,6 +79,11 @@ Progress: 39 DB tables + RLS live in Supabase. 48 API routes. 8 UI pages. 24 Zod
 - Accommodation: Channel manager integration (Booking.com, Airbnb sync)
 - ~~Accommodation: Smoke test full booking flow (property -> unit -> rate plan -> booking)~~ DONE (Session 31)
 - Accommodation: First provisioning pipeline test with real client config
+- Accommodation: Build UI pages for automation rules, message queue, comms log
+- Accommodation: Build UI pages for stock management, cost tracking, profitability
+- Accommodation: Configure N8N workflows (17 planned — queue processor, reminders, daily brief, etc.)
+- Accommodation: Wire PayFast link generator to existing webhook handler
+- Accommodation: Set up Telegram ops bot webhook + channel configuration
 
 ### Blockers/Concerns
 
@@ -89,9 +94,32 @@ Progress: 39 DB tables + RLS live in Supabase. 48 API routes. 8 UI pages. 24 Zod
 
 ## Session Continuity
 
-Last session: 2026-03-05 (Session 31)
-Stopped at: Smoke test passed. State files updated. Session close.
-Resume with: Guest portal with access pack system. Channel manager integration prep. First provisioning pipeline test.
+Last session: 2026-03-06 (Session 33)
+Stopped at: All 5 phases of AI Automation & Operations Layer complete. All .md files updated. Session closed.
+Resume with: Build UI pages for automation management. Wire N8N workflows. Guest portal with access pack system. Channel manager integration prep. First provisioning pipeline test.
+
+### Session 33 Summary (2026-03-06)
+**What was accomplished:**
+Complete 5-phase AI Automation & Operations Layer delivered across sessions 32-33:
+1. **Phase 1: Event-Driven Guest Communications Engine** — 3 DB tables (automation_rules, message_queue, comms_log), event dispatcher (lib/accommodation/events/dispatcher.ts), message sender (lib/accommodation/events/sender.ts), 10 API routes
+2. **Phase 2: Payment Tracking & Smart Reminders** — 2 DB tables (payment_links, financial_snapshots), PayFast link generator (lib/accommodation/payments/payfast-link.ts), 6 API routes
+3. **Phase 3: Staff Operations via Telegram** — 3 DB modifications/new tables (staff enhancements, telegram_channels, task_assignments), Telegram ops bot (lib/accommodation/telegram/ops-bot.ts), 8 API routes
+4. **Phase 4: Accommodation AI Agents** — 1 DB table (ai_configs), 4 AI agent classes extending BaseAgent (quoter, concierge, reviewer, pricer), 7 API routes
+5. **Phase 5: Per-Unit Costing & Stock/Inventory** — 6 DB tables (cost_categories, unit_costs, cost_defaults, stock_items, stock_movements, unit_profitability), 15 API routes, auto-cost on checkout integrated into dispatcher
+6. Fixed 6 TypeScript errors (Supabase joined query type casts) using `as unknown as` pattern
+7. TypeScript build passing with 0 source errors
+
+**Totals delivered:** 15 new DB tables, 46 new API routes, 7 new library files, 4 AI agent classes
+
+**Errors encountered:**
+- 6x TS2352: Supabase joined query type casts — fixed with `as unknown as` intermediate cast pattern in cost-summary/route.ts, unit-profitability/generate/route.ts, dispatcher.ts
+
+**What to do next session:**
+1. Build UI pages for automation rules management, message queue, comms log
+2. Build UI pages for stock management, cost tracking, profitability dashboards
+3. Configure N8N workflows (17 planned)
+4. Guest portal with access pack system
+5. Channel manager integration prep
 
 ### Session 31 Summary (2026-03-05)
 **What was accomplished:**

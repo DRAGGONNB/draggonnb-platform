@@ -249,3 +249,301 @@ export const createCommsTimelineSchema = z.object({
   content: z.string().optional(),
   metadata: z.record(z.unknown()).optional(),
 })
+
+// ─── Domain 9: Automation & Communications ──────────────────────────────────
+
+export const automationTriggerEvent = z.enum([
+  'booking_confirmed', 'booking_cancelled',
+  'guest_checked_in', 'guest_checked_out',
+  'payment_received', 'deposit_due',
+  'check_in_24h', 'check_out_reminder', 'review_request',
+])
+
+export const automationChannel = z.enum(['whatsapp', 'email', 'sms'])
+export const messageQueueStatus = z.enum(['pending', 'sent', 'failed', 'cancelled'])
+
+export const createAutomationRuleSchema = z.object({
+  name: z.string().min(1, 'Rule name is required').max(200),
+  trigger_event: automationTriggerEvent,
+  channel: automationChannel,
+  template_id: z.string().max(200).optional(),
+  delay_minutes: z.number().int().min(0).default(0),
+  is_active: z.boolean().default(true),
+  conditions: z.record(z.unknown()).default({}),
+})
+
+export const updateAutomationRuleSchema = createAutomationRuleSchema.partial()
+
+export const createMessageQueueSchema = z.object({
+  rule_id: z.string().uuid().optional(),
+  booking_id: z.string().uuid().optional(),
+  guest_id: z.string().uuid().optional(),
+  channel: automationChannel,
+  recipient: z.string().min(1, 'Recipient is required'),
+  template_data: z.record(z.unknown()).default({}),
+  scheduled_for: z.string().min(1, 'Scheduled time is required'),
+  status: messageQueueStatus.default('pending'),
+})
+
+export const updateMessageQueueSchema = z.object({
+  status: messageQueueStatus.optional(),
+  scheduled_for: z.string().optional(),
+})
+
+export const createCommsLogSchema = z.object({
+  booking_id: z.string().uuid().optional(),
+  guest_id: z.string().uuid().optional(),
+  channel: z.string().min(1),
+  direction: z.enum(['outbound', 'inbound']).default('outbound'),
+  message_type: z.string().min(1),
+  recipient: z.string().optional(),
+  content_summary: z.string().optional(),
+  external_id: z.string().optional(),
+  status: z.string().optional(),
+  metadata: z.record(z.unknown()).default({}),
+})
+
+export const sendManualMessageSchema = z.object({
+  booking_id: z.string().uuid().optional(),
+  guest_id: z.string().uuid().optional(),
+  channel: automationChannel,
+  recipient: z.string().min(1, 'Recipient is required'),
+  message: z.string().min(1, 'Message is required'),
+  template_id: z.string().optional(),
+})
+
+export const emitEventSchema = z.object({
+  booking_id: z.string().uuid(),
+  event: automationTriggerEvent,
+})
+
+// ─── Domain 9: Payment Tracking & Financial ─────────────────────────────────
+
+export const paymentLinkStatus = z.enum(['pending', 'paid', 'expired', 'cancelled'])
+export const accommodationPaymentType = z.enum(['deposit', 'balance', 'additional_fee'])
+
+export const createPaymentLinkSchema = z.object({
+  booking_id: z.string().uuid(),
+  amount: z.number().positive('Amount must be positive'),
+  payment_type: accommodationPaymentType,
+  expires_in_hours: z.number().int().min(1).max(720).default(72),
+})
+
+export const updatePaymentLinkSchema = z.object({
+  status: paymentLinkStatus.optional(),
+})
+
+export const generatePaymentLinkRequestSchema = z.object({
+  booking_id: z.string().uuid(),
+  amount: z.number().positive('Amount must be positive'),
+  payment_type: accommodationPaymentType,
+  expires_in_hours: z.number().int().min(1).max(720).optional(),
+})
+
+export const generateFinancialSnapshotSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD format').optional(),
+})
+
+// ─── Domain 10: Staff Operations & Telegram ──────────────────────────────────
+
+export const staffDepartment = z.enum([
+  'housekeeping',
+  'maintenance',
+  'front_desk',
+  'management',
+  'kitchen',
+  'security',
+])
+
+export const staffShiftPattern = z.enum(['morning', 'afternoon', 'night', 'flexible', 'split'])
+
+export const staffPermission = z.enum([
+  'manage_bookings',
+  'manage_guests',
+  'manage_payments',
+  'manage_staff',
+  'manage_units',
+  'manage_rates',
+  'view_reports',
+  'manage_housekeeping',
+  'manage_maintenance',
+  'manage_telegram',
+])
+
+export const taskAssignmentStatus = z.enum([
+  'assigned',
+  'accepted',
+  'in_progress',
+  'completed',
+  'rejected',
+])
+
+// ─── Staff Schemas ───────────────────────────────────────────────────────────
+
+export const createStaffSchema = z.object({
+  user_id: z.string().uuid().optional(),
+  first_name: z.string().min(1, 'First name is required').max(100),
+  last_name: z.string().min(1, 'Last name is required').max(100),
+  email: z.string().email().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  department: staffDepartment.optional().nullable(),
+  role: z.string().max(100).optional().nullable(),
+  telegram_chat_id: z.string().optional().nullable(),
+  telegram_username: z.string().optional().nullable(),
+  permissions: z.array(staffPermission).default([]),
+  shift_pattern: staffShiftPattern.optional().nullable(),
+  is_active: z.boolean().default(true),
+})
+
+export const updateStaffSchema = createStaffSchema.partial()
+
+// ─── Telegram Channel Schemas ────────────────────────────────────────────────
+
+export const createTelegramChannelSchema = z.object({
+  department: staffDepartment,
+  channel_name: z.string().max(200).optional().nullable(),
+  chat_id: z.string().min(1, 'Chat ID is required'),
+  bot_token: z.string().optional().nullable(),
+  is_active: z.boolean().default(true),
+})
+
+export const updateTelegramChannelSchema = createTelegramChannelSchema.partial()
+
+// ─── Task Assignment Schemas ─────────────────────────────────────────────────
+
+export const createTaskAssignmentSchema = z.object({
+  task_type: z.string().min(1, 'Task type is required'),
+  task_id: z.string().uuid(),
+  staff_id: z.string().uuid().optional().nullable(),
+  notes: z.string().optional().nullable(),
+})
+
+export const updateTaskAssignmentSchema = z.object({
+  staff_id: z.string().uuid().optional().nullable(),
+  status: taskAssignmentStatus.optional(),
+  notes: z.string().optional().nullable(),
+  photo_urls: z.array(z.string().url()).optional(),
+})
+
+// ─── Daily Brief Query Schema ────────────────────────────────────────────────
+
+export const dailyBriefQuerySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD format').optional(),
+})
+
+// ─── Domain 11: AI Agent Configuration ──────────────────────────────────────
+
+export const accommodationAgentType = z.enum(['quoter', 'concierge', 'reviewer', 'pricer'])
+
+export const createAIConfigSchema = z.object({
+  agent_type: accommodationAgentType,
+  is_enabled: z.boolean().default(false),
+  config: z.record(z.unknown()).default({}),
+  system_prompt_override: z.string().max(10000).optional().nullable(),
+  model_override: z.string().max(100).optional().nullable(),
+})
+
+export const updateAIConfigSchema = createAIConfigSchema.partial()
+
+// ─── AI Agent Request Schemas ───────────────────────────────────────────────
+
+export const generateQuoteSchema = z.object({
+  inquiry_text: z.string().min(1, 'Inquiry text is required'),
+  guest_name: z.string().optional(),
+  guest_email: z.string().email().optional(),
+  guest_phone: z.string().optional(),
+  check_in_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD').optional(),
+  check_out_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD').optional(),
+  guests: z.number().int().min(1).optional(),
+  property_id: z.string().uuid().optional(),
+  session_id: z.string().uuid().optional(),
+})
+
+export const conciergeMessageSchema = z.object({
+  message: z.string().min(1, 'Message is required'),
+  guest_phone: z.string().optional(),
+  guest_id: z.string().uuid().optional(),
+  booking_id: z.string().uuid().optional(),
+  session_id: z.string().uuid().optional(),
+})
+
+export const analyzeReviewSchema = z.object({
+  review_text: z.string().min(1, 'Review text is required'),
+  reviewer_name: z.string().optional(),
+  rating: z.number().min(1).max(5).optional(),
+  platform: z.string().optional(),
+  booking_id: z.string().uuid().optional(),
+  session_id: z.string().uuid().optional(),
+})
+
+export const pricingAnalysisSchema = z.object({
+  period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD').optional(),
+  period_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD').optional(),
+  property_id: z.string().uuid().optional(),
+  session_id: z.string().uuid().optional(),
+})
+
+// ─── Phase 5: Per-Unit Costing & Stock/Inventory ───────────────────────────
+
+export const createCostCategorySchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  category_type: z.enum(['fixed', 'variable', 'per_guest', 'per_night']),
+  default_amount: z.number().min(0).optional(),
+  unit_of_measure: z.string().optional(),
+  is_active: z.boolean().optional(),
+})
+
+export const updateCostCategorySchema = createCostCategorySchema.partial()
+
+export const createUnitCostSchema = z.object({
+  unit_id: z.string().uuid(),
+  category_id: z.string().uuid(),
+  booking_id: z.string().uuid().optional(),
+  amount: z.number().min(0),
+  quantity: z.number().min(0).optional(),
+  cost_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+  notes: z.string().optional(),
+})
+
+export const updateUnitCostSchema = createUnitCostSchema.partial()
+
+export const createCostDefaultSchema = z.object({
+  property_type: z.string().optional(),
+  unit_type: z.string().optional(),
+  category_id: z.string().uuid(),
+  default_amount: z.number().min(0),
+})
+
+export const updateCostDefaultSchema = createCostDefaultSchema.partial()
+
+export const createStockItemSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  sku: z.string().optional(),
+  category: z.enum(['linen', 'toiletry', 'cleaning', 'consumable', 'equipment']),
+  unit_of_measure: z.string().min(1, 'Unit of measure is required'),
+  current_stock: z.number().min(0).optional(),
+  min_stock_level: z.number().min(0).optional(),
+  reorder_quantity: z.number().min(0).optional(),
+  unit_cost: z.number().min(0).optional(),
+  supplier: z.string().optional(),
+  location: z.string().optional(),
+  is_active: z.boolean().optional(),
+})
+
+export const updateStockItemSchema = createStockItemSchema.partial()
+
+export const createStockMovementSchema = z.object({
+  stock_item_id: z.string().uuid(),
+  movement_type: z.enum(['receipt', 'issue', 'adjustment', 'write_off', 'return']),
+  quantity: z.number(),
+  unit_id: z.string().uuid().optional(),
+  booking_id: z.string().uuid().optional(),
+  reference: z.string().optional(),
+  notes: z.string().optional(),
+})
+
+export const generateProfitabilitySchema = z.object({
+  period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+  period_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+  unit_id: z.string().uuid().optional(),
+})

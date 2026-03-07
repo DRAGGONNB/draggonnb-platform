@@ -57,6 +57,18 @@ Recurring issues identified across multiple sessions. Consult before making chan
   - Port is 3030 on host, NOT 3000
 - **Related errors:** ERR-010, ERR-011
 
+## Pattern: Supabase Joined Query Type Casting
+- **Occurrences:** 6+ errors in session 33, recurring from ERR-007 pattern
+- **Root cause:** Supabase TypeScript types infer foreign-key joined data as array types. For many-to-one relationships (e.g., `.select('*, category:accommodation_cost_categories(name)')`) the actual returned data is a single object, but TypeScript sees it as `{ name: string }[]`. Casting directly fails TS2352.
+- **Prevention:**
+  - Always use double-cast through `unknown` for joined query results:
+    ```typescript
+    const catName = (row.category as unknown as { name: string } | null)?.name || 'Unknown'
+    ```
+  - Run `npx tsc --noEmit` locally before pushing
+  - This is the same root pattern as ERR-007 (Vercel TypeScript Strictness) but specific to Supabase joins
+- **Related errors:** ERR-007, ERR-015
+
 ## Pattern: Supabase MCP Re-authentication
 - **Occurrences:** Every session
 - **Root cause:** Supabase MCP uses OAuth with browser-based login. Tokens expire between sessions.

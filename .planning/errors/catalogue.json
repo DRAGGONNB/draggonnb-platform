@@ -194,5 +194,19 @@
     "files_affected": ["lib/auth/get-user-org.ts", "lib/auth/actions.ts"],
     "recurring": true,
     "tags": ["rls", "chicken-and-egg", "admin-client", "user-record", "auth"]
+  },
+  {
+    "id": "ERR-015",
+    "timestamp": "2026-03-06",
+    "session": 33,
+    "category": "build",
+    "source": "typescript",
+    "error_message": "TS2352: Conversion of type may be a mistake because neither type sufficiently overlaps with the other (Supabase joined query type casts)",
+    "root_cause": "Supabase TypeScript types infer foreign-key joined data as array types (e.g., { name: string }[]). For many-to-one joins the actual data is a single object, but casting directly from array to object type fails TypeScript's overlap check.",
+    "resolution": "Added 'as unknown as' intermediate casts: (data.joined_table as unknown as { field: Type } | null)?.field",
+    "prevention": "Always use double-cast pattern for Supabase joined query results: 'as unknown as TargetType'. Run 'npx tsc --noEmit' before pushing.",
+    "files_affected": ["app/api/accommodation/cost-summary/route.ts", "app/api/accommodation/unit-profitability/generate/route.ts", "lib/accommodation/events/dispatcher.ts"],
+    "recurring": true,
+    "tags": ["typescript", "supabase", "type-assertion", "joined-query", "as-unknown-as"]
   }
 ]
