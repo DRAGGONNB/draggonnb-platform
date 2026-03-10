@@ -1,0 +1,88 @@
+{
+  "name": "DraggonnB - Accommodation Occupancy Snapshot",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "55 23 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-occupancy",
+      "name": "Daily 23:55 SAST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.APP_URL}}/api/accommodation/financial-snapshots/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ snapshot_date: $now.toFormat('yyyy-MM-dd') }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "generate-snapshot",
+      "name": "Generate Financial Snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\nreturn [{\n  json: {\n    captured_at: new Date().toISOString(),\n    success: result.success || false,\n    snapshot_date: result.snapshot_date || $now.toFormat('yyyy-MM-dd'),\n    occupancy_rate: result.occupancy_rate || null,\n    total_revenue: result.total_revenue || null,\n    units_occupied: result.units_occupied || null,\n    units_total: result.units_total || null\n  }\n}];"
+      },
+      "id": "log-snapshot",
+      "name": "Log Snapshot Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Daily 23:55 SAST": {
+      "main": [
+        [{ "node": "Generate Financial Snapshot", "type": "main", "index": 0 }]
+      ]
+    },
+    "Generate Financial Snapshot": {
+      "main": [
+        [{ "node": "Log Snapshot Result", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Johannesburg"
+  },
+  "tags": [
+    { "name": "accommodation" },
+    { "name": "analytics" },
+    { "name": "finance" },
+    { "name": "cron" }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "name": "DraggonnB - Accommodation Daily Brief",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "id": "cron-daily-brief",
+      "name": "Daily 6 AM SAST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.APP_URL}}/api/accommodation/telegram/daily-brief",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ date: $now.toFormat('yyyy-MM-dd') }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "send-daily-brief",
+      "name": "Send Telegram Daily Brief",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\nreturn [{\n  json: {\n    sent_at: new Date().toISOString(),\n    success: result.success || false,\n    arrivals: result.arrivals || 0,\n    departures: result.departures || 0,\n    turnovers: result.turnovers || 0,\n    occupancy_pct: result.occupancy_pct || 0\n  }\n}];"
+      },
+      "id": "log-brief",
+      "name": "Log Brief Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Daily 6 AM SAST": {
+      "main": [
+        [{ "node": "Send Telegram Daily Brief", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send Telegram Daily Brief": {
+      "main": [
+        [{ "node": "Log Brief Result", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Johannesburg"
+  },
+  "tags": [
+    { "name": "accommodation" },
+    { "name": "telegram" },
+    { "name": "operations" },
+    { "name": "cron" }
+  ]
+}

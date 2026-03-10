@@ -1,0 +1,171 @@
+{
+  "name": "DraggonnB - Accommodation Review Request",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "id": "cron-review",
+      "name": "Daily 10 AM SAST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.APP_URL}}/api/accommodation/bookings?checked_out_2_days_ago=true",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "fetch-past-guests",
+      "name": "Fetch Guests Checked Out 2 Days Ago",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst bookings = response.data || response;\nif (!Array.isArray(bookings) || bookings.length === 0) {\n  return [{ json: { _skip: true, message: 'No guests to request reviews from' } }];\n}\nreturn bookings.map(booking => ({ json: booking }));"
+      },
+      "id": "parse-review-guests",
+      "name": "Parse Bookings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-guests",
+              "leftValue": "={{ $json._skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notTrue"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-has-guests",
+      "name": "Has Past Guests?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-review-batches",
+      "name": "Process Each Booking",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.APP_URL}}/api/accommodation/events/emit",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'review_request', booking_id: $json.id, metadata: { guest_name: $json.guest_name, guest_email: $json.guest_email, property_name: $json.property_name, check_out: $json.check_out } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "emit-review-event",
+      "name": "Emit review_request Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1500, 200],
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Daily 10 AM SAST": {
+      "main": [
+        [{ "node": "Fetch Guests Checked Out 2 Days Ago", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Guests Checked Out 2 Days Ago": {
+      "main": [
+        [{ "node": "Parse Bookings", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse Bookings": {
+      "main": [
+        [{ "node": "Has Past Guests?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Past Guests?": {
+      "main": [
+        [{ "node": "Process Each Booking", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Process Each Booking": {
+      "main": [
+        [{ "node": "Emit review_request Event", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Johannesburg"
+  },
+  "tags": [
+    { "name": "accommodation" },
+    { "name": "guest-comms" },
+    { "name": "reviews" },
+    { "name": "cron" }
+  ]
+}

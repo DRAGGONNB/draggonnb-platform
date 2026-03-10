@@ -1,0 +1,170 @@
+{
+  "name": "DraggonnB - Accommodation Check-in Reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "cron-checkin",
+      "name": "Daily 8 AM SAST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.APP_URL}}/api/accommodation/bookings?check_in_tomorrow=true",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "fetch-checkins",
+      "name": "Fetch Tomorrow Check-ins",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst bookings = response.data || response;\nif (!Array.isArray(bookings) || bookings.length === 0) {\n  return [{ json: { _skip: true, message: 'No check-ins tomorrow' } }];\n}\nreturn bookings.map(booking => ({ json: booking }));"
+      },
+      "id": "parse-checkins",
+      "name": "Parse Bookings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-bookings",
+              "leftValue": "={{ $json._skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notTrue"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-has-bookings",
+      "name": "Has Check-ins?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-checkin-batches",
+      "name": "Process Each Booking",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.APP_URL}}/api/accommodation/events/emit",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'check_in_24h', booking_id: $json.id, metadata: { guest_name: $json.guest_name, check_in: $json.check_in, unit_name: $json.unit_name } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "emit-checkin-event",
+      "name": "Emit check_in_24h Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1500, 200],
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Daily 8 AM SAST": {
+      "main": [
+        [{ "node": "Fetch Tomorrow Check-ins", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Tomorrow Check-ins": {
+      "main": [
+        [{ "node": "Parse Bookings", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse Bookings": {
+      "main": [
+        [{ "node": "Has Check-ins?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Check-ins?": {
+      "main": [
+        [{ "node": "Process Each Booking", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Process Each Booking": {
+      "main": [
+        [{ "node": "Emit check_in_24h Event", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Johannesburg"
+  },
+  "tags": [
+    { "name": "accommodation" },
+    { "name": "guest-comms" },
+    { "name": "cron" }
+  ]
+}

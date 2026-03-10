@@ -1,0 +1,84 @@
+{
+  "name": "DraggonnB - Accommodation Payment Link Expiry",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "5 0 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-payment-expiry",
+      "name": "Daily 00:05 SAST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.APP_URL}}/api/accommodation/payment-links/expire",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "expire-links",
+      "name": "Expire Payment Links",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\nreturn [{\n  json: {\n    processed_at: new Date().toISOString(),\n    success: result.success || false,\n    expired_count: result.expired_count || 0,\n    message: result.message || 'Payment link expiry check complete'\n  }\n}];"
+      },
+      "id": "log-expiry",
+      "name": "Log Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Daily 00:05 SAST": {
+      "main": [
+        [{ "node": "Expire Payment Links", "type": "main", "index": 0 }]
+      ]
+    },
+    "Expire Payment Links": {
+      "main": [
+        [{ "node": "Log Results", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Johannesburg"
+  },
+  "tags": [
+    { "name": "accommodation" },
+    { "name": "payments" },
+    { "name": "cron" }
+  ]
+}

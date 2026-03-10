@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+import { verifyApiKey } from '@/lib/security/api-key-auth'
 
 interface TenantContext {
   organizationId: string
@@ -84,6 +85,31 @@ function isSubdomainHost(hostname: string): string | null {
 }
 
 export async function updateSession(request: NextRequest) {
+  // --- M2M API key authentication for /api/external/* routes ---
+  if (request.nextUrl.pathname.startsWith('/api/external/')) {
+    const authHeader = request.headers.get('authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7)
+      const result = await verifyApiKey(token)
+      if (!result) {
+        return NextResponse.json(
+          { error: 'Invalid or expired API key' },
+          { status: 401 }
+        )
+      }
+      // Inject organization context and pass through (skip session logic)
+      const headers = new Headers(request.headers)
+      headers.set('x-organization-id', result.organization_id)
+      headers.set('x-api-key-scopes', result.scopes.join(','))
+      return NextResponse.next({ request: { headers } })
+    }
+    // No Bearer token on /api/external/ -> reject
+    return NextResponse.json(
+      { error: 'Missing Authorization header' },
+      { status: 401 }
+    )
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -162,12 +188,18 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user }, error } = await supabase.auth.getUser()
 
-  // --- Webhook bypass (validate their own signatures) ---
-  const webhookRoutes = ['/api/webhooks/whatsapp', '/api/webhooks/telegram', '/api/webhooks/payfast']
-  const isWebhookRoute = webhookRoutes.some(route =>
+  // --- Public route bypass (webhooks, guest portal, iCal feeds) ---
+  const publicApiRoutes = [
+    '/api/webhooks/whatsapp',
+    '/api/webhooks/telegram',
+    '/api/webhooks/payfast',
+    '/api/guest-portal',
+    '/api/accommodation/ical',
+  ]
+  const isPublicApiRoute = publicApiRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   )
-  if (isWebhookRoute) {
+  if (isPublicApiRoute) {
     return response
   }
 

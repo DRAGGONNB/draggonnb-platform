@@ -1,0 +1,170 @@
+{
+  "name": "DraggonnB - Accommodation Checkout Reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "cron-checkout",
+      "name": "Daily 7 AM SAST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.APP_URL}}/api/accommodation/bookings?check_out_today=true",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "fetch-checkouts",
+      "name": "Fetch Today Check-outs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst bookings = response.data || response;\nif (!Array.isArray(bookings) || bookings.length === 0) {\n  return [{ json: { _skip: true, message: 'No check-outs today' } }];\n}\nreturn bookings.map(booking => ({ json: booking }));"
+      },
+      "id": "parse-checkouts",
+      "name": "Parse Bookings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-checkouts",
+              "leftValue": "={{ $json._skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notTrue"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-has-checkouts",
+      "name": "Has Check-outs?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-checkout-batches",
+      "name": "Process Each Booking",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.APP_URL}}/api/accommodation/events/emit",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'check_out_reminder', booking_id: $json.id, metadata: { guest_name: $json.guest_name, check_out: $json.check_out, unit_name: $json.unit_name } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "emit-checkout-event",
+      "name": "Emit check_out_reminder Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1500, 200],
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Daily 7 AM SAST": {
+      "main": [
+        [{ "node": "Fetch Today Check-outs", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Today Check-outs": {
+      "main": [
+        [{ "node": "Parse Bookings", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse Bookings": {
+      "main": [
+        [{ "node": "Has Check-outs?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Check-outs?": {
+      "main": [
+        [{ "node": "Process Each Booking", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Process Each Booking": {
+      "main": [
+        [{ "node": "Emit check_out_reminder Event", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Johannesburg"
+  },
+  "tags": [
+    { "name": "accommodation" },
+    { "name": "guest-comms" },
+    { "name": "cron" }
+  ]
+}

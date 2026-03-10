@@ -1,0 +1,170 @@
+{
+  "name": "DraggonnB - Accommodation Deposit Reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "cron-deposit",
+      "name": "Daily 9 AM SAST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.APP_URL}}/api/accommodation/bookings?status=pending_deposit&deposit_overdue=true",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "fetch-overdue-deposits",
+      "name": "Fetch Overdue Deposits",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst bookings = response.data || response;\nif (!Array.isArray(bookings) || bookings.length === 0) {\n  return [{ json: { _skip: true, message: 'No overdue deposits' } }];\n}\nreturn bookings.map(booking => ({ json: booking }));"
+      },
+      "id": "parse-deposits",
+      "name": "Parse Bookings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-overdue",
+              "leftValue": "={{ $json._skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notTrue"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-has-overdue",
+      "name": "Has Overdue Deposits?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-deposit-batches",
+      "name": "Process Each Booking",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.APP_URL}}/api/accommodation/events/emit",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-tenant-id",
+              "value": "={{$env.DEFAULT_ORG_ID}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'deposit_due', booking_id: $json.id, metadata: { guest_name: $json.guest_name, deposit_amount: $json.deposit_amount, deposit_due_date: $json.deposit_due_date, booking_ref: $json.confirmation_code } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "emit-deposit-event",
+      "name": "Emit deposit_due Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1500, 200],
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Daily 9 AM SAST": {
+      "main": [
+        [{ "node": "Fetch Overdue Deposits", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Overdue Deposits": {
+      "main": [
+        [{ "node": "Parse Bookings", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse Bookings": {
+      "main": [
+        [{ "node": "Has Overdue Deposits?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Overdue Deposits?": {
+      "main": [
+        [{ "node": "Process Each Booking", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Process Each Booking": {
+      "main": [
+        [{ "node": "Emit deposit_due Event", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Johannesburg"
+  },
+  "tags": [
+    { "name": "accommodation" },
+    { "name": "payments" },
+    { "name": "cron" }
+  ]
+}

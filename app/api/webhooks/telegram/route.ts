@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server'
 import { getOpsClient } from '@/lib/ops/config'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendMessage } from '@/lib/telegram/bot'
 import { sendTextMessage } from '@/lib/whatsapp/client'
+import { handleCallback as handleAccommodationCallback, parseCallbackData } from '@/lib/accommodation/telegram/ops-bot'
+
+// Accommodation callback actions that we route to the ops-bot handler
+const ACCOMMODATION_ACTIONS = new Set([
+  'accept_task', 'reject_task', 'complete_task',
+  'ack_issue', 'start_issue', 'resolve_issue',
+])
 
 export async function POST(request: Request) {
   try {
@@ -22,8 +30,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ status: 'ok' })
     }
 
-    const data = callbackQuery.data as string
-    const [action, leadId] = data.split(':')
+    const rawData = callbackQuery.data as string
+    if (!rawData) {
+      return NextResponse.json({ status: 'ok' })
+    }
+
+    // --- Try accommodation callback routing first (JSON-encoded data) ---
+    const accommodationResult = await tryAccommodationCallback(callbackQuery, rawData)
+    if (accommodationResult.handled) {
+      return NextResponse.json({ status: 'ok' })
+    }
+
+    // --- Fall back to ops lead callback routing (colon-separated data) ---
+    const [action, leadId] = rawData.split(':')
 
     if (!action || !leadId) {
       return NextResponse.json({ status: 'ok' })
@@ -173,6 +192,85 @@ export async function POST(request: Request) {
     console.error('Telegram webhook error:', error)
     return NextResponse.json({ status: 'ok' })
   }
+}
+
+/**
+ * Try to handle the callback as an accommodation ops-bot callback.
+ * Accommodation callbacks use JSON-encoded callback_data with an "action" field.
+ * Returns { handled: true } if this was an accommodation callback.
+ */
+async function tryAccommodationCallback(
+  callbackQuery: {
+    id: string
+    data: string
+    from: { id: number; first_name: string; username?: string }
+    message?: { chat: { id: number }; message_id: number }
+  },
+  rawData: string
+): Promise<{ handled: boolean }> {
+  // Accommodation callbacks are JSON-encoded
+  const parsed = parseCallbackData(rawData)
+  if (!parsed || !parsed.action) {
+    return { handled: false }
+  }
+
+  // Check if this is a known accommodation action
+  if (!ACCOMMODATION_ACTIONS.has(parsed.action)) {
+    return { handled: false }
+  }
+
+  // Resolve organization_id from the task or issue in the callback
+  const supabase = createAdminClient()
+  let organizationId: string | null = null
+
+  if (parsed.task_id) {
+    const { data: task } = await supabase
+      .from('accommodation_tasks')
+      .select('organization_id')
+      .eq('id', parsed.task_id)
+      .single()
+    organizationId = task?.organization_id || null
+  } else if (parsed.issue_id) {
+    const { data: issue } = await supabase
+      .from('accommodation_issues')
+      .select('organization_id')
+      .eq('id', parsed.issue_id)
+      .single()
+    organizationId = issue?.organization_id || null
+  }
+
+  if (!organizationId) {
+    console.error('[Telegram Webhook] Could not resolve organization for accommodation callback:', rawData)
+    return { handled: false }
+  }
+
+  const chatId = callbackQuery.message?.chat?.id || 0
+  const messageId = callbackQuery.message?.message_id || 0
+
+  try {
+    const result = await handleAccommodationCallback(
+      supabase,
+      organizationId,
+      callbackQuery.id,
+      rawData,
+      {
+        id: callbackQuery.from.id,
+        first_name: callbackQuery.from.first_name,
+        username: callbackQuery.from.username,
+      },
+      {
+        chat_id: chatId,
+        message_id: messageId,
+      }
+    )
+    console.log(`[Telegram Webhook] Accommodation callback handled: ${result.action} (success: ${result.success})`)
+  } catch (error) {
+    console.error('[Telegram Webhook] Accommodation callback error:', error)
+    // Answer the callback to avoid Telegram showing a loading indicator
+    await answerCallback(callbackQuery.id, 'Error processing request')
+  }
+
+  return { handled: true }
 }
 
 async function answerCallback(callbackQueryId: string, text: string): Promise<void> {
