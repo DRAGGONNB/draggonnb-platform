@@ -208,5 +208,19 @@
     "files_affected": ["app/api/accommodation/cost-summary/route.ts", "app/api/accommodation/unit-profitability/generate/route.ts", "lib/accommodation/events/dispatcher.ts"],
     "recurring": true,
     "tags": ["typescript", "supabase", "type-assertion", "joined-query", "as-unknown-as"]
+  },
+  {
+    "id": "ERR-016",
+    "timestamp": "2026-03-10",
+    "session": 34,
+    "category": "build",
+    "source": "typescript",
+    "error_message": "TS2339: Property 'catch' does not exist on type 'PromiseLike<void>'",
+    "root_cause": "Supabase query builder returns PromiseLike (not full Promise), which lacks .catch(). Chaining .then().catch() fails because .then() on PromiseLike returns PromiseLike, not Promise.",
+    "resolution": "Wrapped in Promise.resolve(): Promise.resolve(supabase.from(...).update(...).eq(...)).catch((err: unknown) => ...)",
+    "prevention": "Supabase fire-and-forget queries must be wrapped in Promise.resolve() before using .catch(). PromiseLike does not support .catch() directly.",
+    "files_affected": ["lib/security/api-key-auth.ts"],
+    "recurring": false,
+    "tags": ["typescript", "supabase", "promiselike", "catch", "fire-and-forget"]
   }
 ]
