@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { dispatchWebhooksForOrg } from '@/lib/webhooks/dispatcher'
 
 // GET - List contacts
 export async function GET(request: Request) {
@@ -123,6 +124,20 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Contact with this email already exists' }, { status: 409 })
       }
       return NextResponse.json({ error: 'Failed to create contact' }, { status: 500 })
+    }
+
+    // After successful insert, dispatch webhook (fire-and-forget)
+    // Skip if this contact was created via sync (has sync_origin) to prevent echo loops
+    if (contact && !body.sync_origin) {
+      dispatchWebhooksForOrg(userData.organization_id, 'contact.created', {
+        id: contact.id,
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        email: contact.email,
+        phone: contact.phone,
+        status: contact.status,
+        created_at: contact.created_at,
+      }).catch((err) => console.error('[CRM] Webhook dispatch failed:', err))
     }
 
     return NextResponse.json({ contact }, { status: 201 })

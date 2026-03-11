@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { dispatchWebhooksForOrg } from '@/lib/webhooks/dispatcher'
 
 // GET - Get single contact
 export async function GET(
@@ -97,6 +98,19 @@ export async function PUT(
 
     if (!contact) {
       return NextResponse.json({ error: 'Contact not found' }, { status: 404 })
+    }
+
+    // After successful update, dispatch webhook (fire-and-forget)
+    // Skip if this update came via sync (has sync_origin) to prevent echo loops
+    if (contact && !body.sync_origin) {
+      dispatchWebhooksForOrg(userData.organization_id, 'contact.updated', {
+        id: contact.id,
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        email: contact.email,
+        phone: contact.phone,
+        status: contact.status,
+      }).catch((err) => console.error('[CRM] Webhook dispatch failed:', err))
     }
 
     return NextResponse.json({ contact })
