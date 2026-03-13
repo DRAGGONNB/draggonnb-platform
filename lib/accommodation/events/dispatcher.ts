@@ -38,6 +38,7 @@ interface BookingWithGuest {
   id: string
   guest_id: string
   property_id: string
+  organization_id: string
   check_in_date: string
   check_out_date: string
   adults: number
@@ -90,7 +91,7 @@ export async function emitBookingEvent(
   const { data: booking, error: bookingError } = await supabase
     .from('accommodation_bookings')
     .select(`
-      id, guest_id, property_id, check_in_date, check_out_date,
+      id, guest_id, property_id, organization_id, check_in_date, check_out_date,
       adults, children, status, source, special_requests,
       accommodation_guests!inner(first_name, last_name, email, phone),
       accommodation_properties!inner(name, type)
@@ -116,6 +117,7 @@ export async function emitBookingEvent(
     id: booking.id,
     guest_id: booking.guest_id,
     property_id: booking.property_id,
+    organization_id: booking.organization_id,
     check_in_date: booking.check_in_date,
     check_out_date: booking.check_out_date,
     adults: booking.adults,
@@ -142,7 +144,7 @@ export async function emitBookingEvent(
 
     const scheduledFor = new Date(Date.now() + rule.delay_minutes * 60 * 1000).toISOString()
 
-    const templateData = buildTemplateData(bookingData, event)
+    const templateData = await buildTemplateData(bookingData, event)
 
     const { error: insertError } = await supabase
       .from('accommodation_message_queue')
@@ -359,13 +361,25 @@ function getRecipient(channel: string, booking: BookingWithGuest): string | null
 /**
  * Build template variables from booking data
  */
-function buildTemplateData(
+async function buildTemplateData(
   booking: BookingWithGuest,
   event: BookingEvent
-): Record<string, string> {
+): Promise<Record<string, string>> {
   const checkIn = new Date(booking.check_in_date)
   const checkOut = new Date(booking.check_out_date)
   const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
+
+  // Build guest portal URL if secret is configured
+  let guestPortalUrl = ''
+  try {
+    const { buildGuestPortalUrl } = await import('@/lib/accommodation/guest-portal')
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000'
+    guestPortalUrl = buildGuestPortalUrl(booking.id, booking.organization_id, baseUrl)
+  } catch {
+    // guest-portal module may not be available in all contexts
+  }
 
   return {
     guest_first_name: booking.guest.first_name,
@@ -381,6 +395,7 @@ function buildTemplateData(
     booking_id: booking.id,
     booking_status: booking.status,
     event_type: event,
+    guest_portal_url: guestPortalUrl,
   }
 }
 

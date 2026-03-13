@@ -79,7 +79,7 @@ After completing work that changes project state:
 
 Module catalog lives in the `module_registry` table (Supabase). Per-tenant activation in `tenant_modules` table. Legacy `scripts/provisioning/template/client-config.json` retained for reference but DB is source of truth. Available modules: crm, email, social, content_studio, accommodation, ai_agents, analytics. Each module maps to route prefixes, DB tables, and tier requirements.
 
-Provisioning flow (5 steps): create-org (DB rows + modules) -> n8n-webhooks -> deploy-automations -> onboarding-sequence -> qa-checks. Rollback cascades via `DELETE FROM organizations WHERE id = ...`.
+Provisioning flow (9 steps): create-org -> create-admin -> assign-subdomain -> seed-data -> n8n-webhooks -> deploy-automations -> onboarding-sequence -> qa-checks -> configure-billing. Rollback cascades via `DELETE FROM organizations WHERE id = ...`.
 
 ## Accommodation Automation Layer
 
@@ -93,7 +93,7 @@ The accommodation module includes a full AI Automation & Operations Layer (5 pha
 | 4: AI Agents | 4 agents (quoter, concierge, reviewer, pricer) extending BaseAgent | `lib/accommodation/agents/*.ts` |
 | 5: Costing | Per-unit cost tracking + stock inventory + profitability reports | Auto-cost in `dispatcher.ts` |
 
-**DB tables:** 54 total (39 base + 15 automation). **API routes:** 94 total (48 base + 46 automation).
+**DB tables:** 84 total. **API routes:** 162 total (102 accommodation + 60 other modules).
 
 The event dispatcher (`emitBookingEvent()`) is the central integration point -- booking status changes trigger automation rules, guest messages, staff Telegram notifications, and auto-cost entries.
 
@@ -116,15 +116,18 @@ Three sub-directory CLAUDE.md files provide build specs for extending the platfo
 | Build-time AI | Claude Code (this tool) | Per-session, developer time | Per-session |
 | Advisory | OpenClaw (read-only Gitea) | Strategic suggestions | Existing |
 
-No autonomous sub-agents per client until 20+ clients with proven patterns. Current agents: LeadQualifierAgent, ProposalGeneratorAgent. Future: Anthropic Agent SDK when scale justifies it.
+No autonomous sub-agents per client until 20+ clients with proven patterns. Current agents: LeadQualifierAgent, ProposalGeneratorAgent, QuoterAgent, ConciergeAgent, ReviewerAgent, PricerAgent. Future: Anthropic Agent SDK when scale justifies it.
 
 ## Auth & User Record Pattern
 
 Protected pages call `getUserOrg()` from `lib/auth/get-user-org.ts`. This function:
 1. Gets authenticated user via `supabase.auth.getUser()`
-2. Queries `users` table with org join (tries user client, then admin client for RLS bypass)
-3. Auto-creates missing user/org records via `createAdminClient()` (service role) if row is missing
-4. Returns `{ data: UserOrg, error }` -- never redirects, never throws
+2. Queries `organization_users` junction table with `organizations` join (tries user client, then admin client for RLS bypass)
+3. Gets display name from `user_profiles` table
+4. Auto-creates missing records via `ensureUserRecord()` using `createAdminClient()` (service role) if rows are missing
+5. Returns `{ data: UserOrg, error }` -- never redirects, never throws
+
+**Key tables:** `organization_users` (junction: user_id + organization_id + role), `user_profiles` (display info), `organizations` (tenant data). There is NO standalone `users` table -- auth users link to orgs via the junction table.
 
 Pages render inline error states (not redirects) when `getUserOrg()` fails. This prevents redirect loops with middleware. Error boundaries (`error.tsx`) catch unexpected throws.
 

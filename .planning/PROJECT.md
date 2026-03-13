@@ -2,19 +2,21 @@
 
 ## What This Is
 
-A production-ready multi-tenant B2B operating system targeting South African SMEs. DraggonnB OS provides CRM, email marketing, AI content generation, social media automation, accommodation management, AI agents, analytics, and payments -- all in one platform. All clients share a single Supabase project with RLS-based tenant isolation. Each client gets a subdomain on *.draggonnb.co.za with DB-backed module gating.
+A production-deployed multi-tenant B2B operating system targeting South African SMEs. DraggonnB OS provides CRM, email marketing, AI content generation, social media automation, accommodation management with full AI automation, AI agents, analytics, and payments -- all in one platform. All clients share a single Supabase project with RLS-based tenant isolation. Each client gets a subdomain on *.draggonnb.co.za with DB-backed module gating.
 
 ## Core Value
 
-**A complete, working multi-tenant business automation platform where new clients are provisioned with a database row, a subdomain, and activated modules -- live in under an hour.** Every module works: CRM, email, content, payments, dashboard, accommodation, AI agents.
+**A complete, working multi-tenant business automation platform where new clients are provisioned with a database row, a subdomain, and activated modules -- live in under an hour.** Every module works: CRM, email, content, payments, dashboard, accommodation (with AI automation, guest portal, channel manager, cost tracking), AI agents.
 
 ## Architecture
 
 - **Multi-tenant:** Shared Supabase DB with RLS policies using `get_user_org_id()` (STABLE, cached per-query)
+- **Auth model:** `organization_users` junction table links auth users to `organizations`. `user_profiles` for display info. `getUserOrg()` in `lib/auth/get-user-org.ts` is the central auth function (used by 19+ files)
 - **Routing:** Wildcard DNS on `*.draggonnb.co.za`, middleware resolves tenant from subdomain, injects `x-tenant-id`/`x-tenant-tier`/`x-tenant-modules` headers
 - **Module gating:** `module_registry` (global catalog) + `tenant_modules` (per-tenant activation) tables
-- **Provisioning:** 5-step saga: create-org -> n8n-webhooks -> deploy-automations -> onboarding-sequence -> qa-checks
+- **Provisioning:** 9-step saga: create-org -> create-admin -> assign-subdomain -> seed-data -> n8n-webhooks -> deploy-automations -> onboarding-sequence -> qa-checks -> configure-billing. Rollback cascades via `DELETE FROM organizations WHERE id = ...`
 - **AI ops:** N8N for deterministic automation, Claude API via BaseAgent for intelligent ops, build-time Claude Code
+- **Event-driven automation:** `emitBookingEvent()` dispatcher triggers automation rules, guest messages, staff notifications, and auto-cost entries on booking status changes
 
 ## Tech Stack
 
@@ -31,18 +33,84 @@ A production-ready multi-tenant B2B operating system targeting South African SME
 - **Logo:** Charcoal + crimson split icon with "DRAGGONNB Operating System" text
 - **Landing page:** Light theme with dark CTA section for contrast
 
+## Platform Scale
+
+| Metric | Count |
+|--------|-------|
+| DB tables (Supabase) | 84 |
+| API routes | 162 |
+| UI modules/pages | 16+ |
+| Library modules | 21 |
+| Components | 54 |
+| N8N workflow templates | 17 |
+| AI agents | 4 |
+| Vitest tests | 241 |
+| Provisioning steps | 9 |
+| Supabase migrations | 14 |
+
 ## Modules
 
-| Module | Status | Tier |
-|--------|--------|------|
-| CRM (contacts, companies, deals) | Complete | Core |
-| Email Marketing (campaigns, sequences, templates, outreach) | Complete | Core |
-| Content Studio (AI generation, social/email content) | Complete | Core |
-| Social Media (scheduling, publishing) | Complete | Growth |
-| Accommodation (properties, guests, inquiries) | Complete | Growth |
-| AI Agents (Autopilot, workflows, settings) | Complete | Scale |
-| Analytics (dashboard stats, pipeline charts) | Complete | Core |
-| Payments (PayFast, 3 tiers) | Complete | Core |
+| Module | Status | Tier | Routes | Key Features |
+|--------|--------|------|--------|--------------|
+| CRM (contacts, companies, deals) | Complete | Core | 6 | Pipeline view, search/filter, org-scoped |
+| Email Marketing (campaigns, sequences, templates) | Complete | Core | 14 | Variable substitution, tracking, batch send |
+| Content Studio (AI generation) | Complete | Core | 5 | N8N-powered AI content generation |
+| Social Media (scheduling, publishing) | Complete | Growth | 4 | Facebook/LinkedIn/Instagram scheduling |
+| Accommodation | Complete | Growth | 102 | Properties, units, bookings, guests, rates, availability, inquiries, guest portal, channel manager, automation, payments, stock, costs, agents |
+| AI Agents (Autopilot, workflows, settings) | Complete | Scale | 4 | BaseAgent pattern, session tracking |
+| Analytics (dashboard stats, pipeline charts) | Complete | Core | 2 | Stat cards, Recharts pipeline chart |
+| Payments (PayFast, 3 tiers) | Complete | Core | 1 | R1,500/R3,500/R7,500 tiers, ITN webhook |
+| Leads (capture, scoring) | Complete | Core | 4 | Lead qualification, scoring |
+| Webhooks (PayFast, N8N, Resend) | Complete | Core | 5 | ITN validation, signature verification |
+| External APIs (CRM, email sequences) | Complete | Core | 5 | M2M auth, scope guards |
+| Ops (health, metrics) | Complete | Core | 2 | Platform health monitoring |
+
+### Accommodation Automation Layer (Complete)
+
+| Phase | Scope | Key Components |
+|-------|-------|----------------|
+| 1: Guest Comms | Event dispatcher + message queue + multi-channel sending | `emitBookingEvent()`, automation rules, template system |
+| 2: Payments | PayFast link generation + payment tracking + financial snapshots | Per-booking payment links, reconciliation |
+| 3: Staff Ops | Telegram ops bot + task assignments + department channels | Real-time staff notifications |
+| 4: AI Agents | 4 agents extending BaseAgent | QuoterAgent, ConciergeAgent, ReviewerAgent, PricerAgent |
+| 5: Costing | Per-unit cost tracking + stock inventory + profitability reports | Auto-cost on booking events |
+
+### Accommodation UI Pages (Complete)
+
+- Properties list + management
+- Units list + management
+- Bookings list + detail view (with guest info, financial summary, status actions)
+- Guests list
+- Rates management
+- Availability calendar
+- Inquiries
+- Automation Hub (rules, message queue, comms log)
+- Stock & Inventory (items, movements)
+- Cost Tracking & Profitability (summary, unit costs, margins)
+- Channel Manager (iCal feeds for Booking.com/Airbnb/VRBO)
+- Guest Portal (access pack with booking details)
+
+## API Route Breakdown
+
+| Category | Routes | Path Prefix |
+|----------|--------|-------------|
+| Accommodation (base) | 56 | /api/accommodation/* |
+| Accommodation (automation) | 46 | /api/accommodation/automation/*, agents/*, payments/*, ops/* |
+| Email | 14 | /api/email/* |
+| CRM | 6 | /api/crm/* |
+| Webhooks | 5 | /api/webhooks/* |
+| External | 5 | /api/external/* |
+| Content | 5 | /api/content/* |
+| Auth | 5 | /api/auth/* |
+| Social | 4 | /api/social/* |
+| Leads | 4 | /api/leads/* |
+| Autopilot | 4 | /api/autopilot/* |
+| Ops | 2 | /api/ops/* |
+| Guest Portal | 2 | /api/guest-portal/* |
+| Embed | 2 | /api/embed/* |
+| Payments | 1 | /api/payments/* |
+| Provisioning | 1 | /api/provisioning/* |
+| Setup | 1 | /api/setup/* |
 
 ## Infrastructure
 
@@ -62,10 +130,11 @@ A production-ready multi-tenant B2B operating system targeting South African SME
 
 ## Completion Status
 
-- v1 Roadmap: 7/7 phases complete (security, core modules, landing, N8N, social, provisioning, testing)
-- v2 BOS: Phases A-E complete (CLAUDE.md hierarchy, error catalogue, provisioning hardening, build reviewer, AI ops)
+- v1 Roadmap: 7/7 phases complete
+- v2 BOS: Phases A-E complete
 - Architecture restructure: Shared DB + RLS migration complete
-- UI Rebrand: Complete (all pages converted to DraggonnB OS brand identity)
+- UI Rebrand: Complete
+- Accommodation module: Complete (base + automation + UI)
 - **Next milestone:** First end-to-end client provisioning test
 
 ## Constraints
@@ -78,4 +147,4 @@ A production-ready multi-tenant B2B operating system targeting South African SME
 - **AI:** Claude API via N8N workflows + BaseAgent for per-call ops
 
 ---
-*Last updated: 2026-03-01 after Session 26 UI rebrand*
+*Last updated: 2026-03-13 after Session 36 comprehensive audit*

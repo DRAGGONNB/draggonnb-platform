@@ -30,6 +30,7 @@ export interface CreatedResources {
   n8nWebhookUrl?: string;
   automationWorkflowIds?: string;
   onboardingEmailIds?: string;
+  modulesActivated?: string[];
   qaResult?: string;
 }
 

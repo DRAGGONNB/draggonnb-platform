@@ -42,8 +42,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Add admin role check when role system is implemented
-    // For now, any authenticated user can provision (restrict in production)
+    // Admin role check: only users with platform_admin role can provision
+    const { data: userRecord } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (userRecord?.role !== 'platform_admin') {
+      return NextResponse.json(
+        { error: 'Forbidden: only platform admins can provision clients' },
+        { status: 403 }
+      );
+    }
 
     // Parse and validate body
     const body = await request.json();

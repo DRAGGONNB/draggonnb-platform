@@ -1,96 +1,144 @@
-# Requirements — DraggonnB CRMM v1
+# Requirements -- DraggonnB OS
 
-## v1 Requirements
+## Security & Infrastructure
 
-### Security & Infrastructure
+- [x] **SEC-01**: Supabase RLS policies enabled on all tables -- users can only read/write data belonging to their organization
+- [x] **SEC-02**: Auth links users to organizations via `organization_users` junction table -- all org-scoped queries work
+- [x] **SEC-03**: Auth middleware protects all dashboard routes -- unauthenticated users get inline error states (no redirect loops)
+- [x] **SEC-04**: Admin Supabase client using service role key exists for webhook handlers and RLS bypass
+- [x] **SEC-05**: Setup API has no hardcoded default secret -- fails if `SETUP_SECRET` env var not set
+- [x] **SEC-06**: Email unsubscribe tokens signed with HMAC -- cannot be forged
+- [x] **SEC-07**: Email click tracking validates redirect URLs -- rejects non-http(s) schemes
+- [ ] **SEC-08**: PayFast passphrase required when `PAYFAST_MODE=production` -- needs production passphrase configured
+- [x] **SEC-09**: Environment variable names aligned between `.env.example` and codebase
+- [x] **SEC-10**: Supabase service role key rotated after accidental exposure (2026-03-05)
+- [x] **SEC-11**: Provisioning API restricted to platform_admin role only
 
-- [ ] **SEC-01**: Supabase RLS policies enabled on all tables — users can only read/write data belonging to their organization
-- [ ] **SEC-02**: Signup flow links user record to organization via `organization_id` — all org-scoped queries work for new users
-- [ ] **SEC-03**: Auth middleware protects all dashboard routes (`/crm`, `/email`, `/content-generator`, `/dashboard`) — unauthenticated users redirected to `/login`
-- [ ] **SEC-04**: Admin Supabase client using service role key exists for webhook handlers (PayFast ITN, Resend webhooks) that need to write data without user context
-- [ ] **SEC-05**: Setup API has no hardcoded default secret — fails if `SETUP_SECRET` env var not set
-- [ ] **SEC-06**: Email unsubscribe tokens signed with HMAC — cannot be forged
-- [ ] **SEC-07**: Email click tracking validates redirect URLs — rejects non-http(s) schemes to prevent open redirect
-- [ ] **SEC-08**: PayFast passphrase required when `PAYFAST_MODE=production` — logs warning if missing
-- [ ] **SEC-09**: Environment variable names aligned between `.env.example` and codebase — no silent failures from mismatched var names
+## Authentication
 
-### Authentication
+- [x] **AUTH-01**: User can create account with email and password
+- [x] **AUTH-02**: User can log in and stay logged in across sessions via cookie
+- [x] **AUTH-03**: User can request password reset via email
+- [x] **AUTH-04**: User can reset password with email link
+- [x] **AUTH-05**: Auth session refreshed automatically on every request via middleware
+- [x] **AUTH-06**: OAuth callback handler for social login (scaffolded, needs credentials)
+- [x] **AUTH-07**: `getUserOrg()` auto-creates missing user/org records via admin client
+- [x] **AUTH-08**: Protected pages render inline error states (never redirect to /login)
 
-- ✓ **AUTH-01**: User can create account with email and password — existing
-- ✓ **AUTH-02**: User can log in and stay logged in across sessions via cookie — existing
-- ✓ **AUTH-03**: User can request password reset via email — existing
-- ✓ **AUTH-04**: User can reset password with email link — existing
-- ✓ **AUTH-05**: Auth session refreshed automatically on every request via middleware — existing
-- ✓ **AUTH-06**: OAuth callback handler for social login — existing (scaffolded)
+## CRM Module
 
-### CRM Module
+- [x] **CRM-01**: User can create, view, edit, and delete contacts with search/filter
+- [x] **CRM-02**: User can create, view, edit, and delete companies
+- [x] **CRM-03**: User can create, view, edit, and delete deals with pipeline view
+- [x] **CRM-04**: All CRM data scoped by organization_id
+- [x] **CRM-05**: External CRM API with M2M auth and scope guards
 
-- ✓ **CRM-01**: User can create, view, edit, and delete contacts with search/filter — existing
-- ✓ **CRM-02**: User can create, view, edit, and delete companies — existing
-- ✓ **CRM-03**: User can create, view, edit, and delete deals with pipeline view — existing
-- ✓ **CRM-04**: All CRM data scoped by organization_id — existing
+## Email Module
 
-### Email Module
+- [x] **EMAIL-01**: User can create and manage email templates with variable substitution
+- [x] **EMAIL-02**: User can create and manage email campaigns
+- [x] **EMAIL-03**: User can create and manage email sequences with steps
+- [x] **EMAIL-04**: Email tracking (opens via pixel, clicks via link wrapping) scaffolded
+- [x] **EMAIL-05**: Per-tier email usage limits enforced
+- [ ] **EMAIL-06**: Resend API configured and emails actually send -- needs API key
+- [x] **EMAIL-07**: External email sequence enrollment endpoint with M2M auth
 
-- ✓ **EMAIL-01**: User can create and manage email templates with variable substitution — existing
-- ✓ **EMAIL-02**: User can create and manage email campaigns — existing
-- ✓ **EMAIL-03**: User can create and manage email sequences with steps — existing
-- ✓ **EMAIL-04**: Email tracking (opens via pixel, clicks via link wrapping) — existing (scaffolded)
-- ✓ **EMAIL-05**: Per-tier email usage limits enforced (starter: 1000/mo, pro: 10000/mo, enterprise: unlimited) — existing
-- [ ] **EMAIL-06**: Resend API configured and emails actually send — code exists, needs API key and testing
-- [ ] **EMAIL-07**: Campaign send targets contacts (not team users) — fix recipient query
-- [ ] **EMAIL-08**: Campaign send uses Resend batch API — prevents timeout on large campaigns
-- [ ] **EMAIL-09**: Email outreach rules functional end-to-end — scaffolded, needs wiring
+## Payments
 
-### Payments
+- [x] **PAY-01**: Pricing page displays 3 tiers (Starter R1,500, Pro R3,500, Enterprise R7,500)
+- [x] **PAY-02**: Checkout flow submits PayFast subscription form
+- [x] **PAY-03**: PayFast ITN webhook validates signature, verifies with server, checks amount
+- [x] **PAY-04**: Successful payment updates organization subscription status and logs transaction
+- [x] **PAY-05**: PayFast webhook uses admin Supabase client for RLS bypass
+- [ ] **PAY-06**: PayFast production passphrase configured -- currently sandbox only
 
-- ✓ **PAY-01**: Pricing page displays 3 tiers (Starter R1,500, Pro R3,500, Enterprise R7,500) — existing
-- ✓ **PAY-02**: Checkout flow submits PayFast subscription form — existing (sandbox)
-- ✓ **PAY-03**: PayFast ITN webhook validates signature, verifies with server, checks amount — existing
-- ✓ **PAY-04**: Successful payment updates organization subscription status and logs transaction — existing
-- [ ] **PAY-05**: PayFast webhook uses admin Supabase client — won't break when RLS enabled
+## Dashboard & Analytics
 
-### Dashboard & Analytics
+- [x] **DASH-01**: Dashboard page with stat cards and charts
+- [x] **DASH-02**: Sidebar navigation with all module links
+- [x] **DASH-03**: Dashboard queries Supabase for real data (with fallback empty states)
+- [x] **DASH-04**: Pipeline chart component with Recharts
 
-- ✓ **DASH-01**: Dashboard page with stat cards and charts — existing (mock data)
-- ✓ **DASH-02**: Sidebar navigation with all module links — existing
-- [ ] **DASH-03**: Dashboard displays real data from Supabase — replace hardcoded values with actual queries
-- [ ] **DASH-04**: Dashboard queries run in parallel via `Promise.all()` — reduce load time
-- [ ] **DASH-05**: Dashboard components show empty states when no data — replace fake users/posts with "No data yet"
+## Landing Page & Public UI
 
-### Landing Page & Public UI
+- [x] **LP-01**: Pricing page with 3 tiers and checkout buttons
+- [x] **LP-02**: Marketing landing page with value proposition, features section, and CTA
+- [x] **LP-03**: Light theme with dark CTA section for contrast
 
-- ✓ **LP-01**: Pricing page with 3 tiers and checkout buttons — existing
-- [ ] **LP-02**: Marketing landing page with value proposition, features section, social proof, and CTA
-- [ ] **LP-03**: Payment success page shows clear next steps — existing but could improve
+## Accommodation Module
 
-### N8N Automation
+- [x] **ACCOM-01**: Properties CRUD with multi-unit support
+- [x] **ACCOM-02**: Units CRUD with amenities, capacity, pricing
+- [x] **ACCOM-03**: Bookings CRUD with status workflow (inquiry -> confirmed -> checked_in -> checked_out)
+- [x] **ACCOM-04**: Guest management with contact details and booking history
+- [x] **ACCOM-05**: Rate management with seasonal pricing and unit-specific rates
+- [x] **ACCOM-06**: Availability calendar with date range queries
+- [x] **ACCOM-07**: Inquiry management with conversion tracking
+- [x] **ACCOM-08**: Booking detail page with guest info, financial summary, status actions
+- [x] **ACCOM-09**: Guest portal with access pack system (booking details for guests)
+- [x] **ACCOM-10**: Channel manager with iCal feed management for Booking.com/Airbnb/VRBO
 
-- [ ] **N8N-01**: N8N workflows activated with Supabase credentials and Anthropic API key
-- [ ] **N8N-02**: Content generation API calls N8N webhook and returns generated content
-- [ ] **N8N-03**: Content queue processor publishes scheduled posts
-- [ ] **N8N-04**: Analytics collector runs daily and stores snapshots
+## Accommodation Automation
 
-### Social Media
+- [x] **AUTO-01**: Event dispatcher (`emitBookingEvent()`) triggers automation on booking status changes
+- [x] **AUTO-02**: Automation rules CRUD with enable/disable toggle
+- [x] **AUTO-03**: Message queue with retry/cancel and multi-channel sending (email, SMS, WhatsApp)
+- [x] **AUTO-04**: Communications log with expandable message rows
+- [x] **AUTO-05**: PayFast link generation for per-booking payments
+- [x] **AUTO-06**: Payment tracking with financial snapshots
+- [x] **AUTO-07**: Telegram ops bot for staff notifications and task assignments
+- [x] **AUTO-08**: 4 AI agents: QuoterAgent, ConciergeAgent, ReviewerAgent, PricerAgent
+- [x] **AUTO-09**: Per-unit cost tracking with stock inventory management
+- [x] **AUTO-10**: Profitability reports with margin calculations
+- [x] **AUTO-11**: Stock items with low/in-stock/overstocked badges and movement tracking
+- [ ] **AUTO-12**: N8N workflows configured and active (17 templates exist, need activation)
+- [ ] **AUTO-13**: Telegram ops bot webhook configured with channel setup
+- [ ] **AUTO-14**: PayFast link generator wired to existing webhook handler
 
-- [ ] **SOCIAL-01**: Facebook/Instagram Graph API connected — can publish posts
-- [ ] **SOCIAL-02**: LinkedIn API connected — can publish posts
-- [ ] **SOCIAL-03**: Social account management UI — connect/disconnect accounts
+## AI & Agents
 
-### Client Provisioning
+- [x] **AI-01**: BaseAgent pattern with session tracking and Claude API integration
+- [x] **AI-02**: LeadQualifierAgent for lead scoring
+- [x] **AI-03**: ProposalGeneratorAgent for content generation
+- [x] **AI-04**: Autopilot UI with agent management
+- [x] **AI-05**: 4 accommodation-specific agents (quoter, concierge, reviewer, pricer)
 
-- [ ] **PROV-01**: Automated Supabase project creation for new client
-- [ ] **PROV-02**: Database schema cloned from template to new client project
-- [ ] **PROV-03**: GitHub repo cloned from template for new client
-- [ ] **PROV-04**: Vercel deployment created and configured for new client
-- [ ] **PROV-05**: N8N webhooks configured for new client organization
+## Content & Social
 
-### Testing
+- [x] **CONTENT-01**: AI content generation via N8N webhook integration
+- [x] **CONTENT-02**: Content queue for scheduled publishing
+- [x] **SOCIAL-01**: Social account management UI scaffolded
+- [ ] **SOCIAL-02**: Facebook/Instagram Graph API connected -- needs OAuth credentials
+- [ ] **SOCIAL-03**: LinkedIn API connected -- needs OAuth credentials
 
-- [ ] **TEST-01**: PayFast signature validation has unit tests with known test vectors
-- [ ] **TEST-02**: Signup flow has integration test verifying user-org linkage
-- [ ] **TEST-03**: CRM API routes have basic CRUD tests
-- [ ] **TEST-04**: Auth middleware has tests for protected/unprotected route behavior
+## Provisioning
+
+- [x] **PROV-01**: 9-step saga orchestrator with rollback support
+- [x] **PROV-02**: Organization row creation in shared DB
+- [x] **PROV-03**: Module activation via tenant_modules table
+- [x] **PROV-04**: DB-backed module registry (module_registry table)
+- [x] **PROV-05**: Provisioning API restricted to platform_admin role
+- [x] **PROV-06**: QA checks validate org records and module activation
+- [ ] **PROV-07**: First end-to-end provisioning test with real client config
+- [ ] **PROV-08**: N8N webhooks configured per client (step exists, needs N8N setup)
+
+## Testing
+
+- [x] **TEST-01**: 241 Vitest tests (unit, integration, component)
+- [x] **TEST-02**: PayFast signature validation tests
+- [x] **TEST-03**: Auth middleware and user/org auto-creation tests
+- [x] **TEST-04**: CRM API route tests
+- [x] **TEST-05**: Dashboard data flow integration tests
+- [x] **TEST-06**: Component render tests (dashboard, CRM, autopilot, sidebar)
+
+## External Integrations
+
+- [x] **EXT-01**: External CRM contacts API with M2M auth
+- [x] **EXT-02**: External CRM companies API with M2M auth
+- [x] **EXT-03**: External email sequence enrollment API
+- [x] **EXT-04**: Scope guard utility for API key permission checking
+- [x] **EXT-05**: Embed route group with social page and CSP headers
+- [x] **EXT-06**: Webhook dispatch wired into CRM contact routes
 
 ---
 
@@ -98,94 +146,24 @@
 
 - Dark mode UI
 - White-label branding for Enterprise tier
-- Bank SMS detection (awaits SMS gateway)
+- WhatsApp Business integration (Meta Cloud API)
 - Voice AI agents
 - Admin panel (manage via Supabase dashboard for now)
 - Advanced ML-driven analytics
 - Mobile native apps (responsive web sufficient)
 - Multi-language support (English only for SA market)
 - CI/CD pipeline (manual Vercel deploys for now)
-- WhatsApp Business integration
 - SEO optimization module
 - Error tracking (Sentry or similar)
-- Database migration versioning
 - Rate limiting on public endpoints
-
----
 
 ## Out of Scope
 
-- Stripe/international payments — PayFast is SA market requirement
-- Direct Claude SDK in Next.js — AI calls go through N8N workflows
-- Custom domains per client — Vercel subdomains sufficient for v1
-- Multi-currency — ZAR only
-- Self-hosted Supabase — using Supabase Cloud
+- Stripe/international payments -- PayFast is SA market requirement
+- Custom domains per client -- Vercel subdomains sufficient for v1
+- Multi-currency -- ZAR only
+- Self-hosted Supabase -- using Supabase Cloud
+- Autonomous sub-agents per client -- deferred until 20+ clients
 
 ---
-
-## Traceability
-
-*Updated by roadmapper — maps each requirement to a phase*
-
-| REQ ID | Phase | Status |
-|--------|-------|--------|
-| SEC-01 | Phase 1 | Pending |
-| SEC-02 | Phase 1 | Pending |
-| SEC-03 | Phase 1 | Pending |
-| SEC-04 | Phase 1 | Pending |
-| SEC-05 | Phase 1 | Pending |
-| SEC-06 | Phase 1 | Pending |
-| SEC-07 | Phase 1 | Pending |
-| SEC-08 | Phase 1 | Pending |
-| SEC-09 | Phase 1 | Pending |
-| AUTH-01 | Phase 1 | Validated |
-| AUTH-02 | Phase 1 | Validated |
-| AUTH-03 | Phase 1 | Validated |
-| AUTH-04 | Phase 1 | Validated |
-| AUTH-05 | Phase 1 | Validated |
-| AUTH-06 | Phase 1 | Validated |
-| CRM-01 | Phase 2 | Validated |
-| CRM-02 | Phase 2 | Validated |
-| CRM-03 | Phase 2 | Validated |
-| CRM-04 | Phase 2 | Validated |
-| EMAIL-01 | Phase 2 | Validated |
-| EMAIL-02 | Phase 2 | Validated |
-| EMAIL-03 | Phase 2 | Validated |
-| EMAIL-04 | Phase 2 | Validated |
-| EMAIL-05 | Phase 2 | Validated |
-| EMAIL-06 | Phase 2 | Pending |
-| EMAIL-07 | Phase 2 | Pending |
-| EMAIL-08 | Phase 2 | Pending |
-| EMAIL-09 | Phase 2 | Pending |
-| PAY-01 | Phase 2 | Validated |
-| PAY-02 | Phase 2 | Validated |
-| PAY-03 | Phase 2 | Validated |
-| PAY-04 | Phase 2 | Validated |
-| PAY-05 | Phase 2 | Pending |
-| DASH-01 | Phase 2 | Validated |
-| DASH-02 | Phase 2 | Validated |
-| DASH-03 | Phase 2 | Pending |
-| DASH-04 | Phase 2 | Pending |
-| DASH-05 | Phase 2 | Pending |
-| LP-01 | Phase 3 | Validated |
-| LP-02 | Phase 3 | Pending |
-| LP-03 | Phase 3 | Pending |
-| N8N-01 | Phase 4 | Pending |
-| N8N-02 | Phase 4 | Pending |
-| N8N-03 | Phase 4 | Pending |
-| N8N-04 | Phase 4 | Pending |
-| SOCIAL-01 | Phase 5 | Pending |
-| SOCIAL-02 | Phase 5 | Pending |
-| SOCIAL-03 | Phase 5 | Pending |
-| PROV-01 | Phase 6 | Pending |
-| PROV-02 | Phase 6 | Pending |
-| PROV-03 | Phase 6 | Pending |
-| PROV-04 | Phase 6 | Pending |
-| PROV-05 | Phase 6 | Pending |
-| TEST-01 | Phase 7 | Pending |
-| TEST-02 | Phase 7 | Pending |
-| TEST-03 | Phase 7 | Pending |
-| TEST-04 | Phase 7 | Pending |
-
----
-*Last updated: 2026-02-02 after roadmap creation*
+*Last updated: 2026-03-13 after Session 36 comprehensive audit*

@@ -2,7 +2,7 @@
 
 ## Overview
 
-DraggonnB OS is a production-deployed multi-tenant B2B operating system for South African SMEs. The v1 roadmap (7 phases) is complete. The platform has been restructured from per-client isolation to shared DB + RLS multi-tenant architecture. A full UI rebrand to the DraggonnB logo identity has been applied.
+DraggonnB OS is a production-deployed multi-tenant B2B operating system for South African SMEs. The v1 roadmap (7 phases), v2 BOS (5 phases), architecture restructure, UI rebrand, and accommodation module (base + automation + management UI) are all complete. Platform has 84 DB tables, 162 API routes, 16+ UI modules, and 241 tests.
 
 ## Completed Work
 
@@ -32,12 +32,26 @@ DraggonnB OS is a production-deployed multi-tenant B2B operating system for Sout
 - Simplified provisioning (org row + modules)
 
 ### UI Rebrand (2026-03-01)
-- Dashboard and CRM pages redesigned (6 pages + pipeline chart component)
-- Brand-crimson/charcoal color palette applied to all pages
+- All dashboard pages redesigned with Brand Crimson/Charcoal palette
 - Sidebar: Lucide icons, logo branding, AI Agents section
-- Header: crimson buttons and focus rings
 - Landing page: dark -> light theme conversion
-- App title: "DraggonnB OS"
+
+### Accommodation Module (2026-03-06 - 2026-03-10)
+- 84 DB tables applied to Supabase (14 migration files)
+- 102 API routes (56 base + 46 automation)
+- 12 UI pages (properties, units, bookings, guests, rates, availability, inquiries, automation, stock, costs, channels, booking detail)
+- 4 AI agents (QuoterAgent, ConciergeAgent, ReviewerAgent, PricerAgent)
+- Event dispatcher + automation rules + message queue
+- Guest portal with access pack system
+- Channel manager (iCal feeds for OTAs)
+- PayFast link generation + payment tracking
+- Telegram ops bot + staff task management
+- Per-unit cost tracking + stock inventory + profitability reports
+
+### Auth Fix (2026-03-13)
+- Rewrote `getUserOrg()` to use `organization_users` junction table
+- Fixed RLS recursion on `organization_users` table
+- Dashboard and CRM pages working again
 
 ## Current Milestone: First Client Go-Live
 
@@ -46,11 +60,12 @@ DraggonnB OS is a production-deployed multi-tenant B2B operating system for Sout
 | Task | Status |
 |------|--------|
 | Save actual logo PNG to public/ | Pending |
-| Verify Vercel build with rebrand | Pending |
-| Test login -> dashboard flow | Pending |
-| Apply accommodation migrations to Supabase | Pending |
+| DB migrations applied to Supabase | Done |
+| Build passing on Vercel | Done |
+| Login -> dashboard flow working | Done |
 | Configure PayFast production passphrase | Pending |
 | Configure Resend API key | Pending |
+| Configure N8N workflows (17 templates) | Pending |
 | First provisioning pipeline test | Pending |
 | End-to-end test: signup -> provision -> dashboard | Pending |
 
@@ -65,10 +80,10 @@ DraggonnB OS is a production-deployed multi-tenant B2B operating system for Sout
 
 ### Milestone: First Hospitality Client
 - Target: Swa-Zulu Safari Lodges (reference client)
-- Apply accommodation migrations
-- Complete accommodation API routes
 - Configure client subdomain
-- Onboarding sequence
+- Run full provisioning pipeline
+- End-to-end test: signup -> provision -> dashboard -> booking flow
+- Configure N8N workflows for accommodation automation
 
 ### Milestone: Scale to 10+ Clients
 - Apply ops dashboard migration (08_ops_dashboard.sql)
@@ -77,4 +92,4 @@ DraggonnB OS is a production-deployed multi-tenant B2B operating system for Sout
 - WhatsApp integration via Meta Cloud API + N8N
 
 ---
-*Last updated: 2026-03-01*
+*Last updated: 2026-03-13 after Session 36 comprehensive audit*

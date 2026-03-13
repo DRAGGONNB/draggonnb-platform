@@ -2,18 +2,18 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-01)
+See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Complete multi-tenant B2B operating system for South African SMEs. Shared Supabase DB with RLS-based tenant isolation, wildcard subdomain routing, DB-backed module gating, automated provisioning.
-**Current focus:** Accommodation module at ~97% implementation. 54 DB tables live (39 base + 15 automation/ops), 94+ API routes, 11 UI pages, 4 AI agents, 7 new libraries. Full 5-phase AI Automation & Operations Layer complete. All management UI pages built. Build passing.
+**Current stats:** 84 DB tables live, 162 API routes, 16+ UI modules, 4 AI agents, 17 N8N workflow templates, 241 tests. Build passing.
 
 ## Current Position
 
-Phase: Accommodation UI & Integration — IN PROGRESS
-Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Accommodation base + Automation Layer + Management UI all complete.
+Phase: Accommodation UI & Integration — COMPLETE
+Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Architecture restructure complete. Accommodation base + Automation Layer + Management UI all complete.
 Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app
-Last activity: 2026-03-10 -- Session 34: Management UI pages + security fixes
-Progress: 54 DB tables + RLS live in Supabase. 94+ API routes. 11 UI pages. 4 AI agents. 7 new libraries. TypeScript build passing (0 source errors).
+Last activity: 2026-03-13 -- Session 36: getUserOrg auth fix, planning files audit
+Progress: 84 DB tables + RLS live in Supabase. 162 API routes. 16+ UI modules. 4 AI agents. 17 N8N templates. 241 tests. TypeScript build passing (0 source errors).
 
 ## Accumulated Context
 
@@ -26,11 +26,12 @@ Progress: 54 DB tables + RLS live in Supabase. 94+ API routes. 11 UI pages. 4 AI
 - Error catalogue as JSON knowledge base (.planning/errors/catalogue.json)
 - No autonomous sub-agents per client until 20+ clients
 - Ops dashboard tables designed but deferred until 5+ clients
-- Brand identity: reverted to original dark charcoal theme with blue/purple accents
-- Sidebar: emoji icons with blue active states, branded "DraggonnB OS"
+- Brand identity: light theme with Brand Crimson (HSL 348) + Charcoal (HSL 220) palette
+- Sidebar: Lucide icons with crimson active states, branded "DraggonnB OS"
 - AI Agents surfaced as dedicated sidebar section (Autopilot, AI Workflows, Agent Settings)
 - Protected pages use inline error states (never redirect to /login) to prevent redirect loops
-- `getUserOrg()` uses admin client fallback for RLS bypass + auto-creates missing user records
+- Auth uses `organization_users` junction table (not a `users` table) to link auth users to organizations
+- `getUserOrg()` queries junction table with admin client fallback, auto-creates missing records
 - Supabase service role key rotated (2026-03-05) after accidental exposure
 - Dev server on Windows: use `node node_modules/next/dist/bin/next dev` (npm/npx ENOENT on this machine)
 
@@ -42,11 +43,9 @@ Progress: 54 DB tables + RLS live in Supabase. 94+ API routes. 11 UI pages. 4 AI
 - Configure Facebook/LinkedIn OAuth credentials
 - Configure Resend API key for email delivery
 - First end-to-end provisioning test with real client config
-- Accommodation: Guest portal with access pack system
-- Accommodation: Channel manager integration (Booking.com, Airbnb sync)
-- Accommodation: Configure N8N workflows (17 planned -- queue processor, reminders, daily brief, etc.)
-- Accommodation: Wire PayFast link generator to existing webhook handler
-- Accommodation: Set up Telegram ops bot webhook + channel configuration
+- Configure N8N workflows (17 planned -- queue processor, reminders, daily brief, etc.)
+- Wire PayFast link generator to existing webhook handler
+- Set up Telegram ops bot webhook + channel configuration
 
 ### Blockers/Concerns
 
@@ -57,51 +56,40 @@ Progress: 54 DB tables + RLS live in Supabase. 94+ API routes. 11 UI pages. 4 AI
 
 ## Session Continuity
 
-Last session: 2026-03-10 (Session 34)
-Stopped at: All management UI pages built (automation, stock, costs). Security fixes applied. Pushed to GitHub.
-Resume with: Guest portal with access pack system. Channel manager integration. N8N workflow configuration. First provisioning pipeline test.
+Last session: 2026-03-13 (Session 36)
+Stopped at: getUserOrg auth rewrite committed. All planning files audited and updated.
+Resume with: N8N workflow configuration. First provisioning pipeline test. Wire PayFast link generator. Telegram ops bot setup.
 
-### Session 34 Summary (2026-03-10)
+### Session 36 Summary (2026-03-13)
 **What was accomplished:**
-1. Committed 33 uncommitted files from previous session (guest portal, channel manager, API keys, N8N workflows, ops APIs)
-2. Code review found 5 issues -- fixed 3:
-   - Bug: Added try/catch to guest-portal/access/route.ts (was the only route missing one)
-   - Security: Removed unsafe default secret in guest-portal.ts, added production warning
-   - Minor: Fixed silent error swallowing in api-key-auth.ts fire-and-forget
-3. Built 3 new UI pages (2,274 lines total):
-   - **Automation Hub** (`/accommodation/automation`): 3 tabs -- automation rules CRUD with toggle, message queue with retry/cancel, comms log with expandable rows
-   - **Stock & Inventory** (`/accommodation/stock`): 2 tabs -- stock items with low/in-stock/overstocked badges, stock movements with type color coding
-   - **Cost Tracking & Profitability** (`/accommodation/costs`): 3 tabs -- cost summary with breakdown bars, unit costs grouped by unit, profitability with margin color coding
-4. Added 3 sidebar navigation links (Automation, Stock, Costs)
-5. Fixed TS error: Supabase PromiseLike lacks .catch() -- wrapped in Promise.resolve()
+1. Fixed **Dashboard and CRM "Unable to load" errors**: Rewrote `getUserOrg()` in `lib/auth/get-user-org.ts` to use `organization_users` junction table instead of legacy `users` table
+2. Fixed **RLS recursion** on `organization_users`: The RLS policy was calling `get_user_org_id()` which queried `organization_users`, causing infinite recursion. Fixed by using `auth.uid()` directly in the policy
+3. Inserted **missing data rows**: Created `organization_users` junction record and `user_profiles` record via SQL for Chris's auth user
+4. **Comprehensive planning files audit**: Explored full codebase (600+ files), updated all .planning/*.md files with accurate current data
+5. Committed getUserOrg fix as `33e0376`
 6. TypeScript build: 0 source errors
-7. Fixed `.claude/launch.json` for Windows (node + next dist path)
 
-**Git commits this session:**
-- `1483c34` feat: add guest portal, channel manager, API keys, N8N workflows, and ops APIs
-- `cde7e20` fix: harden guest portal and API key auth security
-- `8732275` feat: add automation, stock, and cost tracking UI pages
-
+**Files modified:** lib/auth/get-user-org.ts, all .planning/*.md files
 **Errors encountered:**
-- TS2339: PromiseLike .catch -- fixed with Promise.resolve() wrapper (ERR-016)
-- preview_start ENOENT on Windows for npm/npx -- fixed with node direct path
+- RLS recursion on organization_users (fixed via SQL policy update)
+- getUserOrg returning null due to querying non-existent `users` table (fixed by rewriting to use organization_users)
 
 **What to do next session:**
-1. Guest portal with access pack system
-2. Channel manager integration prep (Booking.com, Airbnb sync)
-3. Configure N8N workflows (17 planned)
-4. First provisioning pipeline test with real client config
+1. Configure N8N workflows (17 planned)
+2. First provisioning pipeline test with real client config
+3. Wire PayFast link generator to existing webhook handler
+4. Set up Telegram ops bot webhook + channel configuration
 
-### Session 33 Summary (2026-03-06)
-Complete 5-phase AI Automation & Operations Layer delivered: 15 new DB tables, 46 new API routes, 7 new library files, 4 AI agent classes. TypeScript build passing. Commits: `178f792`.
+### Session 35 Summary (2026-03-10)
+Built Booking Detail page and Channel Manager UI. Integrated guest portal URL into event dispatcher. Fixed provisioning API security and QA checks. 0 source errors.
 
-### Session 31 Summary (2026-03-05)
-Verified Vercel production deployment. Smoke tested full booking flow end-to-end via SQL. Discovered `nights` is a generated column. Fixed `.claude/launch.json`.
+### Session 34 Summary (2026-03-10)
+Committed 33 files from previous session. Fixed 3 code review issues. Built Automation Hub, Stock & Inventory, Cost Tracking UI pages. 0 source errors.
 
 ### Previous Sessions
-- Session 30 (2026-03-05): Built 6 remaining accommodation APIs (deposit-policies, email-templates, comms-timeline). 48 API routes total.
-- Session 29 (2026-03-05): Applied DB migrations to Supabase (39 tables). Built 30 API routes + 4 frontend pages. Merged upstream changes.
-- Session 28 (2026-03-05): Fixed 4 live bugs (signup, dashboard blank, CRM redirect loop). Added 59 tests. Rotated Supabase key.
-- Session 27 (2026-03-03): Reverted light theme, restored dark charcoal + blue/purple palette.
-- Session 26 (2026-03-01): Dashboard & CRM redesign (6 pages). Brand color rebrand. Sidebar + header rewrite.
-- Sessions 1-25: All 7 v1 phases built + v2 BOS evolution + architecture restructure.
+- Session 33 (2026-03-06): Complete 5-phase AI Automation & Operations Layer (15 tables, 46 routes, 7 libs, 4 agents).
+- Session 31 (2026-03-05): Verified production deployment. Smoke tested booking flow.
+- Session 30 (2026-03-05): Built 6 remaining accommodation APIs. 48 routes total.
+- Session 29 (2026-03-05): Applied DB migrations to Supabase (39 tables). Built 30 routes + 4 pages.
+- Session 28 (2026-03-05): Fixed 4 live bugs. Added 59 tests. Rotated Supabase key.
+- Sessions 1-27: All 7 v1 phases + v2 BOS + architecture restructure + brand redesign.
