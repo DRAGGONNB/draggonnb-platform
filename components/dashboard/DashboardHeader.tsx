@@ -22,6 +22,7 @@ const breadcrumbMap: Record<string, string[]> = {
   '/crm/companies': ['CRM', 'Companies'],
   '/email': ['Email Hub', 'Overview'],
   '/content-generator': ['Content Studio', 'Overview'],
+  '/admin/integrations': ['Admin', 'Integrations'],
 }
 
 export function DashboardHeader() {

@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Complete multi-tenant B2B operating system for South African SMEs. Shared Supabase DB with RLS-based tenant isolation, wildcard subdomain routing, DB-backed module gating, automated provisioning.
-**Current stats:** 84 DB tables live, 162 API routes, 16+ UI modules, 4 AI agents, 17 N8N workflow templates, 241 tests. Build passing.
+**Current stats:** 84 DB tables live, 166 API routes, 17+ UI modules, 4 AI agents, 17 N8N workflow templates, 241 tests. Build passing.
 
 ## Current Position
 
 Phase: Accommodation UI & Integration — COMPLETE
 Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Architecture restructure complete. Accommodation base + Automation Layer + Management UI all complete.
 Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app
-Last activity: 2026-03-13 -- Session 37: planning files committed and pushed to GitHub
-Progress: 84 DB tables + RLS live in Supabase. 162 API routes. 16+ UI modules. 4 AI agents. 17 N8N templates. 241 tests. TypeScript build passing (0 source errors).
+Last activity: 2026-03-13 -- Session 38: CRM bug fix + Integration Admin Panel
+Progress: 84 DB tables + RLS live in Supabase. 166 API routes. 17+ UI modules. 4 AI agents. 17 N8N templates. 241 tests. TypeScript build passing (0 source errors).
 
 ## Accumulated Context
 
@@ -34,6 +34,9 @@ Progress: 84 DB tables + RLS live in Supabase. 162 API routes. 16+ UI modules. 4
 - `getUserOrg()` queries junction table with admin client fallback, auto-creates missing records
 - Supabase service role key rotated (2026-03-05) after accidental exposure
 - Dev server on Windows: use `node node_modules/next/dist/bin/next dev` (npm/npx ENOENT on this machine)
+- `getOrgId()` lightweight helper in `lib/auth/get-user-org.ts` for API routes needing only org_id (avoids full getUserOrg overhead)
+- API keys stored as SHA-256 hashes with `dgb_` prefix format; webhook secrets use `whsec_` prefix
+- Integration Admin Panel at `/admin/integrations` for vertical SaaS client connectivity
 
 ### Pending Todos
 
@@ -56,25 +59,41 @@ Progress: 84 DB tables + RLS live in Supabase. 162 API routes. 16+ UI modules. 4
 
 ## Session Continuity
 
-Last session: 2026-03-13 (Session 37)
-Stopped at: All planning files committed and pushed to GitHub. Git state clean. All work up to date.
-Resume with: N8N workflow configuration. First provisioning pipeline test. Wire PayFast link generator. Telegram ops bot setup.
+Last session: 2026-03-13 (Session 38)
+Stopped at: CRM bug fix + Integration Admin Panel complete. All changes committed and pushed.
+Resume with: N8N workflow configuration. First provisioning pipeline test. Wire PayFast link generator. Telegram ops bot setup. Deploy Integration Admin Panel to production.
 
-### Session 37 Summary (2026-03-13)
+### Session 38 Summary (2026-03-13)
 **What was accomplished:**
-1. Committed all planning file updates + session 35 UI work as `137dba5` (13 files, 1401 insertions, 536 deletions)
-2. Pushed 8 commits to GitHub (branch now up to date with origin/main)
+1. Fixed CRM bug: all 6 CRM API routes queried non-existent `users` table -- replaced with `getOrgId()` helper querying `organization_users`
+2. Added `getOrgId()` lightweight helper to `lib/auth/get-user-org.ts`
+3. Built Integration Admin Panel (`/admin/integrations`) with API Keys and Webhooks tabs
+4. Created 4 new admin API routes: `api/admin/api-keys/` (GET, POST), `api/admin/api-keys/[id]/` (PATCH, DELETE), `api/admin/webhooks/` (GET, POST), `api/admin/webhooks/[id]/` (GET, PATCH, DELETE)
+5. Added Admin > Integrations entry to Sidebar + DashboardHeader breadcrumbs
+6. Verified: TypeScript clean (0 source errors), UI renders correctly
 
-**Git commits this session:**
-- `137dba5` docs: comprehensive planning files audit + session 35 UI commits
+**New files:**
+- `app/(dashboard)/admin/integrations/page.tsx` -- Integration Admin Panel UI
+- `app/api/admin/api-keys/route.ts` -- API key list + generate
+- `app/api/admin/api-keys/[id]/route.ts` -- API key update + revoke
+- `app/api/admin/webhooks/route.ts` -- Webhook list + create
+- `app/api/admin/webhooks/[id]/route.ts` -- Webhook get + update + delete
 
-**Uncommitted changes:** None -- all work committed and pushed.
+**Modified files:**
+- `lib/auth/get-user-org.ts` -- added `getOrgId()` helper
+- 6 CRM API routes -- fixed `users` table references to `organization_users`
+- `components/dashboard/Sidebar.tsx` -- added Admin section
+- `components/dashboard/DashboardHeader.tsx` -- added integrations breadcrumb
 
 **What to do next session:**
-1. Configure N8N workflows (17 planned)
-2. First provisioning pipeline test with real client config
-3. Wire PayFast link generator to existing webhook handler
-4. Set up Telegram ops bot webhook + channel configuration
+1. Deploy to production (Vercel)
+2. Configure N8N workflows (17 planned)
+3. First provisioning pipeline test with real client config
+4. Wire PayFast link generator to existing webhook handler
+5. Set up Telegram ops bot webhook + channel configuration
+
+### Session 37 Summary (2026-03-13)
+Committed all planning file updates + session 35 UI work as `137dba5`. Pushed 8 commits to GitHub.
 
 ### Session 36 Summary (2026-03-13)
 getUserOrg auth fix (`33e0376`): rewrote to use `organization_users` junction table. Fixed RLS recursion. Comprehensive planning files audit across all .planning/*.md files. 0 source errors.

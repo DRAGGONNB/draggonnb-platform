@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getOrgId } from '@/lib/auth/get-user-org'
 
 // GET - List deals
 export async function GET(request: Request) {
@@ -11,17 +12,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
-    const organizationId = userData.organization_id
+    // organizationId already set above
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
     const stage = searchParams.get('stage')
@@ -73,13 +69,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
@@ -93,7 +84,7 @@ export async function POST(request: Request) {
     const { data: deal, error } = await supabase
       .from('deals')
       .insert({
-        organization_id: userData.organization_id,
+        organization_id: organizationId,
         name,
         value: value || 0,
         stage: stage || 'lead',

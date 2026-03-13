@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getOrgId } from '@/lib/auth/get-user-org'
 
 // GET - Get single deal
 export async function GET(
@@ -15,13 +16,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
@@ -29,7 +25,7 @@ export async function GET(
       .from('deals')
       .select('*, contacts(first_name, last_name, email)')
       .eq('id', id)
-      .eq('organization_id', userData.organization_id)
+      .eq('organization_id', organizationId)
       .single()
 
     if (error || !deal) {
@@ -58,13 +54,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
@@ -77,7 +68,7 @@ export async function PUT(
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .eq('organization_id', userData.organization_id)
+      .eq('organization_id', organizationId)
       .select()
       .single()
 
@@ -112,13 +103,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
@@ -126,7 +112,7 @@ export async function DELETE(
       .from('deals')
       .delete()
       .eq('id', id)
-      .eq('organization_id', userData.organization_id)
+      .eq('organization_id', organizationId)
 
     if (error) {
       console.error('Error deleting deal:', error)

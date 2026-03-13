@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getOrgId } from '@/lib/auth/get-user-org'
 import { dispatchWebhooksForOrg } from '@/lib/webhooks/dispatcher'
 
 // GET - List contacts
@@ -7,24 +8,15 @@ export async function GET(request: Request) {
   try {
     const supabase = await createClient()
 
-    // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's organization
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
-
-    const organizationId = userData.organization_id
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status')
@@ -74,36 +66,27 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient()
 
-    // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's organization
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
     const body = await request.json()
     const { first_name, last_name, email, phone, company, job_title, status, notes, tags } = body
 
-    // Validate required fields
     if (!first_name || !email) {
       return NextResponse.json({ error: 'First name and email are required' }, { status: 400 })
     }
 
-    // Create contact
     const { data: contact, error } = await supabase
       .from('contacts')
       .insert({
-        organization_id: userData.organization_id,
+        organization_id: organizationId,
         first_name,
         last_name: last_name || '',
         email,
@@ -129,7 +112,7 @@ export async function POST(request: Request) {
     // After successful insert, dispatch webhook (fire-and-forget)
     // Skip if this contact was created via sync (has sync_origin) to prevent echo loops
     if (contact && !body.sync_origin) {
-      dispatchWebhooksForOrg(userData.organization_id, 'contact.created', {
+      dispatchWebhooksForOrg(organizationId, 'contact.created', {
         id: contact.id,
         first_name: contact.first_name,
         last_name: contact.last_name,

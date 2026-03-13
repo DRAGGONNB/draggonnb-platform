@@ -1,5 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+/**
+ * Lightweight org lookup for API routes that already have an authenticated user.
+ * Queries the organization_users junction table (the correct auth pattern).
+ */
+export async function getOrgId(supabase: SupabaseClient, userId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('organization_users')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .limit(1)
+    .single()
+  return data?.organization_id ?? null
+}
 
 export interface UserOrg {
   userId: string

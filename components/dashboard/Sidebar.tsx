@@ -49,6 +49,12 @@ const navigation = [
     ],
   },
   {
+    section: 'Admin',
+    items: [
+      { name: 'Integrations', href: '/admin/integrations', icon: '🔌', badge: 'NEW', badgeColor: 'bg-gradient-to-r from-green-500 to-green-600' },
+    ],
+  },
+  {
     section: 'Settings',
     items: [
       { name: 'Social Accounts', href: '/settings/social', icon: '🔗', badge: null },

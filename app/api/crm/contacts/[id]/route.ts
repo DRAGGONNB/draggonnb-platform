@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getOrgId } from '@/lib/auth/get-user-org'
 import { dispatchWebhooksForOrg } from '@/lib/webhooks/dispatcher'
 
 // GET - Get single contact
@@ -16,13 +17,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
@@ -30,7 +26,7 @@ export async function GET(
       .from('contacts')
       .select('*')
       .eq('id', id)
-      .eq('organization_id', userData.organization_id)
+      .eq('organization_id', organizationId)
       .single()
 
     if (error || !contact) {
@@ -59,13 +55,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
@@ -87,7 +78,7 @@ export async function PUT(
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .eq('organization_id', userData.organization_id)
+      .eq('organization_id', organizationId)
       .select()
       .single()
 
@@ -103,7 +94,7 @@ export async function PUT(
     // After successful update, dispatch webhook (fire-and-forget)
     // Skip if this update came via sync (has sync_origin) to prevent echo loops
     if (contact && !body.sync_origin) {
-      dispatchWebhooksForOrg(userData.organization_id, 'contact.updated', {
+      dispatchWebhooksForOrg(organizationId, 'contact.updated', {
         id: contact.id,
         first_name: contact.first_name,
         last_name: contact.last_name,
@@ -135,13 +126,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData?.organization_id) {
+    const organizationId = await getOrgId(supabase, user.id)
+    if (!organizationId) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 400 })
     }
 
@@ -149,7 +135,7 @@ export async function DELETE(
       .from('contacts')
       .delete()
       .eq('id', id)
-      .eq('organization_id', userData.organization_id)
+      .eq('organization_id', organizationId)
 
     if (error) {
       console.error('Error deleting contact:', error)
