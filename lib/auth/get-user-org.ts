@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
 export interface UserOrg {
   userId: string
@@ -21,24 +20,9 @@ export interface GetUserOrgResult {
   error: string | null
 }
 
-const USER_SELECT = `
-  id,
-  email,
-  full_name,
-  organization_id,
-  role,
-  organizations (
-    id,
-    name,
-    subscription_tier,
-    subscription_status
-  )
-`
-
 /**
- * Auto-create a user record from auth metadata when the users table row is missing.
+ * Auto-create user records (organization_users + user_profiles) when missing.
  * Uses admin client to bypass RLS (user is already authenticated via auth.getUser).
- * This handles users who signed up before the signup flow was fixed to link org.
  */
 async function ensureUserRecord(
   authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> }
@@ -54,102 +38,91 @@ async function ensureUserRecord(
   const email = authUser.email || ''
   const fullName = (authUser.user_metadata?.full_name as string) || email.split('@')[0]
 
-  // Check if user owns an organization (created during signup but user row wasn't linked)
-  const { data: ownedOrg, error: orgError } = await admin
-    .from('organizations')
-    .select('id')
-    .eq('owner_id', authUser.id)
+  // Check if user already has an organization_users row
+  const { data: existingMembership } = await admin
+    .from('organization_users')
+    .select('organization_id')
+    .eq('user_id', authUser.id)
+    .eq('is_active', true)
     .limit(1)
     .single()
 
-  if (!ownedOrg) {
-    console.error('ensureUserRecord: no org with owner_id =', authUser.id, orgError)
+  if (existingMembership?.organization_id) {
+    // Ensure user_profiles row exists
+    await admin
+      .from('user_profiles')
+      .upsert({ id: authUser.id, full_name: fullName, updated_at: new Date().toISOString() }, { onConflict: 'id' })
 
-    // Fallback: check if user has any org membership via existing users row
-    const { data: existingUser } = await admin
-      .from('users')
-      .select('organization_id')
-      .eq('id', authUser.id)
-      .single()
-
-    if (existingUser?.organization_id) {
-      return { organizationId: existingUser.organization_id, error: null }
-    }
-
-    // Last resort: create a default organization for the user
-    const { data: newOrg, error: newOrgError } = await admin
-      .from('organizations')
-      .insert({
-        name: fullName + "'s Organization",
-        subscription_tier: 'starter',
-        subscription_status: 'trial',
-        owner_id: authUser.id,
-        created_at: new Date().toISOString(),
-      })
-      .select('id')
-      .single()
-
-    if (newOrgError || !newOrg) {
-      console.error('ensureUserRecord: failed to create fallback org:', newOrgError)
-      return { organizationId: null, error: 'No organization found for user' }
-    }
-
-    // Create user record linked to the new org
-    const { error: insertError } = await admin.from('users').insert({
-      id: authUser.id,
-      email,
-      full_name: fullName,
-      organization_id: newOrg.id,
-      role: 'admin',
-      created_at: new Date().toISOString(),
-    })
-
-    if (insertError) {
-      console.error('ensureUserRecord: failed to create user record:', insertError)
-      return { organizationId: null, error: 'Failed to create user record' }
-    }
-
-    return { organizationId: newOrg.id, error: null }
+    return { organizationId: existingMembership.organization_id, error: null }
   }
 
-  // Check if user record already exists (might have been created without org link)
-  const { data: existingUser } = await admin
-    .from('users')
+  // No membership found — check if there's an org where account_manager_id matches
+  const { data: managedOrg } = await admin
+    .from('organizations')
     .select('id')
-    .eq('id', authUser.id)
+    .eq('account_manager_id', authUser.id)
+    .limit(1)
     .single()
 
-  if (existingUser) {
-    // User row exists but org join failed -- update the organization_id
-    await admin
-      .from('users')
-      .update({ organization_id: ownedOrg.id })
-      .eq('id', authUser.id)
+  if (managedOrg) {
+    // Link user to the org they manage
+    await admin.from('organization_users').insert({
+      organization_id: managedOrg.id,
+      user_id: authUser.id,
+      role: 'admin',
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
 
-    return { organizationId: ownedOrg.id, error: null }
+    await admin
+      .from('user_profiles')
+      .upsert({ id: authUser.id, full_name: fullName, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+
+    return { organizationId: managedOrg.id, error: null }
   }
 
-  // Create the missing user record linked to their organization
-  const { error: insertError } = await admin.from('users').insert({
-    id: authUser.id,
-    email,
-    full_name: fullName,
-    organization_id: ownedOrg.id,
+  // Last resort: create a default organization for the user
+  const { data: newOrg, error: newOrgError } = await admin
+    .from('organizations')
+    .insert({
+      name: fullName + "'s Organization",
+      subscription_tier: 'starter',
+      subscription_status: 'trial',
+      account_manager_id: authUser.id,
+      created_at: new Date().toISOString(),
+    })
+    .select('id')
+    .single()
+
+  if (newOrgError || !newOrg) {
+    console.error('ensureUserRecord: failed to create fallback org:', newOrgError)
+    return { organizationId: null, error: 'No organization found for user' }
+  }
+
+  // Create organization_users membership
+  await admin.from('organization_users').insert({
+    organization_id: newOrg.id,
+    user_id: authUser.id,
     role: 'admin',
+    is_active: true,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   })
 
-  if (insertError) {
-    console.error('ensureUserRecord: failed to insert user record:', insertError)
-    return { organizationId: null, error: 'Failed to create user record' }
-  }
+  // Create user_profiles row
+  await admin
+    .from('user_profiles')
+    .upsert({ id: authUser.id, full_name: fullName, updated_at: new Date().toISOString() }, { onConflict: 'id' })
 
-  return { organizationId: ownedOrg.id, error: null }
+  return { organizationId: newOrg.id, error: null }
 }
 
 /**
  * Get the current authenticated user and their organization.
  * This function should be used in server components and API routes.
+ *
+ * Schema: organization_users (junction) + user_profiles + organizations
  */
 export async function getUserOrg(): Promise<GetUserOrgResult> {
   try {
@@ -162,37 +135,60 @@ export async function getUserOrg(): Promise<GetUserOrgResult> {
       return { data: null, error: 'Not authenticated' }
     }
 
-    // Get user record with organization
-    // Try with user's client first, fall back to admin if RLS blocks
-    let { data: userData, error: userError } = await supabase
-      .from('users')
-      .select(USER_SELECT)
-      .eq('id', user.id)
+    // Query organization_users with joined organization data
+    // Try user client first, fall back to admin if RLS blocks
+    type Membership = {
+      organization_id: string
+      role: string
+      organizations: { id: string; name: string; subscription_tier: string; subscription_status: string } | { id: string; name: string; subscription_tier: string; subscription_status: string }[] | null
+    }
+    let membership: Membership | null = null
+
+    const MEMBERSHIP_SELECT = `
+      organization_id,
+      role,
+      organizations (
+        id,
+        name,
+        subscription_tier,
+        subscription_status
+      )
+    `
+
+    const { data: memberData, error: memberError } = await supabase
+      .from('organization_users')
+      .select(MEMBERSHIP_SELECT)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .limit(1)
       .single()
 
-    // If user query failed (RLS or missing row), try admin client
-    if (userError || !userData) {
-      console.warn('User query failed with user client, trying admin. Error:', userError?.message, 'User:', user.id)
+    if (memberData && !memberError) {
+      membership = memberData as unknown as Membership
+    }
 
+    // Fall back to admin client if RLS blocked
+    if (!membership) {
       try {
         const admin = createAdminClient()
-        const adminFetch = await admin
-          .from('users')
-          .select(USER_SELECT)
-          .eq('id', user.id)
+        const { data: adminData } = await admin
+          .from('organization_users')
+          .select(MEMBERSHIP_SELECT)
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .limit(1)
           .single()
 
-        if (adminFetch.data) {
-          userData = adminFetch.data
-          userError = null
+        if (adminData) {
+          membership = adminData as unknown as Membership
         }
       } catch {
         // Admin client not available, continue with auto-create path
       }
     }
 
-    // Auto-create user record if still missing
-    if ((userError || !userData) && user.email) {
+    // Auto-create if still missing
+    if (!membership && user.email) {
       console.warn('User record missing for authenticated user, attempting auto-create:', user.id)
       const autoResult = await ensureUserRecord(user)
 
@@ -201,55 +197,73 @@ export async function getUserOrg(): Promise<GetUserOrgResult> {
         return { data: null, error: autoResult.error }
       }
 
-      // Re-fetch with admin client (bypasses RLS)
+      // Re-fetch with admin client
       try {
         const admin = createAdminClient()
-        const refetch = await admin
-          .from('users')
-          .select(USER_SELECT)
-          .eq('id', user.id)
+        const { data: refetchData } = await admin
+          .from('organization_users')
+          .select(MEMBERSHIP_SELECT)
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .limit(1)
           .single()
 
-        userData = refetch.data
-        userError = refetch.error
+        if (refetchData) {
+          membership = refetchData as unknown as Membership
+        }
       } catch {
         // Fall back to user client
-        const refetch = await supabase
-          .from('users')
-          .select(USER_SELECT)
-          .eq('id', user.id)
+        const { data: refetchData } = await supabase
+          .from('organization_users')
+          .select(MEMBERSHIP_SELECT)
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .limit(1)
           .single()
 
-        userData = refetch.data
-        userError = refetch.error
+        if (refetchData) {
+          membership = refetchData as unknown as Membership
+        }
       }
     }
 
-    if (userError || !userData) {
-      console.error('Error fetching user data:', userError)
+    if (!membership) {
       return { data: null, error: 'User not found' }
     }
 
-    if (!userData.organization_id) {
-      return { data: null, error: 'User has no organization' }
-    }
-
-    // Handle organizations as either an object or array
-    const org = Array.isArray(userData.organizations)
-      ? userData.organizations[0]
-      : userData.organizations
+    // Get organization data (handle Supabase join returning array or object)
+    const org = Array.isArray(membership.organizations)
+      ? membership.organizations[0]
+      : membership.organizations
 
     if (!org) {
       return { data: null, error: 'Organization not found' }
     }
 
+    // Get user profile for display name
+    let fullName = user.user_metadata?.full_name as string || user.email?.split('@')[0] || ''
+    try {
+      const admin = createAdminClient()
+      const { data: profile } = await admin
+        .from('user_profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.full_name) {
+        fullName = profile.full_name
+      }
+    } catch {
+      // Use auth metadata fallback
+    }
+
     return {
       data: {
-        userId: userData.id,
-        email: userData.email,
-        fullName: userData.full_name,
-        organizationId: userData.organization_id,
-        role: userData.role,
+        userId: user.id,
+        email: user.email || '',
+        fullName,
+        organizationId: membership.organization_id,
+        role: membership.role,
         organization: {
           id: org.id,
           name: org.name,
