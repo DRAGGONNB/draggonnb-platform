@@ -87,19 +87,30 @@ export async function createOrganization(
       };
     }
 
-    // Create users table entry
-    const { error: userError } = await supabase
-      .from('users')
+    // Create organization_users junction entry (links auth user to org)
+    const { error: orgUserError } = await supabase
+      .from('organization_users')
       .insert({
-        id: authUser.user.id,
-        email: job.orgEmail,
-        full_name: `${job.clientName} Admin`,
-        role: 'admin',
         organization_id: org.id,
+        user_id: authUser.user.id,
+        role: 'admin',
+        is_active: true,
       });
 
-    if (userError) {
-      console.warn(`Warning: users table insert failed (may already exist): ${userError.message}`);
+    if (orgUserError) {
+      console.warn(`Warning: organization_users insert failed (may already exist): ${orgUserError.message}`);
+    }
+
+    // Create user_profiles entry (display info)
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .insert({
+        id: authUser.user.id,
+        full_name: `${job.clientName} Admin`,
+      });
+
+    if (profileError) {
+      console.warn(`Warning: user_profiles insert failed (may already exist): ${profileError.message}`);
     }
 
     // Create usage metrics row

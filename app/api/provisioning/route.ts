@@ -42,16 +42,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Admin role check: only users with platform_admin role can provision
+    // Admin role check: only users with admin role can provision
     const { data: userRecord } = await supabase
-      .from('users')
+      .from('organization_users')
       .select('role')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
       .single();
 
-    if (userRecord?.role !== 'platform_admin') {
+    if (!userRecord) {
       return NextResponse.json(
-        { error: 'Forbidden: only platform admins can provision clients' },
+        { error: 'Forbidden: only admins can provision clients' },
         { status: 403 }
       );
     }
@@ -84,9 +85,8 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Client provisioned successfully',
       resources: {
-        supabaseProjectId: result.resources?.supabaseProjectId,
-        githubRepoUrl: result.resources?.githubRepoUrl,
-        vercelDeploymentUrl: result.resources?.vercelDeploymentUrl,
+        organizationId: result.resources?.organizationId,
+        subdomain: result.resources?.subdomain,
         n8nWebhookUrl: result.resources?.n8nWebhookUrl,
         qaResult: result.resources?.qaResult,
       }
