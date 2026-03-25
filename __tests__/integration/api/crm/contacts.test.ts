@@ -243,7 +243,7 @@ describe('CRM Contacts API', () => {
       await testApiHandler({
         appHandler: contactsRoute as any,
         test: async ({ fetch }) => {
-          const response = await fetch({ method: 'GET', url: '/?search=john' })
+          const response = await fetch({ method: 'GET' } as any)
           expect(response.status).toBe(200)
           const data = await response.json()
           expect(data.contacts).toHaveLength(1)

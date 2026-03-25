@@ -5,9 +5,9 @@ import { vi } from 'vitest'
  */
 export interface MockSupabaseClient {
   auth: {
-    getUser: ReturnType<typeof vi.fn>
+    getUser: any
   }
-  from: ReturnType<typeof vi.fn>
+  from: any
 }
 
 /**

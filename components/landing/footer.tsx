@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 const footerLinks = {
@@ -57,16 +58,16 @@ const socialLinks = [
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-white/10 bg-brand-charcoal-900 px-4 py-16 sm:px-6 lg:px-8">
+    <footer className="border-t border-[#A8A9AD]/20 bg-[#1A1B1E] px-4 py-16 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            <Link href="/" className="mb-4 inline-flex items-baseline gap-1.5">
-              <span className="font-display text-xl font-bold gradient-text-brand">DraggonnB</span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-charcoal-400">CRMM</span>
+            <Link href="/" className="mb-4 inline-flex items-center gap-2">
+              <Image src="/logo.png" alt="DraggonnB" width={32} height={32} className="rounded-lg" />
+              <span className="font-display text-xl font-bold text-white">DRAGGON<span className="text-[#6B1420]">NB</span></span>
             </Link>
-            <p className="mb-6 max-w-xs text-sm leading-relaxed text-brand-charcoal-400">
+            <p className="mb-6 max-w-xs text-sm leading-relaxed text-[#A8A9AD]">
               The all-in-one CRM and marketing platform built for South African businesses.
               Manage clients, automate campaigns, and grow revenue from a single platform.
             </p>
@@ -77,7 +78,7 @@ export function LandingFooter() {
                 <a
                   key={social.label}
                   href={social.href}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-brand-charcoal-800/60 text-brand-charcoal-400 transition-all hover:border-brand-crimson-500/30 hover:bg-brand-crimson-500/10 hover:text-white"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-[#A8A9AD] transition-all hover:border-[#6B1420]/30 hover:bg-[#6B1420]/10 hover:text-white"
                   aria-label={social.label}
                 >
                   {social.icon}
@@ -95,7 +96,7 @@ export function LandingFooter() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-brand-charcoal-400 transition-colors hover:text-brand-charcoal-200"
+                      className="text-sm text-[#A8A9AD] transition-colors hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -107,11 +108,11 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
-          <p className="text-xs text-brand-charcoal-500">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#A8A9AD]/20 pt-8 sm:flex-row">
+          <p className="text-xs text-[#A8A9AD]">
             &copy; {new Date().getFullYear()} DraggonnB. All rights reserved.
           </p>
-          <p className="text-xs text-brand-charcoal-500">
+          <p className="text-xs text-[#A8A9AD]">
             Powered by <span className="gradient-text-brand font-semibold">DraggonnB</span> -- Built in South Africa, for South Africa.
           </p>
         </div>

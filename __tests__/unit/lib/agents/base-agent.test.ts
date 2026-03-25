@@ -66,7 +66,7 @@ describe('BaseAgent', () => {
     class TestAgent extends BaseAgent {
       constructor() {
         super({
-          agentType: 'test',
+          agentType: 'lead_qualifier',
           systemPrompt: 'You are a test agent.',
         })
       }
@@ -128,7 +128,7 @@ describe('BaseAgent', () => {
 
     class TestAgent extends BaseAgent {
       constructor() {
-        super({ agentType: 'test', systemPrompt: 'Test' })
+        super({ agentType: 'lead_qualifier', systemPrompt: 'Test' })
       }
       protected parseResponse(response: string): unknown {
         return JSON.parse(response)
@@ -191,7 +191,7 @@ describe('BaseAgent', () => {
 
     class TestAgent extends BaseAgent {
       constructor() {
-        super({ agentType: 'test', systemPrompt: 'Test' })
+        super({ agentType: 'lead_qualifier', systemPrompt: 'Test' })
       }
       protected parseResponse(response: string): unknown {
         return JSON.parse(response)
@@ -239,7 +239,7 @@ describe('BaseAgent', () => {
 
     class TestAgent extends BaseAgent {
       constructor() {
-        super({ agentType: 'test', systemPrompt: 'Test' })
+        super({ agentType: 'lead_qualifier', systemPrompt: 'Test' })
       }
       protected parseResponse(response: string): unknown {
         return JSON.parse(response)

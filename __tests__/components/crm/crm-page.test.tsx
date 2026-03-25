@@ -33,7 +33,7 @@ function createMockSupabase(tableResponses: Record<string, unknown>) {
   return {
     from: vi.fn((table: string) => {
       const response = tableResponses[table] || { data: null, count: 0 }
-      const self = {
+      const self: Record<string, any> = {
         select: vi.fn(() => self),
         eq: vi.fn(() => self),
         order: vi.fn(() => self),

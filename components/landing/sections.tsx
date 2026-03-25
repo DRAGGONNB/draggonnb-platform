@@ -27,15 +27,14 @@ import { Button } from '@/components/ui/button'
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden px-4 pb-24 pt-32 sm:px-6 sm:pt-40 lg:px-8 lg:pt-48">
+    <section className="relative overflow-hidden bg-[#2D2F33] px-4 pb-24 pt-32 sm:px-6 sm:pt-40 lg:px-8 lg:pt-48">
       {/* Background Effects */}
-      <div className="pointer-events-none absolute inset-0 gradient-mesh-brand opacity-40" />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-brand-crimson-500/15 blur-[140px]" />
-      <div className="pointer-events-none absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-brand-gold-500/10 blur-[120px]" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-[#6B1420]/[0.12] blur-[140px]" />
+      <div className="pointer-events-none absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-[#6B1420]/[0.08] blur-[120px]" />
 
       <div className="relative mx-auto max-w-5xl text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-crimson-400/30 bg-brand-crimson-500/10 px-4 py-1.5 text-sm text-brand-charcoal-100 backdrop-blur-sm">
-          <Zap className="h-4 w-4 text-brand-crimson-400" />
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#6B1420]/30 bg-[#6B1420]/10 px-4 py-1.5 text-sm text-[#A8A9AD]">
+          <Zap className="h-4 w-4 text-[#6B1420]" />
           The CRM and Marketing Platform Built for South Africa
         </div>
 
@@ -44,14 +43,14 @@ export function HeroSection() {
           <span className="gradient-text-brand">Business Growth</span>
         </h1>
 
-        <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-brand-charcoal-200 sm:text-xl">
+        <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-[#A8A9AD] sm:text-xl">
           DraggonnB is the all-in-one CRM, marketing, and automation platform that
           helps South African businesses manage clients, send campaigns, and grow
           revenue -- without the enterprise price tag.
         </p>
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <Button asChild size="lg" className="btn-brand h-13 rounded-xl px-8 text-base">
+          <Button asChild size="lg" className="h-13 rounded-xl bg-gradient-to-r from-[#6B1420] to-[#8B1A2A] px-8 text-base font-semibold text-white hover:from-[#5A1018] hover:to-[#7A1624]">
             <Link href="/qualify">
               Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -61,24 +60,24 @@ export function HeroSection() {
             asChild
             variant="outline"
             size="lg"
-            className="h-13 rounded-xl border-brand-charcoal-400/40 bg-transparent px-8 text-base text-brand-charcoal-100 hover:bg-white/5 hover:text-white"
+            className="h-13 rounded-xl border-[#A8A9AD]/30 bg-transparent px-8 text-base text-white hover:bg-white/5 hover:text-white"
           >
             <a href="#pricing">See Pricing</a>
           </Button>
         </div>
 
         {/* Trust indicators */}
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-brand-charcoal-400">
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-[#A8A9AD]">
           <span className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-500" />
+            <Check className="h-4 w-4 text-[#6B1420]" />
             14-day free trial
           </span>
           <span className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-500" />
+            <Check className="h-4 w-4 text-[#6B1420]" />
             No credit card required
           </span>
           <span className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-500" />
+            <Check className="h-4 w-4 text-[#6B1420]" />
             Pay in Rands
           </span>
         </div>
@@ -97,58 +96,52 @@ const modules = [
     title: 'CRM & Pipeline',
     description:
       'Manage contacts, companies, and deals in one place. Track every interaction and move leads through your sales pipeline with full visibility.',
-    gradient: 'from-brand-crimson-500 to-brand-crimson-700',
   },
   {
     icon: Mail,
     title: 'Email Marketing',
     description:
       'Build campaigns, automate sequences, and track results. Templates, A/B testing, smart segmentation, and deliverability built in.',
-    gradient: 'from-brand-crimson-600 to-brand-crimson-800',
   },
   {
     icon: Share2,
     title: 'Social Media',
     description:
       'Schedule posts, monitor engagement, and manage your social presence across platforms from a single dashboard.',
-    gradient: 'from-brand-crimson-400 to-brand-crimson-600',
   },
   {
     icon: Sparkles,
     title: 'Content Studio',
     description:
       'Generate professional content with AI for social, email, and web. Autopilot mode creates and schedules weekly content for you.',
-    gradient: 'from-brand-gold-500 to-brand-crimson-500',
   },
   {
     icon: Building2,
     title: 'Accommodation',
     description:
       'Purpose-built for lodges, guest houses, and hospitality. Property inventory, guest management, inquiry pipeline, and booking operations.',
-    gradient: 'from-brand-crimson-400 to-brand-gold-500',
   },
   {
     icon: Bot,
     title: 'AI Agents',
     description:
       'Intelligent agents that qualify leads, generate proposals, onboard clients, and run daily operations autonomously -- 24/7.',
-    gradient: 'from-brand-crimson-500 to-brand-charcoal-500',
   },
 ]
 
 export function ModuleShowcaseSection() {
   return (
-    <section id="modules" className="border-t border-white/10 bg-brand-charcoal-800/30 px-4 py-24 sm:px-6 lg:px-8">
+    <section id="modules" className="bg-white px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
             The Platform
           </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold text-[#2D2F33] lg:text-4xl">
             Everything You Need to{' '}
             <span className="gradient-text-brand">Run and Grow</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
+          <p className="mx-auto max-w-2xl text-lg text-[#A8A9AD]">
             Modular by design. Pick the tools your business needs and add more as you scale.
             Every module is AI-enhanced and built for South African operations.
           </p>
@@ -160,15 +153,13 @@ export function ModuleShowcaseSection() {
             return (
               <div
                 key={mod.title}
-                className="group relative rounded-2xl border border-white/10 bg-brand-charcoal-800/60 p-6 transition-all hover-lift hover-glow-brand"
+                className="group relative rounded-2xl border border-[#C0C1C4]/50 bg-white p-6 shadow-md transition-all hover:shadow-lg hover:border-[#6B1420]/30"
               >
-                <div
-                  className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${mod.gradient} shadow-lg`}
-                >
-                  <Icon className="h-6 w-6 text-white" />
+                <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#6B1420]/10">
+                  <Icon className="h-6 w-6 text-[#6B1420]" />
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-white">{mod.title}</h3>
-                <p className="text-sm leading-relaxed text-brand-charcoal-300">{mod.description}</p>
+                <h3 className="mb-2 text-lg font-semibold text-[#2D2F33]">{mod.title}</h3>
+                <p className="text-sm leading-relaxed text-[#A8A9AD]">{mod.description}</p>
               </div>
             )
           })}
@@ -208,17 +199,17 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="px-4 py-24 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="bg-[#F5F5F6] px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
             How It Works
           </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold text-[#2D2F33] lg:text-4xl">
             Three Steps to a{' '}
             <span className="gradient-text-brand">Smarter Business</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
+          <p className="mx-auto max-w-2xl text-lg text-[#A8A9AD]">
             From sign-up to fully operational in as little as 72 hours.
           </p>
         </div>
@@ -231,22 +222,22 @@ export function HowItWorksSection() {
                 {/* Connector line between steps */}
                 {i < steps.length - 1 && (
                   <div className="pointer-events-none absolute right-0 top-12 hidden w-full translate-x-1/2 md:block">
-                    <div className="h-px w-full bg-gradient-to-r from-brand-crimson-500/50 to-transparent" />
+                    <div className="h-px w-full bg-gradient-to-r from-[#C0C1C4] to-transparent" />
                   </div>
                 )}
 
                 <div className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center">
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-brand-crimson-500/20 to-brand-crimson-700/20 blur-xl" />
-                  <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-brand-charcoal-800">
-                    <Icon className="h-8 w-8 text-brand-crimson-400" />
+                  <div className="absolute inset-0 rounded-2xl bg-[#6B1420]/10 blur-xl" />
+                  <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-[#C0C1C4]/50 bg-white shadow-sm">
+                    <Icon className="h-8 w-8 text-[#6B1420]" />
                   </div>
-                  <span className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-crimson-500 to-brand-crimson-700 text-xs font-bold text-white shadow-lg">
+                  <span className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#6B1420] text-xs font-bold text-white shadow-lg">
                     {step.number}
                   </span>
                 </div>
 
-                <h3 className="mb-3 text-xl font-semibold text-white">{step.title}</h3>
-                <p className="text-sm leading-relaxed text-brand-charcoal-300">{step.description}</p>
+                <h3 className="mb-3 text-xl font-semibold text-[#2D2F33]">{step.title}</h3>
+                <p className="text-sm leading-relaxed text-[#A8A9AD]">{step.description}</p>
               </div>
             )
           })}
@@ -318,17 +309,17 @@ function AnimatedCounter({
 
 export function SocialProofSection() {
   return (
-    <section className="border-y border-white/10 bg-brand-charcoal-800/50 px-4 py-20 sm:px-6 lg:px-8">
+    <section className="bg-[#2D2F33] px-4 py-20 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-14 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
             Results That Matter
           </p>
           <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
             Built to Deliver{' '}
             <span className="gradient-text-brand">Real Impact</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
+          <p className="mx-auto max-w-2xl text-lg text-[#A8A9AD]">
             Our platform helps South African businesses automate operations and focus on growth.
           </p>
         </div>
@@ -339,15 +330,15 @@ export function SocialProofSection() {
             return (
               <div
                 key={stat.label}
-                className="group rounded-2xl border border-white/10 bg-brand-charcoal-800/60 p-6 text-center transition-all hover-lift hover-glow-brand"
+                className="group rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-sm transition-all hover-lift hover-glow-brand"
               >
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-crimson-500/15">
-                  <Icon className="h-6 w-6 text-brand-crimson-400" />
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#6B1420]/15">
+                  <Icon className="h-6 w-6 text-[#6B1420]" />
                 </div>
                 <p className="mb-1 text-3xl font-bold text-white sm:text-4xl">
                   <AnimatedCounter target={stat.value} suffix={stat.suffix} />
                 </p>
-                <p className="text-sm text-brand-charcoal-300">{stat.label}</p>
+                <p className="text-sm text-[#A8A9AD]">{stat.label}</p>
               </div>
             )
           })}
@@ -410,17 +401,17 @@ const tiers = [
 
 export function PricingPreviewSection() {
   return (
-    <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-8">
+    <section id="pricing" className="bg-[#F5F5F6] px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-crimson-400">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
             Pricing
           </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold text-[#2D2F33] lg:text-4xl">
             Transparent Pricing,{' '}
             <span className="gradient-text-brand">Powerful Platform</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-brand-charcoal-300">
+          <p className="mx-auto max-w-2xl text-lg text-[#A8A9AD]">
             All plans include a 14-day free trial. No credit card required. Billed in South African Rands.
           </p>
         </div>
@@ -431,30 +422,30 @@ export function PricingPreviewSection() {
               key={tier.id}
               className={`relative flex flex-col rounded-2xl border p-8 transition-all hover-lift ${
                 tier.popular
-                  ? 'border-brand-crimson-500/50 bg-brand-charcoal-800 shadow-lg shadow-brand-crimson-500/10'
-                  : 'border-white/10 bg-brand-charcoal-800/60'
+                  ? 'border-[#6B1420] bg-white shadow-lg shadow-[#6B1420]/10 ring-2 ring-[#6B1420]'
+                  : 'border-[#C0C1C4]/50 bg-white shadow-md'
               }`}
             >
               {tier.popular && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="inline-block rounded-full bg-gradient-to-r from-brand-crimson-600 to-brand-crimson-500 px-4 py-1 text-xs font-semibold text-white shadow-lg shadow-brand-crimson-500/25">
+                  <span className="inline-block rounded-full bg-[#6B1420] px-4 py-1 text-xs font-semibold text-white shadow-lg shadow-[#6B1420]/25">
                     Most Popular
                   </span>
                 </div>
               )}
 
-              <h3 className="mb-1 text-xl font-semibold text-white">{tier.name}</h3>
-              <p className="mb-5 text-sm text-brand-charcoal-300">{tier.description}</p>
+              <h3 className="mb-1 text-xl font-semibold text-[#2D2F33]">{tier.name}</h3>
+              <p className="mb-5 text-sm text-[#A8A9AD]">{tier.description}</p>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-white">{tier.price}</span>
-                <span className="ml-1 text-brand-charcoal-300">/month</span>
+                <span className="text-4xl font-bold text-[#2D2F33]">{tier.price}</span>
+                <span className="ml-1 text-[#A8A9AD]">/month</span>
               </div>
 
               <ul className="mb-8 flex-1 space-y-3">
                 {tier.highlights.map((item) => (
-                  <li key={item} className="flex items-center gap-2.5 text-sm text-brand-charcoal-200">
-                    <Check className="h-4 w-4 shrink-0 text-green-400" />
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-[#A8A9AD]">
+                    <Check className="h-4 w-4 shrink-0 text-[#6B1420]" />
                     {item}
                   </li>
                 ))}
@@ -467,7 +458,7 @@ export function PricingPreviewSection() {
                 className={`w-full rounded-xl ${
                   tier.popular
                     ? 'btn-brand'
-                    : 'border-brand-charcoal-500 bg-transparent text-brand-charcoal-100 hover:bg-white/5 hover:text-white'
+                    : 'border-[#C0C1C4] bg-transparent text-[#2D2F33] hover:bg-[#F5F5F6] hover:text-[#2D2F33]'
                 }`}
               >
                 <Link href={`/qualify?tier=${tier.id}`}>Get Started</Link>
@@ -476,9 +467,9 @@ export function PricingPreviewSection() {
           ))}
         </div>
 
-        <p className="mt-10 text-center text-sm text-brand-charcoal-400">
+        <p className="mt-10 text-center text-sm text-[#A8A9AD]">
           Need a custom solution?{' '}
-          <Link href="/pricing" className="text-brand-crimson-400 underline-offset-4 hover:underline">
+          <Link href="/pricing" className="text-[#6B1420] underline-offset-4 hover:underline">
             View full feature comparison
           </Link>
         </p>
@@ -493,22 +484,21 @@ export function PricingPreviewSection() {
 
 export function CTASection() {
   return (
-    <section className="relative overflow-hidden px-4 py-24 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 gradient-mesh-brand opacity-30" />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-crimson-600/15 blur-[100px]" />
+    <section className="relative overflow-hidden bg-gradient-to-r from-[#6B1420] to-[#4A0E16] px-4 py-24 text-white sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.07] blur-[100px]" />
 
       <div className="relative mx-auto max-w-3xl text-center">
         <h2 className="mb-5 font-display text-3xl font-bold text-white lg:text-5xl">
           Ready to Automate{' '}
-          <span className="gradient-text-brand">Your Growth?</span>
+          <span className="text-brand-gold-300">Your Growth?</span>
         </h2>
-        <p className="mx-auto mb-10 max-w-xl text-lg text-brand-charcoal-300">
+        <p className="mx-auto mb-10 max-w-xl text-lg text-white/80">
           Join South African businesses that use DraggonnB to manage clients,
           automate marketing, and grow revenue. Start your free trial today.
         </p>
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <Button asChild size="lg" className="btn-brand h-13 rounded-xl px-10 text-base">
+          <Button asChild size="lg" className="h-13 rounded-xl bg-white px-10 text-base font-semibold text-[#6B1420] hover:bg-white/90">
             <Link href="/qualify">
               Get Started Free
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -518,23 +508,23 @@ export function CTASection() {
             asChild
             variant="outline"
             size="lg"
-            className="h-13 rounded-xl border-brand-charcoal-400/40 bg-transparent px-8 text-base text-brand-charcoal-100 hover:bg-white/5 hover:text-white"
+            className="h-13 rounded-xl border-white/30 bg-transparent px-8 text-base text-white hover:bg-white/10 hover:text-white"
           >
             <Link href="/pricing">View Pricing</Link>
           </Button>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-brand-charcoal-400">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-white/70">
           <span className="flex items-center gap-1.5">
-            <Check className="h-4 w-4 text-green-500" />
+            <Check className="h-4 w-4 text-white" />
             14-day free trial
           </span>
           <span className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4 text-brand-crimson-400" />
+            <Clock className="h-4 w-4 text-brand-gold-300" />
             72-hour setup
           </span>
           <span className="flex items-center gap-1.5">
-            <BarChart3 className="h-4 w-4 text-brand-gold-400" />
+            <BarChart3 className="h-4 w-4 text-brand-gold-300" />
             No lock-in contracts
           </span>
         </div>

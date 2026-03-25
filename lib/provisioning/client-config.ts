@@ -5,6 +5,10 @@ export interface ClientModules {
   content_studio: boolean;
   accommodation: boolean;
   ai_agents: boolean;
+  analytics: boolean;
+  restaurant: boolean;
+  events: boolean;
+  security_ops: boolean;
 }
 
 export interface ClientBranding {
@@ -49,6 +53,10 @@ const TIER_DEFAULTS: Record<Tier, ClientModules> = {
     content_studio: false,
     accommodation: false,
     ai_agents: false,
+    analytics: true,
+    restaurant: false,
+    events: false,
+    security_ops: false,
   },
   growth: {
     crm: true,
@@ -57,6 +65,10 @@ const TIER_DEFAULTS: Record<Tier, ClientModules> = {
     content_studio: true,
     accommodation: false,
     ai_agents: false,
+    analytics: true,
+    restaurant: false,
+    events: false,
+    security_ops: false,
   },
   scale: {
     crm: true,
@@ -65,6 +77,10 @@ const TIER_DEFAULTS: Record<Tier, ClientModules> = {
     content_studio: true,
     accommodation: true,
     ai_agents: true,
+    analytics: true,
+    restaurant: false,
+    events: false,
+    security_ops: false,
   },
 };
 

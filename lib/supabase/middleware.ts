@@ -30,6 +30,12 @@ const MODULE_ROUTE_MAP: Record<string, string> = {
   '/api/autopilot': 'ai_agents',
   '/analytics': 'analytics',
   '/api/analytics': 'analytics',
+  '/restaurant': 'restaurant',
+  '/api/restaurant': 'restaurant',
+  '/events': 'events',
+  '/api/events': 'events',
+  '/security': 'security_ops',
+  '/api/security': 'security_ops',
 }
 
 // Hostnames that are NOT subdomains (the platform itself)

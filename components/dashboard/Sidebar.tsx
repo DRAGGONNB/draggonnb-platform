@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils/cn'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -51,6 +52,10 @@ const navigation = [
   {
     section: 'Admin',
     items: [
+      { name: 'Business Suite', href: '/admin/suite', icon: '📊', badge: null },
+      { name: 'Clients', href: '/admin/clients', icon: '👥', badge: null },
+      { name: 'Modules', href: '/admin/modules', icon: '📦', badge: null },
+      { name: 'Pricing Matrix', href: '/admin/pricing', icon: '💳', badge: null },
       { name: 'Integrations', href: '/admin/integrations', icon: '🔌', badge: 'NEW', badgeColor: 'bg-gradient-to-r from-green-500 to-green-600' },
     ],
   },
@@ -99,9 +104,10 @@ export function Sidebar({ usageStats }: SidebarProps) {
       <div className="flex h-full flex-col overflow-y-auto py-6">
         {/* Logo */}
         <div className="mb-8 px-6">
-          <div className="bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-base font-bold text-transparent">
-            🚀 DraggonnB OS
-          </div>
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="DraggonnB" width={32} height={32} className="rounded-lg" />
+            <span className="text-base font-bold text-brand-charcoal-900">DRAGGON<span className="text-brand-crimson-500">NB</span> <span className="text-xs font-medium text-brand-charcoal-400">OS</span></span>
+          </Link>
         </div>
 
         {/* Navigation */}
