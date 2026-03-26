@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Sparkles, Share2, Loader2, Copy, Check, CalendarPlus } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Sparkles, Share2, Loader2, Copy, Check, CalendarPlus, Send, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,7 +9,29 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { SocialGenerationInput, SocialGenerationOutput, SocialPlatformOutput } from '@/lib/content-studio/types'
+
+interface SocialAccountInfo {
+  id: string
+  platform: string
+  platform_username: string | null
+  platform_display_name: string | null
+  page_name: string | null
+  status: string
+}
+
+interface PublishedInfo {
+  platform: string
+  accountName: string
+  timestamp: string
+}
 
 const PLATFORMS = [
   { value: 'linkedin' as const, label: 'LinkedIn', icon: '💼' },
@@ -34,6 +56,9 @@ export default function SocialContentPage() {
   const [activeTab, setActiveTab] = useState('linkedin')
   const [copiedIdx, setCopiedIdx] = useState<string | null>(null)
   const [queuedIdx, setQueuedIdx] = useState<Set<string>>(new Set())
+  const [accounts, setAccounts] = useState<Record<string, SocialAccountInfo[]>>({})
+  const [publishingIdx, setPublishingIdx] = useState<Set<string>>(new Set())
+  const [publishedIdx, setPublishedIdx] = useState<Map<string, PublishedInfo>>(new Map())
 
   const goals = [
     { value: 'awareness', label: 'Brand Awareness' },
@@ -107,6 +132,63 @@ export default function SocialContentPage() {
     await navigator.clipboard.writeText(text)
     setCopiedIdx(key)
     setTimeout(() => setCopiedIdx(null), 2000)
+  }
+
+  // Fetch connected social accounts on mount
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const res = await fetch('/api/social/accounts')
+        if (!res.ok) return
+        const data = await res.json()
+        const grouped: Record<string, SocialAccountInfo[]> = {}
+        for (const acct of (data.accounts || []) as SocialAccountInfo[]) {
+          if (acct.status !== 'active') continue
+          if (!grouped[acct.platform]) grouped[acct.platform] = []
+          grouped[acct.platform].push(acct)
+        }
+        setAccounts(grouped)
+      } catch {
+        // Silent fail -- publish button will show "Connect" fallback
+      }
+    }
+    fetchAccounts()
+  }, [])
+
+  const handlePublish = async (platform: string, content: string, accountId: string, variantKey: string) => {
+    setPublishingIdx(prev => new Set(prev).add(variantKey))
+    setError(null)
+    try {
+      const res = await fetch(`/api/social/publish/${platform}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, account_id: accountId }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Publish failed')
+      }
+      // Find account name for display
+      const acct = accounts[platform]?.find(a => a.id === accountId)
+      const accountName = acct?.page_name || acct?.platform_display_name || acct?.platform_username || platform
+      setPublishedIdx(prev => {
+        const next = new Map(prev)
+        next.set(variantKey, {
+          platform,
+          accountName,
+          timestamp: new Date().toLocaleTimeString(),
+        })
+        return next
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to publish')
+    } finally {
+      setPublishingIdx(prev => {
+        const next = new Set(prev)
+        next.delete(variantKey)
+        return next
+      })
+    }
   }
 
   const saveToQueue = async (content: string, platform: string, key: string) => {
@@ -312,18 +394,30 @@ export default function SocialContentPage() {
 
                   {result.platforms.map((p: SocialPlatformOutput) => (
                     <TabsContent key={p.platform} value={p.platform} className="space-y-4 mt-4">
-                      {p.variants.map((variant, idx) => (
-                        <div key={idx} className="space-y-2">
+                      {p.variants.map((variant, idx) => {
+                        const variantKey = `${p.platform}-${idx}`
+                        const isPublishing = publishingIdx.has(variantKey)
+                        const published = publishedIdx.get(variantKey)
+                        const platformAccounts = accounts[p.platform] || []
+                        const platformInfo = PLATFORMS.find(pl => pl.value === p.platform)
+
+                        return (
+                        <div key={idx} className="space-y-2 relative">
+                          {published && (
+                            <Badge variant="default" className="absolute -top-2 -right-2 bg-green-600 text-white z-10">
+                              <Check className="h-3 w-3 mr-1" /> Published
+                            </Badge>
+                          )}
                           <div className="flex items-center justify-between">
                             <Label>Variant {idx + 1}</Label>
                             <div className="flex gap-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => copyToClipboard(variant, `${p.platform}-${idx}`)}
+                                onClick={() => copyToClipboard(variant, variantKey)}
                                 title="Copy to clipboard"
                               >
-                                {copiedIdx === `${p.platform}-${idx}` ? (
+                                {copiedIdx === variantKey ? (
                                   <Check className="h-4 w-4 text-green-500" />
                                 ) : (
                                   <Copy className="h-4 w-4" />
@@ -332,21 +426,80 @@ export default function SocialContentPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => saveToQueue(variant, p.platform, `${p.platform}-${idx}`)}
-                                disabled={queuedIdx.has(`${p.platform}-${idx}`)}
+                                onClick={() => saveToQueue(variant, p.platform, variantKey)}
+                                disabled={queuedIdx.has(variantKey)}
                                 title="Save to content queue"
                               >
-                                {queuedIdx.has(`${p.platform}-${idx}`) ? (
+                                {queuedIdx.has(variantKey) ? (
                                   <Check className="h-4 w-4 text-green-500" />
                                 ) : (
                                   <CalendarPlus className="h-4 w-4" />
                                 )}
                               </Button>
+                              {published ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled
+                                  title={`Published to ${published.accountName} at ${published.timestamp}`}
+                                  className="text-green-600"
+                                >
+                                  <Check className="h-4 w-4 mr-1" />
+                                  <span className="text-xs">Published</span>
+                                </Button>
+                              ) : platformAccounts.length > 0 ? (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      disabled={isPublishing}
+                                      title="Publish now"
+                                      className="bg-[#6B1420] hover:bg-[#6B1420]/90 text-white"
+                                    >
+                                      {isPublishing ? (
+                                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                      ) : (
+                                        <Send className="h-4 w-4 mr-1" />
+                                      )}
+                                      <span className="text-xs">Publish Now</span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    {platformAccounts.map((acct) => (
+                                      <DropdownMenuItem
+                                        key={acct.id}
+                                        onClick={() => handlePublish(p.platform, variant, acct.id, variantKey)}
+                                      >
+                                        <span className="mr-2">{platformInfo?.icon}</span>
+                                        {acct.page_name || acct.platform_display_name || acct.platform_username || 'Account'}
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  asChild
+                                  title={`Connect ${platformInfo?.label || p.platform}`}
+                                >
+                                  <a href="/settings/social">
+                                    <ExternalLink className="h-4 w-4 mr-1" />
+                                    <span className="text-xs">Connect {platformInfo?.label || p.platform}</span>
+                                  </a>
+                                </Button>
+                              )}
                             </div>
                           </div>
                           <Textarea value={variant} rows={4} readOnly className="font-mono text-sm" />
+                          {published && (
+                            <p className="text-xs text-green-600">
+                              Published to {published.accountName} at {published.timestamp}
+                            </p>
+                          )}
                         </div>
-                      ))}
+                        )
+                      })}
 
                       {p.hashtags.length > 0 && (
                         <div className="space-y-2">
