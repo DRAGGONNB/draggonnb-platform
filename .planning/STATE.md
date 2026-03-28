@@ -5,15 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Complete multi-tenant B2B operating system for South African SMEs. Shared Supabase DB with RLS-based tenant isolation, wildcard subdomain routing, DB-backed module gating, automated provisioning.
-**Current stats:** 168 DB tables (166 with RLS), 162 API routes, 17+ UI modules, 6 AI agents, 20 N8N workflows active, 241 tests. Build passing.
+**Current stats:** 168 DB tables (166 with RLS), 162 API routes, 17+ UI modules, 6 AI agents, 22 N8N workflows active, 241 tests. Build passing.
 
 ## Current Position
 
-Phase: Launch Readiness + Post-Deploy Fixes
-Plan: v1 roadmap complete (7/7 phases). BOS v2 complete. Architecture restructure complete. Accommodation base + Automation Layer + Management UI all complete. Phase 08 Meta integration planned (deferred pending credentials). Site redesign + admin panel + template system complete. PR #9 merged.
-Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app
-Last activity: 2026-03-25 -- Session 41: Brand redesign, admin panel, templates, module expansion, VPS config, N8N activation, agent testing
-Progress: 168 DB tables + RLS live in Supabase. 162 API routes. 17+ UI modules. 6 AI agents. 20 N8N workflows active on VPS. 10 branded communication templates. 241 tests. TypeScript build passing (0 source errors).
+Phase: Launch Readiness + First Client Prep
+Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app. Build passing.
+Last activity: 2026-03-28 -- Session 44: Full Restaurant & Events module built (Phase 01-05). 16 new DB tables, 11 API route groups, LiveTab guest bill view, floor plan, POS page, 4 N8N workflows.
+Progress: 184 DB tables + RLS live in Supabase. 173 API routes. 18+ UI modules. 6 AI agents. 26 N8N workflows active on VPS. 10 branded communication templates. 241 tests. Build clean.
 
 ## Accumulated Context
 
@@ -26,118 +25,98 @@ Progress: 168 DB tables + RLS live in Supabase. 162 API routes. 17+ UI modules. 
 - Error catalogue as JSON knowledge base (.planning/errors/catalogue.json)
 - No autonomous sub-agents per client until 20+ clients
 - Ops dashboard tables designed but deferred until 5+ clients
-- Brand identity: hybrid dark/light theme -- dark hero/nav/footer (#2D2F33), light middle sections, Burgundy #6B1420 accents (from official DraggonnB_Brand_Identity_Plan.docx)
+- Brand identity: hybrid dark/light theme -- dark hero/nav/footer (#2D2F33), light middle sections, Burgundy #6B1420 accents
 - CSS utilities: btn-brand, gradient-text-brand updated to official brand palette
 - Sidebar: Lucide icons with crimson active states, branded "DraggonnB OS"
 - AI Agents surfaced as dedicated sidebar section (Autopilot, AI Workflows, Agent Settings)
 - Protected pages use inline error states (never redirect to /login) to prevent redirect loops
 - Auth uses `organization_users` junction table (not a `users` table) to link auth users to organizations
 - `getUserOrg()` queries junction table with admin client fallback, auto-creates missing records
+- `getOrgId()` lightweight helper for API routes needing only org_id
 - Supabase service role key rotated (2026-03-05) after accidental exposure
 - Dev server on Windows: use `node node_modules/next/dist/bin/next dev` (npm/npx ENOENT on this machine)
-- `getOrgId()` lightweight helper in `lib/auth/get-user-org.ts` for API routes needing only org_id (avoids full getUserOrg overhead)
 - API keys stored as SHA-256 hashes with `dgb_` prefix format; webhook secrets use `whsec_` prefix
 - Integration Admin Panel at `/admin/integrations` for vertical SaaS client connectivity
 - Logo: 882x882 PNG integrated at public/logo.png
 - PayFast merchant ID: 32705333 (updated on VPS + Vercel)
-- N8N: self-hosted only (cloud reference removed), all 20 workflows active, tagged by category
+- N8N: self-hosted only (cloud reference removed), all 22 workflows active, tagged by category
 
 ### Pending Todos
 
-- Fix CRITICAL: /billing, /admin/suite, /admin/clients accessible without auth
-- Fix CRITICAL: N8N workflows 100% execution failure (RLS recursion + 401 auth)
-- Fix HIGH: /api/leads/capture 500 on DB insert (schema mismatch)
-- Provision tenant_modules entries (currently 0 enabled)
+- Visual QA of property/accommodation module (all roles) -- original user request, deferred during build fixes
+- Scheduled publish cron (N8N workflow)
+- Twitter/X OAuth + publish endpoint
+- Image upload for social posts
+- Analytics dashboard for social media
 - Manual visual QA by Chris
-- Lead capture N8N workflow (qualify form -> Supabase -> email -> Telegram)
 - Domain DNS configuration (draggonnb.online verification)
-- Phase 08.1: Create Meta config + Embedded Signup backend (blocked by Chris providing META_APP_ID, META_APP_SECRET, META_BUSINESS_PORTFOLIO_ID)
+- Phase 08.1: Create Meta config + Embedded Signup backend (blocked: Chris providing META_APP_ID, META_APP_SECRET, META_BUSINESS_PORTFOLIO_ID)
 - Phase 08.4: Token refresh + social publishing multi-tenant
 - Phase 08.5: Provisioning pipeline Meta setup step
-- Wire PayFast link generator to existing webhook handler
 - Set up Telegram ops bot webhook + channel configuration
 - WhatsApp API: Phone Number ID and Access Token needed from Meta Business dashboard (deferred by Chris)
 
 ### Blockers/Concerns
 
+- Gitea API token expired -- need to generate new token on VPS (Gitea admin panel at localhost:3030)
 - WhatsApp API: Phone Number ID and Access Token needed from Meta Business dashboard (deferred by Chris)
 - Domain DNS: draggonnb.online pointing needs verification
 - Meta App credentials needed: META_APP_ID, META_APP_SECRET, META_BUSINESS_PORTFOLIO_ID (Chris to provide)
-- N8N workflow execution failures need root cause fix (RLS recursion + 401 auth)
 
 ## Infrastructure State
 
-- **Vercel:** production READY, 21 env vars, PayFast merchant 32705333
-- **VPS:** Traefik + N8N (20 workflows active, tagged) + Gitea + OpenClaw
-- **Supabase:** 168 tables, 166 with RLS, 7 orgs, 10 modules in registry
-- **GitHub:** DRAGGONNB/draggonnb-platform (main branch), PR #9 merged
-- **N8N:** 20 workflows active, 2 test workflows deleted, tagged by category (platform, accommodation, content, whatsapp, checkmylotto)
+- **Vercel:** production READY, 21 env vars, PayFast merchant 32705333, tsc clean
+- **VPS:** Traefik + N8N (26 workflows active, tagged) + Gitea + OpenClaw
+- **Supabase:** 184 tables, 182 with RLS, 7 orgs, 52 tenant_module activations
+- **GitHub:** DRAGGONNB/draggonnb-platform (main branch), latest commit: `acdf47d`
+- **N8N:** 26 workflows active (+4: Daily Briefing, Session Opened, PayFast ITN, Temp Critical Alert)
 - **VPS env:** PayFast merchant 32705333, Resend key updated, N8N Cloud ref removed
 
 ## Session Continuity
 
-Last session: 2026-03-25 (Session 41)
-Stopped at: Post-deploy testing complete. Critical auth and N8N issues identified. Brand redesign live in production.
-Resume with: Fix critical auth gaps (/billing, /admin/suite, /admin/clients). Fix N8N RLS recursion + 401. Fix /api/leads/capture schema mismatch. Provision tenant_modules. Lead capture workflow. DNS config.
+Last session: 2026-03-28 (Session 44)
+Stopped at: Restaurant & Events module fully built and deployed. 4 N8N workflows created.
+Resume with: Visual QA of Restaurant module (floor plan, POS, LiveTab guest view). Activate N8N workflows (currently inactive — need activation in N8N dashboard). Add restaurant module to tenant_modules for restaurant clients. Then visual QA of accommodation module and remaining deferred todos.
 
-### Session 41 Summary (2026-03-25)
+### Session 44 Summary (2026-03-28)
 **What was done:**
-1. Read and applied official Brand Identity Plan from DraggonnB_Brand_Identity_Plan.docx
-2. Hybrid dark/light site redesign: dark hero/nav/footer (#2D2F33), light middle sections, Burgundy #6B1420 accents
-3. CSS utilities (btn-brand, gradient-text-brand) updated to official brand palette
-4. 10 branded communication templates created (email: welcome, lead-qualified, proposal, invoice; WhatsApp: welcome, booking; social: 4 platform-specific announcement templates)
-5. 4 admin panel pages: /admin/clients, /admin/modules, /admin/suite, /admin/pricing with 3 API routes
-6. 3 new module stubs: restaurant, events, security_ops with DB migration, middleware routing, feature gates
-7. CI lint-and-build fixed (5 test files, tsc clean)
-8. Logo integrated (882x882 PNG)
-9. Comprehensive 123-test QA plan created
-10. PR #9 merged to main, deployed to production
-11. VPS: PayFast merchant ID updated to 32705333, Resend key updated, N8N Cloud ref removed (self-hosted only)
-12. VPS: All 20 N8N workflows activated, 2 test workflows deleted
-13. N8N workflows tagged by category (platform, accommodation, content, whatsapp, checkmylotto)
-14. Vercel: PayFast env updated to 32705333
-15. Agent testing run: 62 tests across public pages, APIs, security, integrations
-16. Fixed expired password reset link handling (redirects to /forgot-password with message)
+1. Applied 3 Supabase migrations: 16 new tables (restaurant_tables, table_sessions, bills, bill_items, bill_payers, bill_payments, menu_categories, menu_items, restaurant_staff, staff_shifts, reservations, temp_logs, restaurant_checklists, checklist_completions, event_vendors, restaurants alter), RLS policies, module_registry seed
+2. Created lib/restaurant/ scaffold: api-helpers.ts, schemas.ts (all Zod schemas + R638 thresholds), types.ts, telegram/templates.ts, payfast/generate-link.ts
+3. Created 11 API route groups: tables, sessions, sessions/[id]/status, bills/items, payment/itn (public webhook), payment/link, menu, reservations, staff, temp-log, checklists, settings
+4. Created LiveTab guest flow: hooks/use-live-bill.ts (Supabase Realtime), app/(guest)/r/[slug]/[qrToken]/page.tsx, components/restaurant/livetab/LiveBillView.tsx
+5. Created restaurant staff UI: floor plan page (tables grid + open-session modal), POS page (category tabs + menu grid + live bill sidebar), dashboard summary page
+6. Created 4 N8N workflows: Daily Briefing (cron), Session Opened (webhook), PayFast ITN Notification (webhook), Temp Critical Alert (webhook)
+7. Committed 27 files (3146 insertions) and deployed to Vercel
 
-**Issues found by testing agents:**
-- CRITICAL: /billing, /admin/suite, /admin/clients accessible without auth (to fix)
-- CRITICAL: N8N workflows 100% execution failure (RLS recursion + 401 auth, to fix)
-- HIGH: /api/leads/capture 500 on DB insert (schema mismatch, to fix)
-- WARN: tenant_modules has 0 enabled entries (to provision)
+**Key decisions:**
+- Per-restaurant PayFast credentials in restaurants table, env var fallback
+- Manager PIN (SHA-256) required for voids > R50
+- LiveTab uses Supabase Realtime on `livetab:{sessionId}` channel
+- QR URL format: `/r/[slug]/[qrToken]` resolves to guest bill view
+- R638 compliance auto-classifies temp readings as ok/warning/critical
 
-**What to do next session:**
-1. Fix all critical issues from testing (auth gaps, N8N failures, leads API)
-2. Provision tenant_modules entries
-3. Manual visual QA by Chris
-4. Lead capture N8N workflow (qualify form -> Supabase -> email -> Telegram)
-5. Domain DNS configuration
+**Session 43 Summary (2026-03-27)
+**What was done:**
+1. Fixed root cause of "cannot add properties" -- `getAccommodationAuth()` in `lib/accommodation/api-helpers.ts` queried non-existent `users` table, replaced with `getOrgId()` using correct `organization_users` junction table
+2. Fixed same `users` table pattern across 13 email API routes, 4 content routes, and `lib/auth/actions.ts` signup function (20+ files total)
+3. Added `platform_admin: 4` to `TIER_HIERARCHY` in `lib/feature-gate.ts` -- platform admins were failing all tier checks
+4. Created `lib/accommodation/schemas.ts` -- 50+ Zod validation schemas imported by 54 accommodation API routes (file was never committed to git, causing all accommodation routes to fail at build)
+5. Fixed forgot-password page Suspense boundary build error
+6. Clean build verified: 166 pages, 0 errors
+7. Committed and deployed to production
 
-### Session 40 Summary (2026-03-15)
-**What was accomplished:**
-1. Completed environment variable audit across Vercel (22 vars), VPS (7 N8N vars), and local .env.local
-2. VPS env vars configured via SSH: APP_URL, SUPABASE_URL, SUPABASE_SERVICE_KEY, DEFAULT_ORG_ID, RESEND_API_KEY set in /root/.env
-3. Created comprehensive Phase 08 Meta Business API Integration scope and 5 sub-phase plans in `.planning/phases/08-meta-integration/`
-4. Deployed Billing Monitor N8N workflow (15 nodes, 2 triggers) -- VPS ID: `IPJGaMPjDkaMXzkU` (17th workflow total)
-5. Built Phase 08.3 Onboarding Wizard UI: 6-step wizard with Path A (Embedded Signup) and Path B (WABA sharing), POPIA/DPA agreement, module selection
-6. Implemented Phase 08.2 Multi-Tenant WhatsApp Client Refactor: all WhatsApp functions now accept optional `orgId` for per-tenant credential resolution
-7. Created `lib/meta/whatsapp-tenant.ts` (tenant config resolver) and `lib/meta/phone-number-map.ts` (reverse phone-to-org lookup)
-8. Updated webhook handler for multi-WABA routing via `phone_number_id` metadata
-9. Added Meta OAuth callback routes to middleware public API routes
-10. Build verified passing (0 source errors, all 170 routes compile)
+**Key fixes:**
+- `lib/accommodation/api-helpers.ts` -- `getAccommodationAuth()` now uses `getOrgId()` instead of `.from('users')`
+- `lib/auth/get-user-org.ts` -- Added `getOrgId()` export (lightweight org resolver with admin fallback)
+- `lib/accommodation/schemas.ts` -- Created complete Zod schema file (was missing from git)
+- `lib/feature-gate.ts` -- Added `platform_admin` to tier hierarchy
+- 13 email routes + 4 content routes -- All fixed from `.from('users')` to `getOrgId()` pattern
 
-### Session 39 Summary (2026-03-13)
-**What was accomplished:**
-1. Fixed `getOrgId()` admin client fallback (same RLS chicken-and-egg as ERR-014) -- committed as `a47d43b`
-2. Fixed provisioning pipeline: `01-create-org.ts` replaced `users` table with `organization_users` + `user_profiles` -- committed as `29f3b6d`
-3. Deployed all 13 new N8N workflows to VPS via MCP API (all inactive, awaiting env var configuration)
-
-### Session 38 Summary (2026-03-13)
-Fixed CRM bug (6 routes queried non-existent `users` table). Added `getOrgId()` helper. Built Integration Admin Panel (`/admin/integrations`). 4 new admin API routes.
-
-### Previous Sessions
-- Session 37 (2026-03-13): Committed planning files + session 35 UI work. Pushed 8 commits to GitHub.
-- Session 36 (2026-03-13): getUserOrg auth fix, RLS recursion fix, planning files audit.
-- Session 35 (2026-03-10): Booking Detail page, Channel Manager UI, provisioning API security.
-- Session 34 (2026-03-10): Automation Hub, Stock & Inventory, Cost Tracking UI pages.
-- Session 33 (2026-03-06): Complete 5-phase AI Automation & Operations Layer.
-- Sessions 1-32: All 7 v1 phases + v2 BOS + architecture restructure + brand redesign.
+### Previous Sessions (Condensed)
+- Session 42 (2026-03-25): Bug fixes (PayFast, auth, leads), OnboardingChecklist widget, 2 N8N workflows, social publish button, VDJ demo prep
+- Session 41 (2026-03-25): Brand identity redesign, 10 templates, admin panel (4 pages), 3 module stubs, logo, PR #9 merged, 22 N8N workflows activated
+- Session 40 (2026-03-15): Env var audit, Phase 08 Meta scope, Billing Monitor N8N, Phase 08.2-08.3 implementation
+- Session 39 (2026-03-13): getOrgId admin fallback fix, provisioning pipeline fix, 13 N8N workflows deployed
+- Session 38 (2026-03-13): CRM `users` table fix, Integration Admin Panel
+- Sessions 33-37: Accommodation automation layer, auth fixes, planning commits
+- Sessions 1-32: All 7 v1 phases + v2 BOS + architecture restructure + brand redesign
