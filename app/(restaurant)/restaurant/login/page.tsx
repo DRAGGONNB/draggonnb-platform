@@ -1,8 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { StaffCard } from '@/components/restaurant/auth/StaffCard'
 import { PINPad } from '@/components/restaurant/auth/PINPad'
+import { Suspense } from 'react'
 
 const SESSION_KEY = 'restaurant_staff_session'
 
@@ -14,8 +15,12 @@ type StaffMember = {
 
 type Step = 'select' | 'pin'
 
-export default function RestaurantLoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  // restaurant_id can be passed as ?r=xxx, or falls back to env var for single-restaurant deploys
+  const restaurantId = searchParams.get('r') ?? process.env.NEXT_PUBLIC_DEFAULT_RESTAURANT_ID ?? ''
+
   const [step, setStep] = useState<Step>('select')
   const [staffList, setStaffList] = useState<StaffMember[]>([])
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null)
@@ -25,9 +30,14 @@ export default function RestaurantLoginPage() {
   const [verifying, setVerifying] = useState(false)
 
   useEffect(() => {
+    if (!restaurantId) {
+      setErrorMessage('No restaurant configured. Add ?r=<restaurant_id> to the URL.')
+      setLoading(false)
+      return
+    }
     async function fetchStaff() {
       try {
-        const res = await fetch('/api/restaurant/staff')
+        const res = await fetch(`/api/restaurant/staff/public?restaurant_id=${restaurantId}`)
         if (!res.ok) throw new Error('Failed to load staff')
         const data = await res.json()
         setStaffList(data.staff ?? [])
@@ -210,5 +220,17 @@ export default function RestaurantLoginPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function RestaurantLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-[#2D2F33]">
+        <div className="w-8 h-8 border-2 border-[#6B1420] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }
