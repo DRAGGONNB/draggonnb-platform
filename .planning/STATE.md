@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Complete multi-tenant B2B operating system for South African SMEs. Shared Supabase DB with RLS-based tenant isolation, wildcard subdomain routing, DB-backed module gating, automated provisioning.
-**Current stats:** 168 DB tables (166 with RLS), 162 API routes, 17+ UI modules, 6 AI agents, 22 N8N workflows active, 241 tests. Build passing.
+**Current stats:** 184 DB tables, 175 API routes, 19+ UI modules, 6 AI agents, 26 N8N workflows active, 241 tests. Build passing. tsc clean.
 
 ## Current Position
 
 Phase: Launch Readiness + First Client Prep
-Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app. Build passing.
-Last activity: 2026-03-28 -- Session 44: Full Restaurant & Events module built (Phase 01-05). 16 new DB tables, 11 API route groups, LiveTab guest bill view, floor plan, POS page, 4 N8N workflows.
-Progress: 184 DB tables + RLS live in Supabase. 173 API routes. 18+ UI modules. 6 AI agents. 26 N8N workflows active on VPS. 10 branded communication templates. 241 tests. Build clean.
+Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app. Build passing. tsc clean.
+Last activity: 2026-03-28 -- Session 44: Restaurant module fully built end-to-end (DB + APIs + all UI + N8N workflows + demo seeded).
+Progress: 184 DB tables + RLS live in Supabase. 175 API routes. 19+ UI modules. 6 AI agents. 26 N8N workflows. 241 tests. Build clean.
 
 ## Accumulated Context
 
@@ -66,34 +66,61 @@ Progress: 184 DB tables + RLS live in Supabase. 173 API routes. 18+ UI modules. 
 ## Infrastructure State
 
 - **Vercel:** production READY, 21 env vars, PayFast merchant 32705333, tsc clean
-- **VPS:** Traefik + N8N (26 workflows active, tagged) + Gitea + OpenClaw
-- **Supabase:** 184 tables, 182 with RLS, 7 orgs, 52 tenant_module activations
-- **GitHub:** DRAGGONNB/draggonnb-platform (main branch), latest commit: `acdf47d`
-- **N8N:** 26 workflows active (+4: Daily Briefing, Session Opened, PayFast ITN, Temp Critical Alert)
+- **VPS:** Traefik + N8N (26 workflows created, need manual activation) + Gitea + OpenClaw
+- **Supabase:** 184 tables, RLS live, 8 orgs, demo restaurant seeded (Sunset Grill, org: 678634bd)
+- **GitHub:** DRAGGONNB/draggonnb-platform (main branch), latest commit: `1542da4`
+- **N8N:** 26 workflows (4 restaurant workflows INACTIVE — activate manually in N8N dashboard)
 - **VPS env:** PayFast merchant 32705333, Resend key updated, N8N Cloud ref removed
+- **Gitea:** API token expired — Chris to generate new token at localhost:3030 on VPS
 
 ## Session Continuity
 
-Last session: 2026-03-28 (Session 44)
-Stopped at: Restaurant & Events module fully built and deployed. 4 N8N workflows created.
-Resume with: Visual QA of Restaurant module (floor plan, POS, LiveTab guest view). Activate N8N workflows (currently inactive — need activation in N8N dashboard). Add restaurant module to tenant_modules for restaurant clients. Then visual QA of accommodation module and remaining deferred todos.
+Last session: 2026-03-28 (Session 44 — extended)
+Stopped at: Restaurant module fully built, all UI components complete, demo seeded in Supabase, deployed and type-check clean.
+Resume with:
+1. Visual QA of Restaurant module using demo URLs below
+2. Activate 4 N8N restaurant workflows in N8N dashboard (currently inactive)
+3. Add `restaurant` to `tenant_modules` for org 678634bd to enable feature gating
+4. Gitea token renewal (Chris: Gitea admin panel at localhost:3030 via SSH tunnel)
+5. Then: accommodation module visual QA + remaining deferred todos (Twitter/X, scheduled publish cron, Meta config)
 
-### Session 44 Summary (2026-03-28)
+## Demo Restaurant — Sunset Grill
+
+**Org:** Test Restaurant ABC (`678634bd-0f62-423d-a828-b7a1394580b5`)
+**Restaurant ID:** `0e1c61c5-42c7-4703-9047-ed3dcdf35e15`
+**Staff PIN:** `1234` (all 3 staff: Chris Manager, Thandi Server, Sipho Server)
+
+| Screen | URL |
+|--------|-----|
+| Staff Login | `/restaurant/login?r=0e1c61c5-42c7-4703-9047-ed3dcdf35e15` |
+| Floor Plan | `/restaurant/tables` (after login) |
+| Guest T1 | `/r/sunset-grill/876b6b13-40b8-4aaa-99ed-593e808d46b9` |
+| Guest T2 | `/r/sunset-grill/5310b828-e25d-4a2e-930b-0d67c90cef09` |
+| Guest VIP | `/r/sunset-grill/d6db13a7-366b-491e-a623-cdd66bdbad50` |
+
+### Session 44 Summary (2026-03-28) — FULL SESSION
 **What was done:**
-1. Applied 3 Supabase migrations: 16 new tables (restaurant_tables, table_sessions, bills, bill_items, bill_payers, bill_payments, menu_categories, menu_items, restaurant_staff, staff_shifts, reservations, temp_logs, restaurant_checklists, checklist_completions, event_vendors, restaurants alter), RLS policies, module_registry seed
-2. Created lib/restaurant/ scaffold: api-helpers.ts, schemas.ts (all Zod schemas + R638 thresholds), types.ts, telegram/templates.ts, payfast/generate-link.ts
-3. Created 11 API route groups: tables, sessions, sessions/[id]/status, bills/items, payment/itn (public webhook), payment/link, menu, reservations, staff, temp-log, checklists, settings
-4. Created LiveTab guest flow: hooks/use-live-bill.ts (Supabase Realtime), app/(guest)/r/[slug]/[qrToken]/page.tsx, components/restaurant/livetab/LiveBillView.tsx
-5. Created restaurant staff UI: floor plan page (tables grid + open-session modal), POS page (category tabs + menu grid + live bill sidebar), dashboard summary page
-6. Created 4 N8N workflows: Daily Briefing (cron), Session Opened (webhook), PayFast ITN Notification (webhook), Temp Critical Alert (webhook)
-7. Committed 27 files (3146 insertions) and deployed to Vercel
+1. Applied 3 Supabase migrations: 16 new tables + RLS + module_registry seed
+2. Created lib/restaurant/ scaffold: api-helpers, schemas (Zod + R638), types, telegram templates, PayFast link generator
+3. Created 12 API route groups: tables, sessions, sessions/[id]/status, bills/items, payment/itn, payment/link, menu, reservations, staff, temp-log, checklists, settings, auth/pin (public)
+4. Created LiveTab guest flow: use-live-bill hook (Supabase Realtime), /r/[slug]/[qrToken] page, LiveBillView component
+5. Created prototype spec: .planning/restaurant-ui-prototype-spec.md (8 screens, component inventory, design decisions)
+6. Built all 18 UI components via 3 parallel agents:
+   - Auth: PINPad, StaffCard, RestaurantAuthGuard, login page
+   - POS/Payment: VoidItemSheet, TipSelector, SplitSlotRow, BillSummaryCard, bill finalisation page
+   - Ops: DashboardStatCard, ReservationRow, AddReservationSheet, TempLogRow, TempLogSheet, WaitingScreen, reservations page, temp-log page, dashboard rewrite
+7. Created 4 N8N workflows: Daily Briefing, Session Opened, PayFast ITN, Temp Critical Alert
+8. Fixed staff login: public endpoint /api/restaurant/staff/public (no auth, id+name only)
+9. Seeded demo: Sunset Grill restaurant, 3 staff (PIN 1234), 9 tables, 13 menu items
+10. 3 type-check passes — zero TypeScript errors across all new files
 
 **Key decisions:**
-- Per-restaurant PayFast credentials in restaurants table, env var fallback
+- Staff auth is PIN-only (not Supabase auth) — sessionStorage, 8h implied expiry
+- Public staff list endpoint scoped by restaurant_id (no sensitive data)
+- Login URL: /restaurant/login?r={restaurant_id} or NEXT_PUBLIC_DEFAULT_RESTAURANT_ID env var
 - Manager PIN (SHA-256) required for voids > R50
-- LiveTab uses Supabase Realtime on `livetab:{sessionId}` channel
-- QR URL format: `/r/[slug]/[qrToken]` resolves to guest bill view
-- R638 compliance auto-classifies temp readings as ok/warning/critical
+- LiveTab Realtime channel: livetab:{sessionId}
+- R638 temp thresholds mirrored client-side in TempLogSheet for live preview
 
 **Session 43 Summary (2026-03-27)
 **What was done:**
