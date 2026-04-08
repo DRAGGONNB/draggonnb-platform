@@ -289,7 +289,7 @@ export default function BillPage() {
                       display_name: payer.display_name || undefined,
                       share_amount: payer.amount_due ?? (Number(bill.subtotal) + Number(bill.service_charge) + tipAmount) / payers.length,
                       status: payer.status,
-                      payfast_token: payer.payfast_token,
+                      payfast_token: payer.payfast_token ?? '',
                     }}
                     onSendLink={handleSendLink}
                     onMarkCash={handleMarkCash}

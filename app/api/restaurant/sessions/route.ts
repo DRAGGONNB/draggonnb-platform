@@ -1,122 +1,104 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { getRestaurantAuth, isRestaurantAuthError } from '@/lib/restaurant/api-helpers'
-import { OpenSessionSchema } from '@/lib/restaurant/schemas'
+import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/service'
+import { ORG_ID } from '@/lib/restaurant/constants'
+import type { OpenSessionRequest } from '@/lib/restaurant/types'
 
-export async function GET(request: NextRequest) {
-  const auth = await getRestaurantAuth(request)
-  if (isRestaurantAuthError(auth)) return auth
+export async function POST(req: NextRequest) {
+  const supabase = createServiceClient()
+  const body: OpenSessionRequest = await req.json()
 
-  const admin = createAdminClient()
-  const { searchParams } = new URL(request.url)
-  const restaurantId = searchParams.get('restaurant_id')
-  const status = searchParams.get('status') || 'open'
-
-  let query = admin
-    .from('table_sessions')
-    .select(`
-      *,
-      restaurant_tables(id, label, section, capacity),
-      restaurant_staff(id, display_name, role),
-      bills(id, subtotal, service_charge, tip_total, total, status, bill_items(id, name, quantity, unit_price, line_total, voided))
-    `)
-    .eq('organization_id', auth.organizationId)
-    .eq('status', status)
-    .order('opened_at', { ascending: false })
-
-  if (restaurantId) {
-    query = query.eq('restaurant_id', restaurantId)
+  // Validate required fields
+  if (!body.table_id || !body.party_size) {
+    return NextResponse.json({ error: 'table_id and party_size are required' }, { status: 400 })
   }
 
-  const { data, error } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ sessions: data })
-}
-
-export async function POST(request: NextRequest) {
-  const auth = await getRestaurantAuth(request)
-  if (isRestaurantAuthError(auth)) return auth
-
-  const body = await request.json()
-  const parsed = OpenSessionSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
-  }
-
-  const { table_id, waiter_id, party_size, split_mode, guest_whatsapp, notes } = parsed.data
-  const admin = createAdminClient()
-
-  // Verify no open session already exists for this table
-  const { data: existing } = await admin
+  // Check table exists and has no active session
+  const { data: existingSession } = await supabase
     .from('table_sessions')
     .select('id')
-    .eq('table_id', table_id)
+    .eq('table_id', body.table_id)
     .eq('status', 'open')
-    .single()
+    .maybeSingle()
 
-  if (existing) {
-    return NextResponse.json({ error: 'Table already has an open session', sessionId: existing.id }, { status: 409 })
+  if (existingSession) {
+    return NextResponse.json({ error: 'Table already has an active session' }, { status: 409 })
   }
 
-  // Get restaurant_id from table
-  const { data: table } = await admin
+  // Get restaurant info for service charge
+  const { data: table } = await supabase
     .from('restaurant_tables')
-    .select('restaurant_id')
-    .eq('id', table_id)
-    .eq('organization_id', auth.organizationId)
+    .select('restaurant_id, label, section, restaurants(name, service_charge_pct)')
+    .eq('id', body.table_id)
     .single()
 
   if (!table) {
     return NextResponse.json({ error: 'Table not found' }, { status: 404 })
   }
 
-  // Open session
-  const { data: session, error: sessionError } = await admin
+  const restaurant = table.restaurants as unknown as { name: string; service_charge_pct: number }
+
+  // Create session
+  const { data: session, error: sessionErr } = await supabase
     .from('table_sessions')
     .insert({
-      organization_id: auth.organizationId,
+      organization_id: ORG_ID,
       restaurant_id: table.restaurant_id,
-      table_id,
-      waiter_id,
-      party_size,
-      split_mode,
-      guest_whatsapp: guest_whatsapp || null,
-      notes: notes || null,
+      table_id: body.table_id,
+      waiter_id: body.waiter_id || null,
+      party_size: body.party_size,
+      split_mode: body.split_mode || 'none',
+      guest_whatsapp: body.guest_whatsapp || null,
+      status: 'open',
+      opened_at: new Date().toISOString(),
     })
     .select()
     .single()
 
-  if (sessionError || !session) {
-    return NextResponse.json({ error: sessionError?.message }, { status: 500 })
+  if (sessionErr) {
+    return NextResponse.json({ error: sessionErr.message }, { status: 500 })
   }
 
-  // Create associated bill immediately
-  const { data: restaurantData } = await admin
-    .from('restaurants')
-    .select('service_charge_pct')
-    .eq('id', table.restaurant_id)
-    .single()
-
-  const { data: bill } = await admin
+  // Create bill for this session
+  const { data: bill, error: billErr } = await supabase
     .from('bills')
     .insert({
-      organization_id: auth.organizationId,
+      organization_id: ORG_ID,
       session_id: session.id,
       restaurant_id: table.restaurant_id,
-      service_charge_pct: restaurantData?.service_charge_pct ?? 0,
+      subtotal: 0,
+      service_charge_pct: restaurant.service_charge_pct ?? 0,
+      service_charge: 0,
+      tip_total: 0,
+      total: 0,
+      currency: 'ZAR',
+      status: 'open',
     })
-    .select('id')
+    .select()
     .single()
 
-  // Create payer slots for equal/by_item splits
-  if (split_mode !== 'none' && party_size > 1 && bill) {
-    const slots = Array.from({ length: party_size }, (_, i) => ({
-      organization_id: auth.organizationId,
-      bill_id: bill.id,
-      slot_number: i + 1,
-    }))
-    await admin.from('bill_payers').insert(slots)
+  if (billErr) {
+    // Rollback session
+    await supabase.from('table_sessions').delete().eq('id', session.id)
+    return NextResponse.json({ error: billErr.message }, { status: 500 })
   }
 
-  return NextResponse.json({ session, billId: bill?.id }, { status: 201 })
+  // Fire N8N webhook (non-blocking)
+  const webhookUrl = process.env.N8N_WEBHOOK_SESSION_OPENED
+  if (webhookUrl) {
+    fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: session.id,
+        bill_id: bill.id,
+        table_label: table.label,
+        table_section: table.section,
+        restaurant_name: restaurant.name,
+        party_size: body.party_size,
+        waiter_id: body.waiter_id,
+      }),
+    }).catch(() => {})
+  }
+
+  return NextResponse.json({ session, bill })
 }
