@@ -24,6 +24,8 @@ export interface Restaurant {
   updated_at: string
 }
 
+export type TableShape = 'rect' | 'circle' | 'oval'
+
 export interface RestaurantTable {
   id: string
   organization_id: string
@@ -33,6 +35,37 @@ export interface RestaurantTable {
   capacity: number
   qr_code_url: string | null
   qr_token: string | null
+  is_active: boolean
+  floor_plan_id: string | null
+  x_pos: number
+  y_pos: number
+  width: number
+  height: number
+  rotation: number
+  shape: TableShape
+  linked_group_id: string | null
+  created_at: string
+}
+
+export interface FloorPlan {
+  id: string
+  organization_id: string
+  restaurant_id: string
+  name: string
+  canvas_width: number
+  canvas_height: number
+  background_image_url: string | null
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface TableGroup {
+  id: string
+  organization_id: string
+  restaurant_id: string
+  name: string
+  combined_capacity: number
   is_active: boolean
   created_at: string
 }
@@ -376,4 +409,12 @@ export interface TableWithSession extends RestaurantTable {
     waiter?: { display_name: string } | null
     bill?: Bill | null
   }
+}
+
+export interface FloorPlanWithTables extends FloorPlan {
+  tables: TableWithSession[]
+}
+
+export interface TableGroupWithTables extends TableGroup {
+  tables: RestaurantTable[]
 }

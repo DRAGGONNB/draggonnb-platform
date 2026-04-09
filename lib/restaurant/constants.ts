@@ -104,6 +104,33 @@ export const SOP_CATEGORIES = ['Service', 'Kitchen', 'Safety', 'Hygiene', 'HR', 
 export const STAFF_ROLES = ['manager', 'server', 'bartender', 'chef', 'host'] as const
 export const CHECKLIST_TYPES = ['opening', 'closing', 'cleaning', 'food_prep'] as const
 
+// ─── Floor Plan ───────────────────────────────────────────────
+
+export const TABLE_SHAPES = ['rect', 'circle', 'oval'] as const
+
+export const TABLE_SHAPE_META: Record<string, { label: string; icon: string }> = {
+  rect: { label: 'Rectangle', icon: 'Square' },
+  circle: { label: 'Circle', icon: 'Circle' },
+  oval: { label: 'Oval', icon: 'Ellipsis' },
+}
+
+export const DEFAULT_TABLE_SIZE = { width: 80, height: 80 }
+export const FLOOR_PLAN_GRID_SIZE = 20
+
+export const TABLE_STATUS_FILL: Record<string, string> = {
+  available: '#10B981',   // emerald-500
+  occupied: '#F59E0B',    // amber-500
+  pending_payment: '#EF4444', // red-500
+  linked: '#6366F1',      // indigo-500
+}
+
+export const SECTION_FILL: Record<string, string> = {
+  deck: '#0EA5E9',     // sky-500
+  indoor: '#F59E0B',   // amber-500
+  bar: '#A855F7',      // purple-500
+  private: '#F43F5E',  // rose-500
+}
+
 // ─── Helpers ───────────────────────────────────────────────────
 
 export function formatZAR(amount: number): string {

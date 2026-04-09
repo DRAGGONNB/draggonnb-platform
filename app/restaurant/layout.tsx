@@ -15,12 +15,16 @@ import {
   Menu,
   X,
   Waves,
+  Receipt,
+  ChefHat,
 } from 'lucide-react'
 import { useState } from 'react'
 
 const NAV_ITEMS = [
   { href: '/restaurant/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/restaurant/tables', label: 'Tables', icon: UtensilsCrossed },
+  { href: '/restaurant/bills', label: 'Bills', icon: Receipt },
+  { href: '/restaurant/menu', label: 'Menu', icon: ChefHat },
   { href: '/restaurant/reservations', label: 'Reservations', icon: CalendarCheck },
   { href: '/restaurant/staff', label: 'Staff', icon: Users },
   { href: '/restaurant/sops', label: 'SOPs & Checklists', icon: BookOpen },
