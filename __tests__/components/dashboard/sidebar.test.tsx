@@ -16,10 +16,17 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
 }))
 
+// Mock next/image
+vi.mock('next/image', () => ({
+  default: (props: Record<string, unknown>) => <img {...props} />,
+}))
+
 describe('Sidebar', () => {
   it('renders the DraggonnB logo text', () => {
     render(<Sidebar />)
-    expect(screen.getByText(/DraggonnB OS/)).toBeInTheDocument()
+    // Logo text is split: "DRAGONN" + "NB" + "OS" across spans
+    expect(screen.getByText('NB')).toBeInTheDocument()
+    expect(screen.getByText('OS')).toBeInTheDocument()
   })
 
   it('renders Main navigation items', () => {
@@ -37,7 +44,8 @@ describe('Sidebar', () => {
     expect(screen.getByText('Sequences')).toBeInTheDocument()
     expect(screen.getByText('Templates')).toBeInTheDocument()
     expect(screen.getByText('Outreach')).toBeInTheDocument()
-    expect(screen.getByText('Analytics')).toBeInTheDocument()
+    // Analytics appears in both Main nav and Email Marketing
+    expect(screen.getAllByText('Analytics')).toHaveLength(2)
   })
 
   it('renders Content Studio section', () => {
@@ -64,10 +72,11 @@ describe('Sidebar', () => {
     expect(screen.getByText('Properties').closest('a')).toHaveAttribute('href', '/accommodation/properties')
   })
 
-  it('renders NEW badges on Autopilot and Accommodation', () => {
+  it('renders NEW badges on multiple sections', () => {
     render(<Sidebar />)
     const badges = screen.getAllByText('NEW')
-    expect(badges).toHaveLength(2)
+    // Analytics, Lead Scoring, Social Media, Accommodation Overview, Elijah, Integrations
+    expect(badges).toHaveLength(6)
   })
 
   it('renders usage progress bars with default values', () => {

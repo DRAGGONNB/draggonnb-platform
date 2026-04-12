@@ -75,7 +75,8 @@ describe('WhatsApp Intake Flow', () => {
     expect(mockFrom).toHaveBeenCalledWith('ops_leads')
     expect(sendTextMessage).toHaveBeenCalledWith(
       '+27123456789',
-      expect.stringContaining('Welcome to DraggonnB')
+      expect.stringContaining('Welcome to DraggonnB'),
+      undefined
     )
   })
 
@@ -93,7 +94,8 @@ describe('WhatsApp Intake Flow', () => {
 
     expect(sendTextMessage).toHaveBeenCalledWith(
       '+27123456789',
-      expect.stringContaining('already received')
+      expect.stringContaining('already received'),
+      undefined
     )
   })
 

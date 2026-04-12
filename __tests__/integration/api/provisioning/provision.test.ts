@@ -13,6 +13,39 @@ vi.mock('@/scripts/provisioning/orchestrator', () => ({
   provisionClient: vi.fn(),
 }))
 
+function createChainableBuilder(result: { data: unknown; error: unknown }) {
+  const builder: any = {}
+  builder.then = (resolve: any) => resolve(result)
+  builder.single = vi.fn().mockResolvedValue(result)
+  builder.maybeSingle = vi.fn().mockResolvedValue(result)
+  const methods = ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'gte', 'lte', 'gt', 'lt', 'like', 'ilike', 'is', 'not', 'in', 'contains', 'filter', 'or', 'order', 'limit', 'range', 'match']
+  for (const m of methods) {
+    builder[m] = vi.fn().mockReturnValue(builder)
+  }
+  return builder
+}
+
+/** Create a mock supabase client that passes auth and admin role check */
+function mockAuthenticatedAdmin() {
+  return {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: { id: 'admin-user' } },
+        error: null,
+      }),
+    },
+    from: vi.fn((table: string) => {
+      if (table === 'organization_users') {
+        return createChainableBuilder({
+          data: { role: 'admin' },
+          error: null,
+        })
+      }
+      return createChainableBuilder({ data: null, error: null })
+    }),
+  } as any
+}
+
 describe('Provisioning API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -32,14 +65,7 @@ describe('Provisioning API', () => {
 
     it('returns 400 for missing clientId', async () => {
       const { createClient } = await import('@/lib/supabase/server')
-      vi.mocked(createClient).mockResolvedValue({
-        auth: {
-          getUser: vi.fn().mockResolvedValue({
-            data: { user: { id: 'admin-user' } },
-            error: null,
-          }),
-        },
-      } as any)
+      vi.mocked(createClient).mockResolvedValue(mockAuthenticatedAdmin())
 
       await testApiHandler({
         appHandler: provisioningRoute as any,
@@ -59,14 +85,7 @@ describe('Provisioning API', () => {
 
     it('returns 400 for invalid tier', async () => {
       const { createClient } = await import('@/lib/supabase/server')
-      vi.mocked(createClient).mockResolvedValue({
-        auth: {
-          getUser: vi.fn().mockResolvedValue({
-            data: { user: { id: 'admin-user' } },
-            error: null,
-          }),
-        },
-      } as any)
+      vi.mocked(createClient).mockResolvedValue(mockAuthenticatedAdmin())
 
       await testApiHandler({
         appHandler: provisioningRoute as any,
@@ -85,14 +104,7 @@ describe('Provisioning API', () => {
 
     it('returns 400 for invalid email', async () => {
       const { createClient } = await import('@/lib/supabase/server')
-      vi.mocked(createClient).mockResolvedValue({
-        auth: {
-          getUser: vi.fn().mockResolvedValue({
-            data: { user: { id: 'admin-user' } },
-            error: null,
-          }),
-        },
-      } as any)
+      vi.mocked(createClient).mockResolvedValue(mockAuthenticatedAdmin())
 
       await testApiHandler({
         appHandler: provisioningRoute as any,
@@ -118,14 +130,7 @@ describe('Provisioning API', () => {
       } as any)
 
       for (const tier of validTiers) {
-        vi.mocked(createClient).mockResolvedValue({
-          auth: {
-            getUser: vi.fn().mockResolvedValue({
-              data: { user: { id: 'admin-user' } },
-              error: null,
-            }),
-          },
-        } as any)
+        vi.mocked(createClient).mockResolvedValue(mockAuthenticatedAdmin())
 
         await testApiHandler({
           appHandler: provisioningRoute as any,
@@ -144,14 +149,7 @@ describe('Provisioning API', () => {
 
     it('validates branding color format', async () => {
       const { createClient } = await import('@/lib/supabase/server')
-      vi.mocked(createClient).mockResolvedValue({
-        auth: {
-          getUser: vi.fn().mockResolvedValue({
-            data: { user: { id: 'admin-user' } },
-            error: null,
-          }),
-        },
-      } as any)
+      vi.mocked(createClient).mockResolvedValue(mockAuthenticatedAdmin())
 
       await testApiHandler({
         appHandler: provisioningRoute as any,
@@ -173,14 +171,7 @@ describe('Provisioning API', () => {
       const { createClient } = await import('@/lib/supabase/server')
       const { provisionClient } = await import('@/scripts/provisioning/orchestrator')
       vi.mocked(provisionClient).mockResolvedValue({ success: true, resources: {} } as any)
-      vi.mocked(createClient).mockResolvedValue({
-        auth: {
-          getUser: vi.fn().mockResolvedValue({
-            data: { user: { id: 'admin-user' } },
-            error: null,
-          }),
-        },
-      } as any)
+      vi.mocked(createClient).mockResolvedValue(mockAuthenticatedAdmin())
 
       await testApiHandler({
         appHandler: provisioningRoute as any,
@@ -202,21 +193,13 @@ describe('Provisioning API', () => {
       const { createClient } = await import('@/lib/supabase/server')
       const { provisionClient } = await import('@/scripts/provisioning/orchestrator')
 
-      vi.mocked(createClient).mockResolvedValue({
-        auth: {
-          getUser: vi.fn().mockResolvedValue({
-            data: { user: { id: 'admin-user' } },
-            error: null,
-          }),
-        },
-      } as any)
+      vi.mocked(createClient).mockResolvedValue(mockAuthenticatedAdmin())
 
       vi.mocked(provisionClient).mockResolvedValue({
         success: true,
         resources: {
-          supabaseProjectId: 'proj-123',
-          githubRepoUrl: 'https://github.com/test/repo',
-          vercelDeploymentUrl: 'https://test.vercel.app',
+          organizationId: 'org-123',
+          subdomain: 'test-client',
           n8nWebhookUrl: 'https://n8n.test/webhook',
           qaResult: { passed: true },
         },
@@ -233,8 +216,8 @@ describe('Provisioning API', () => {
           expect(response.status).toBe(200)
           const data = await response.json()
           expect(data.success).toBe(true)
-          expect(data.resources.supabaseProjectId).toBe('proj-123')
-          expect(data.resources.githubRepoUrl).toContain('github.com')
+          expect(data.resources.organizationId).toBe('org-123')
+          expect(data.resources.subdomain).toBe('test-client')
         },
       })
     })

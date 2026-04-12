@@ -10,19 +10,27 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 import { getOrgId } from '@/lib/auth/get-user-org'
-import { createChainableMock } from '../../helpers/api-test-utils'
 
-function createMockClient(rows: Array<{ organization_id: string; organizations: { subscription_tier: string } }>) {
+/**
+ * Creates a chainable Supabase mock that mirrors the actual query chain:
+ *   .from('organization_users').select('organization_id').eq(...).eq(...).limit(1).single()
+ */
+function createChainableBuilder(result: { data: unknown; error: unknown }) {
+  const builder: any = {}
+  builder.then = (resolve: any) => resolve(result)
+  builder.single = vi.fn().mockResolvedValue(result)
+  builder.maybeSingle = vi.fn().mockResolvedValue(result)
+  const methods = ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'gte', 'lte', 'gt', 'lt', 'like', 'ilike', 'is', 'not', 'in', 'contains', 'filter', 'or', 'order', 'limit', 'range', 'match']
+  for (const m of methods) {
+    builder[m] = vi.fn().mockReturnValue(builder)
+  }
+  return builder
+}
+
+function createMockClient(result: { data: unknown; error: unknown }) {
+  const builder = createChainableBuilder(result)
   return {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(function (this: unknown) { return this }),
-        order: vi.fn(() => ({
-          data: rows,
-          error: null,
-        })),
-      })),
-    })),
+    from: vi.fn(() => builder),
   } as any
 }
 
@@ -31,86 +39,110 @@ describe('getOrgId - org resolution', () => {
     vi.clearAllMocks()
   })
 
-  it('returns the single org when user has one membership', async () => {
-    const mock = createMockClient([
-      { organization_id: 'org-1', organizations: { subscription_tier: 'starter' } },
-    ])
+  it('returns the org when user has a membership', async () => {
+    const mock = createMockClient({
+      data: { organization_id: 'org-1' },
+      error: null,
+    })
 
     const result = await getOrgId(mock, 'user-1')
     expect(result).toBe('org-1')
   })
 
-  it('picks the highest-tier org when user has multiple', async () => {
-    const mock = createMockClient([
-      { organization_id: 'org-starter', organizations: { subscription_tier: 'starter' } },
-      { organization_id: 'org-growth', organizations: { subscription_tier: 'professional' } },
-    ])
+  it('queries organization_users table', async () => {
+    const mock = createMockClient({
+      data: { organization_id: 'org-1' },
+      error: null,
+    })
 
-    const result = await getOrgId(mock, 'user-1')
-    expect(result).toBe('org-growth')
+    await getOrgId(mock, 'user-1')
+    expect(mock.from).toHaveBeenCalledWith('organization_users')
   })
 
-  it('picks scale over growth when both exist', async () => {
-    const mock = createMockClient([
-      { organization_id: 'org-growth', organizations: { subscription_tier: 'growth' } },
-      { organization_id: 'org-scale', organizations: { subscription_tier: 'scale' } },
-    ])
+  it('filters by user_id and is_active', async () => {
+    const builder = createChainableBuilder({
+      data: { organization_id: 'org-1' },
+      error: null,
+    })
+    const mock = { from: vi.fn(() => builder) } as any
 
-    const result = await getOrgId(mock, 'user-1')
-    expect(result).toBe('org-scale')
+    await getOrgId(mock, 'user-1')
+    expect(builder.eq).toHaveBeenCalledWith('user_id', 'user-1')
+    expect(builder.eq).toHaveBeenCalledWith('is_active', true)
   })
 
-  it('picks platform_admin over everything', async () => {
-    const mock = createMockClient([
-      { organization_id: 'org-scale', organizations: { subscription_tier: 'scale' } },
-      { organization_id: 'org-admin', organizations: { subscription_tier: 'platform_admin' } },
-    ])
+  it('returns the first org (no tier priority selection)', async () => {
+    // getOrgId uses .limit(1).single() so it returns whatever the DB gives first
+    const mock = createMockClient({
+      data: { organization_id: 'org-first' },
+      error: null,
+    })
 
     const result = await getOrgId(mock, 'user-1')
-    expect(result).toBe('org-admin')
-  })
-
-  it('treats professional as equal to growth', async () => {
-    const mock = createMockClient([
-      { organization_id: 'org-core', organizations: { subscription_tier: 'core' } },
-      { organization_id: 'org-pro', organizations: { subscription_tier: 'professional' } },
-    ])
-
-    const result = await getOrgId(mock, 'user-1')
-    expect(result).toBe('org-pro')
-  })
-
-  it('treats enterprise as equal to scale', async () => {
-    const mock = createMockClient([
-      { organization_id: 'org-growth', organizations: { subscription_tier: 'growth' } },
-      { organization_id: 'org-ent', organizations: { subscription_tier: 'enterprise' } },
-    ])
-
-    const result = await getOrgId(mock, 'user-1')
-    expect(result).toBe('org-ent')
+    expect(result).toBe('org-first')
   })
 
   it('returns null when user has no memberships', async () => {
-    const mock = createMockClient([])
+    const userMock = createMockClient({
+      data: null,
+      error: { code: 'PGRST116', message: 'not found' },
+    })
 
     // Also mock admin client to return empty
     const { createAdminClient } = await import('@/lib/supabase/admin')
-    vi.mocked(createAdminClient).mockReturnValue(createMockClient([]) as any)
+    vi.mocked(createAdminClient).mockReturnValue(
+      createMockClient({
+        data: null,
+        error: { code: 'PGRST116', message: 'not found' },
+      }) as any
+    )
 
-    const result = await getOrgId(mock, 'user-1')
+    const result = await getOrgId(userMock, 'user-1')
     expect(result).toBeNull()
   })
 
-  it('falls back to admin client when user client returns empty', async () => {
-    const userMock = createMockClient([])
-    const adminMock = createMockClient([
-      { organization_id: 'org-admin-found', organizations: { subscription_tier: 'growth' } },
-    ])
+  it('falls back to admin client when user client returns null', async () => {
+    const userMock = createMockClient({
+      data: null,
+      error: { code: 'PGRST116', message: 'not found' },
+    })
 
     const { createAdminClient } = await import('@/lib/supabase/admin')
-    vi.mocked(createAdminClient).mockReturnValue(adminMock as any)
+    vi.mocked(createAdminClient).mockReturnValue(
+      createMockClient({
+        data: { organization_id: 'org-admin-found' },
+        error: null,
+      }) as any
+    )
 
     const result = await getOrgId(userMock, 'user-1')
     expect(result).toBe('org-admin-found')
+  })
+
+  it('returns null when admin client also fails', async () => {
+    const userMock = createMockClient({
+      data: null,
+      error: { code: 'PGRST116', message: 'not found' },
+    })
+
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    vi.mocked(createAdminClient).mockImplementation(() => {
+      throw new Error('Admin client unavailable')
+    })
+
+    const result = await getOrgId(userMock, 'user-1')
+    expect(result).toBeNull()
+  })
+
+  it('uses limit(1) and single() for the query', async () => {
+    const builder = createChainableBuilder({
+      data: { organization_id: 'org-1' },
+      error: null,
+    })
+    const mock = { from: vi.fn(() => builder) } as any
+
+    await getOrgId(mock, 'user-1')
+    expect(builder.limit).toHaveBeenCalledWith(1)
+    expect(builder.single).toHaveBeenCalled()
   })
 })

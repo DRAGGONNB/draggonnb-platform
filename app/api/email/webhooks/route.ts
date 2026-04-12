@@ -53,10 +53,13 @@ function verifyWebhookSignature(
     .update(payload)
     .digest('hex')
 
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  )
+  const sigBuffer = Buffer.from(signature)
+  const expectedBuffer = Buffer.from(expectedSignature)
+
+  // timingSafeEqual throws if buffers have different lengths
+  if (sigBuffer.length !== expectedBuffer.length) return false
+
+  return crypto.timingSafeEqual(sigBuffer, expectedBuffer)
 }
 
 /**

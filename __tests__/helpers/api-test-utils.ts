@@ -2,6 +2,33 @@ import { vi, expect } from 'vitest'
 import { testApiHandler } from 'next-test-api-route-handler'
 
 /**
+ * Create a fully chainable Supabase query builder mock.
+ * Supports .select().eq().eq().limit().single() and direct await (thenable).
+ */
+export function createChainableBuilder(result: { data: unknown; error: unknown }) {
+  const builder: any = {}
+  builder.then = (resolve: any) => resolve(result)
+  builder.single = vi.fn().mockResolvedValue(result)
+  builder.maybeSingle = vi.fn().mockResolvedValue(result)
+  const methods = ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'gte', 'lte', 'gt', 'lt', 'like', 'ilike', 'is', 'not', 'in', 'contains', 'filter', 'or', 'order', 'limit', 'range', 'match']
+  for (const m of methods) {
+    builder[m] = vi.fn().mockReturnValue(builder)
+  }
+  return builder
+}
+
+/**
+ * Create the organization_users mock that matches the real getOrgId() query:
+ * .from('organization_users').select('organization_id').eq('user_id', ...).eq('is_active', true).limit(1).single()
+ */
+function createOrgUserBuilder(orgId: string | null) {
+  return createChainableBuilder({
+    data: orgId ? { organization_id: orgId } : null,
+    error: orgId ? null : { message: 'Not found' },
+  })
+}
+
+/**
  * Test that an API route returns 401 when user is not authenticated
  */
 export async function testAuthRequired(
@@ -36,7 +63,9 @@ export async function testAuthRequired(
 }
 
 /**
- * Test that an API route returns 400 when user has no organization
+ * Test that an API route returns 400 when user has no organization.
+ * Mocks organization_users to return null (no membership found).
+ * Also mocks createAdminClient fallback to return null.
  */
 export async function testOrgRequired(
   routeModule: Record<string, unknown>,
@@ -44,6 +73,7 @@ export async function testOrgRequired(
   body?: Record<string, unknown>
 ) {
   const { createClient } = await import('@/lib/supabase/server')
+  const noOrgBuilder = createOrgUserBuilder(null)
   vi.mocked(createClient).mockResolvedValue({
     auth: {
       getUser: vi.fn().mockResolvedValue({
@@ -52,20 +82,17 @@ export async function testOrgRequired(
       }),
     },
     from: vi.fn((table: string) => {
-      if (table === 'users') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
-                data: null,
-                error: { message: 'User not found' },
-              }),
-            })),
-          })),
-        }
+      if (table === 'organization_users') {
+        return noOrgBuilder
       }
-      return {}
+      return createChainableBuilder({ data: null, error: null })
     }),
+  } as any)
+
+  // Mock admin client fallback (also returns no org)
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  vi.mocked(createAdminClient).mockReturnValue({
+    from: vi.fn(() => createOrgUserBuilder(null)),
   } as any)
 
   await testApiHandler({
@@ -85,7 +112,8 @@ export async function testOrgRequired(
 }
 
 /**
- * Setup auth mock with a specific user and organization
+ * Setup auth mock with a specific user and organization.
+ * Mocks organization_users junction table (not legacy users table).
  */
 export function setupAuthMock(userId: string = 'test-user-id', orgId: string = 'test-org-id') {
   return {
@@ -96,17 +124,8 @@ export function setupAuthMock(userId: string = 'test-user-id', orgId: string = '
       }),
     },
     from: vi.fn((table: string) => {
-      if (table === 'users') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
-                data: { id: userId, organization_id: orgId },
-                error: null,
-              }),
-            })),
-          })),
-        }
+      if (table === 'organization_users') {
+        return createOrgUserBuilder(orgId)
       }
       // Return a flexible chainable mock for other tables
       return createChainableMock()

@@ -9,6 +9,35 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(),
 }))
 
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(() => ({
+    from: vi.fn(() => createChainableBuilder({ data: null, error: { message: 'Not found' } })),
+  })),
+}))
+
+vi.mock('@/lib/webhooks/dispatcher', () => ({
+  dispatchWebhooksForOrg: vi.fn().mockResolvedValue(undefined),
+}))
+
+function createChainableBuilder(result: { data: unknown; error: unknown }) {
+  const builder: any = {}
+  builder.then = (resolve: any) => resolve(result)
+  builder.single = vi.fn().mockResolvedValue(result)
+  builder.maybeSingle = vi.fn().mockResolvedValue(result)
+  const methods = ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'gte', 'lte', 'gt', 'lt', 'like', 'ilike', 'is', 'not', 'in', 'contains', 'filter', 'or', 'order', 'limit', 'range', 'match']
+  for (const m of methods) {
+    builder[m] = vi.fn().mockReturnValue(builder)
+  }
+  return builder
+}
+
+function createOrgUserBuilder(orgId: string | null) {
+  return createChainableBuilder({
+    data: orgId ? { organization_id: orgId } : null,
+    error: orgId ? null : { message: 'Not found' },
+  })
+}
+
 describe('CRM Deals API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -99,30 +128,16 @@ describe('CRM Deals API', () => {
       }
 
       const { createClient } = await import('@/lib/supabase/server')
+      const dealsBuilder = createChainableBuilder({ data: mockDeal, error: null })
       const mock = createDealsAuthMock()
       ;(mock.from as any).mockImplementation((table: string) => {
-        if (table === 'users') {
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({
-                  data: { id: 'test-user-id', organization_id: 'test-org-id' },
-                  error: null,
-                }),
-              })),
-            })),
-          }
+        if (table === 'organization_users') {
+          return createOrgUserBuilder('test-org-id')
         }
         if (table === 'deals') {
-          return {
-            insert: vi.fn(() => ({
-              select: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({ data: mockDeal, error: null }),
-              })),
-            })),
-          }
+          return dealsBuilder
         }
-        return {}
+        return createChainableBuilder({ data: null, error: null })
       })
       vi.mocked(createClient).mockResolvedValue(mock as any)
 
@@ -152,17 +167,8 @@ describe('CRM Deals API', () => {
       const insertMock = vi.fn()
       const mock = createDealsAuthMock()
       ;(mock.from as any).mockImplementation((table: string) => {
-        if (table === 'users') {
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({
-                  data: { id: 'test-user-id', organization_id: 'test-org-id' },
-                  error: null,
-                }),
-              })),
-            })),
-          }
+        if (table === 'organization_users') {
+          return createOrgUserBuilder('test-org-id')
         }
         if (table === 'deals') {
           insertMock.mockReturnValue({
@@ -175,7 +181,7 @@ describe('CRM Deals API', () => {
           })
           return { insert: insertMock }
         }
-        return {}
+        return createChainableBuilder({ data: null, error: null })
       })
       vi.mocked(createClient).mockResolvedValue(mock as any)
 
@@ -199,14 +205,7 @@ describe('CRM Deals API', () => {
 })
 
 function createDealsAuthMock(deals: unknown[] = [], count: number = 0) {
-  const orMock = vi.fn().mockResolvedValue({ data: deals, error: null, count })
-  const rangeMock = vi.fn().mockReturnValue({ or: orMock, data: deals, error: null, count, then: (resolve: any) => resolve({ data: deals, error: null, count }) })
-  // Handle the chained query pattern with .or() being called after .range()
-  rangeMock.mockImplementation(() => ({
-    or: orMock,
-    eq: vi.fn(() => ({ or: orMock, data: deals, error: null, count, then: (resolve: any) => resolve({ data: deals, error: null, count }) })),
-    then: (resolve: any) => resolve({ data: deals, error: null, count }),
-  }))
+  const dealsBuilder = createChainableBuilder({ data: deals, error: null, count } as any)
 
   return {
     auth: {
@@ -216,35 +215,13 @@ function createDealsAuthMock(deals: unknown[] = [], count: number = 0) {
       }),
     },
     from: vi.fn((table: string) => {
-      if (table === 'users') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
-                data: { id: 'test-user-id', organization_id: 'test-org-id' },
-                error: null,
-              }),
-            })),
-          })),
-        }
+      if (table === 'organization_users') {
+        return createOrgUserBuilder('test-org-id')
       }
       if (table === 'deals') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                range: rangeMock,
-              })),
-            })),
-          })),
-          insert: vi.fn(() => ({
-            select: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({ data: deals[0] || { id: 'new-id' }, error: null }),
-            })),
-          })),
-        }
+        return dealsBuilder
       }
-      return {}
+      return createChainableBuilder({ data: null, error: null })
     }),
   }
 }

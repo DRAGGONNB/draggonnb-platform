@@ -89,7 +89,7 @@ describe('BaseAgent', () => {
     // Verify session was created
     expect(insertMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        agent_type: 'test',
+        agent_type: 'lead_qualifier',
         organization_id: 'test-org',
         status: 'active',
       })

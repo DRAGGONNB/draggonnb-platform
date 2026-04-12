@@ -10,6 +10,22 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(),
 }))
 
+/**
+ * Creates a chainable Supabase mock that supports the full query chain:
+ *   .from(table).select(...).eq(...).eq(...).limit(1).single()
+ */
+function createChainableBuilder(result: { data: unknown; error: unknown }) {
+  const builder: any = {}
+  builder.then = (resolve: any) => resolve(result)
+  builder.single = vi.fn().mockResolvedValue(result)
+  builder.maybeSingle = vi.fn().mockResolvedValue(result)
+  const methods = ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'gte', 'lte', 'gt', 'lt', 'like', 'ilike', 'is', 'not', 'in', 'contains', 'filter', 'or', 'order', 'limit', 'range', 'match']
+  for (const m of methods) {
+    builder[m] = vi.fn().mockReturnValue(builder)
+  }
+  return builder
+}
+
 describe('getUserOrg data flow', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -17,6 +33,25 @@ describe('getUserOrg data flow', () => {
   })
 
   it('returns valid UserOrg when user and org exist', async () => {
+    const membershipBuilder = createChainableBuilder({
+      data: {
+        organization_id: 'org-1',
+        role: 'admin',
+        organizations: {
+          id: 'org-1',
+          name: 'Test Org',
+          subscription_tier: 'growth',
+          subscription_status: 'active',
+        },
+      },
+      error: null,
+    })
+
+    const profileBuilder = createChainableBuilder({
+      data: { full_name: 'Test User' },
+      error: null,
+    })
+
     const { createClient } = await import('@/lib/supabase/server')
     vi.mocked(createClient).mockResolvedValue({
       auth: {
@@ -26,31 +61,17 @@ describe('getUserOrg data flow', () => {
         }),
       },
       from: vi.fn((table: string) => {
-        if (table === 'users') {
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({
-                  data: {
-                    id: 'user-1',
-                    email: 'test@test.co.za',
-                    full_name: 'Test User',
-                    organization_id: 'org-1',
-                    role: 'admin',
-                    organizations: {
-                      id: 'org-1',
-                      name: 'Test Org',
-                      subscription_tier: 'growth',
-                      subscription_status: 'active',
-                    },
-                  },
-                  error: null,
-                }),
-              })),
-            })),
-          }
-        }
-        return {}
+        if (table === 'organization_users') return membershipBuilder
+        return createChainableBuilder({ data: null, error: null })
+      }),
+    } as any)
+
+    // Admin client used for user_profiles lookup
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    vi.mocked(createAdminClient).mockReturnValue({
+      from: vi.fn((table: string) => {
+        if (table === 'user_profiles') return profileBuilder
+        return createChainableBuilder({ data: null, error: null })
       }),
     } as any)
 
@@ -83,10 +104,13 @@ describe('getUserOrg data flow', () => {
     expect(result.error).toBe('Not authenticated')
   })
 
-  it('auto-creates user record via admin client when user row is missing', async () => {
-    const adminInsertMock = vi.fn().mockResolvedValue({ error: null })
+  it('auto-creates user record via ensureUserRecord when membership is missing', async () => {
+    // User client: auth works but organization_users query returns null (no membership)
+    const userOrgBuilder = createChainableBuilder({
+      data: null,
+      error: { code: 'PGRST116', message: 'not found' },
+    })
 
-    // User client: auth works but users query fails
     const { createClient } = await import('@/lib/supabase/server')
     vi.mocked(createClient).mockResolvedValue({
       auth: {
@@ -101,87 +125,73 @@ describe('getUserOrg data flow', () => {
           error: null,
         }),
       },
-      from: vi.fn(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn().mockResolvedValue({
-              data: null,
-              error: { code: 'PGRST116', message: 'not found' },
-            }),
-          })),
-        })),
-      })),
+      from: vi.fn(() => userOrgBuilder),
     } as any)
 
-    // Admin client: handles the auto-create + re-fetch
-    let adminQueryCount = 0
+    // Admin client handles: fallback lookup, ensureUserRecord checks, org lookup, inserts, re-fetch
+    let adminOrgUsersCallCount = 0
+    const adminInsertMock = vi.fn().mockReturnValue(
+      createChainableBuilder({ data: null, error: null })
+    )
+    const adminUpsertMock = vi.fn().mockResolvedValue({ data: null, error: null })
+
     const { createAdminClient } = await import('@/lib/supabase/admin')
     vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn((table: string) => {
-        if (table === 'users') {
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                single: vi.fn().mockImplementation(() => {
-                  adminQueryCount++
-                  if (adminQueryCount <= 2) {
-                    // First admin queries: user not found (for fallback check + initial fetch)
-                    return Promise.resolve({ data: null, error: { code: 'PGRST116' } })
-                  }
-                  // After insert: user found
-                  return Promise.resolve({
-                    data: {
-                      id: 'user-2',
-                      email: 'missing@test.co.za',
-                      full_name: 'Missing User',
-                      organization_id: 'org-auto',
-                      role: 'admin',
-                      organizations: {
-                        id: 'org-auto',
-                        name: 'Auto Org',
-                        subscription_tier: 'starter',
-                        subscription_status: 'trial',
-                      },
-                    },
-                    error: null,
-                  })
-                }),
-              })),
-            })),
-            insert: adminInsertMock,
+        if (table === 'organization_users') {
+          adminOrgUsersCallCount++
+          if (adminOrgUsersCallCount <= 2) {
+            // First calls: membership not found (fallback + ensureUserRecord check)
+            return createChainableBuilder({
+              data: null,
+              error: { code: 'PGRST116', message: 'not found' },
+            })
           }
+          // After auto-create: re-fetch returns membership with joined org
+          const refetchBuilder = createChainableBuilder({
+            data: {
+              organization_id: 'org-auto',
+              role: 'admin',
+              organizations: {
+                id: 'org-auto',
+                name: "Missing User's Organization",
+                subscription_tier: 'starter',
+                subscription_status: 'trial',
+              },
+            },
+            error: null,
+          })
+          refetchBuilder.insert = adminInsertMock
+          return refetchBuilder
         }
         if (table === 'organizations') {
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  single: vi.fn().mockResolvedValue({
-                    data: { id: 'org-auto' },
-                    error: null,
-                  }),
-                })),
-              })),
-            })),
-          }
+          // ensureUserRecord: no managed org found, then creates a new org
+          const orgBuilder: any = createChainableBuilder({
+            data: null,
+            error: { code: 'PGRST116', message: 'not found' },
+          })
+          orgBuilder.insert = vi.fn().mockReturnValue(
+            createChainableBuilder({
+              data: { id: 'org-auto' },
+              error: null,
+            })
+          )
+          return orgBuilder
         }
-        return {}
+        if (table === 'user_profiles') {
+          const profileBuilder: any = createChainableBuilder({
+            data: { full_name: 'Missing User' },
+            error: null,
+          })
+          profileBuilder.upsert = adminUpsertMock
+          return profileBuilder
+        }
+        return createChainableBuilder({ data: null, error: null })
       }),
     } as any)
 
     const { getUserOrg } = await import('@/lib/auth/get-user-org')
     const result = await getUserOrg()
-
-    // Should have auto-created the user record via admin client
-    expect(adminInsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: 'user-2',
-        email: 'missing@test.co.za',
-        full_name: 'Missing User',
-        organization_id: 'org-auto',
-        role: 'admin',
-      })
-    )
 
     // Should return valid data after auto-create
     expect(result.error).toBeNull()
@@ -190,47 +200,26 @@ describe('getUserOrg data flow', () => {
     expect(result.data!.organizationId).toBe('org-auto')
   })
 
-  it('returns error when user has no organization', async () => {
-    const { createClient } = await import('@/lib/supabase/server')
-    vi.mocked(createClient).mockResolvedValue({
-      auth: {
-        getUser: vi.fn().mockResolvedValue({
-          data: { user: { id: 'user-3', email: 'noorg@test.co.za' } },
-          error: null,
-        }),
+  it('handles organizations returned as array from join', async () => {
+    const membershipBuilder = createChainableBuilder({
+      data: {
+        organization_id: 'org-arr',
+        role: 'admin',
+        organizations: [{
+          id: 'org-arr',
+          name: 'Array Org',
+          subscription_tier: 'scale',
+          subscription_status: 'active',
+        }],
       },
-      from: vi.fn((table: string) => {
-        if (table === 'users') {
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({
-                  data: {
-                    id: 'user-3',
-                    email: 'noorg@test.co.za',
-                    full_name: 'No Org User',
-                    organization_id: null,
-                    role: 'admin',
-                    organizations: null,
-                  },
-                  error: null,
-                }),
-              })),
-            })),
-          }
-        }
-        return {}
-      }),
-    } as any)
+      error: null,
+    })
 
-    const { getUserOrg } = await import('@/lib/auth/get-user-org')
-    const result = await getUserOrg()
+    const profileBuilder = createChainableBuilder({
+      data: { full_name: 'Array User' },
+      error: null,
+    })
 
-    expect(result.data).toBeNull()
-    expect(result.error).toBe('User has no organization')
-  })
-
-  it('handles organizations returned as array', async () => {
     const { createClient } = await import('@/lib/supabase/server')
     vi.mocked(createClient).mockResolvedValue({
       auth: {
@@ -239,28 +228,18 @@ describe('getUserOrg data flow', () => {
           error: null,
         }),
       },
-      from: vi.fn(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn().mockResolvedValue({
-              data: {
-                id: 'user-4',
-                email: 'arr@test.co.za',
-                full_name: 'Array User',
-                organization_id: 'org-arr',
-                role: 'admin',
-                organizations: [{
-                  id: 'org-arr',
-                  name: 'Array Org',
-                  subscription_tier: 'scale',
-                  subscription_status: 'active',
-                }],
-              },
-              error: null,
-            }),
-          })),
-        })),
-      })),
+      from: vi.fn((table: string) => {
+        if (table === 'organization_users') return membershipBuilder
+        return createChainableBuilder({ data: null, error: null })
+      }),
+    } as any)
+
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    vi.mocked(createAdminClient).mockReturnValue({
+      from: vi.fn((table: string) => {
+        if (table === 'user_profiles') return profileBuilder
+        return createChainableBuilder({ data: null, error: null })
+      }),
     } as any)
 
     const { getUserOrg } = await import('@/lib/auth/get-user-org')

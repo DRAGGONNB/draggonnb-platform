@@ -9,6 +9,35 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(),
 }))
 
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(() => ({
+    from: vi.fn(() => createChainableBuilder({ data: null, error: { message: 'Not found' } })),
+  })),
+}))
+
+vi.mock('@/lib/webhooks/dispatcher', () => ({
+  dispatchWebhooksForOrg: vi.fn().mockResolvedValue(undefined),
+}))
+
+function createChainableBuilder(result: { data: unknown; error: unknown }) {
+  const builder: any = {}
+  builder.then = (resolve: any) => resolve(result)
+  builder.single = vi.fn().mockResolvedValue(result)
+  builder.maybeSingle = vi.fn().mockResolvedValue(result)
+  const methods = ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'gte', 'lte', 'gt', 'lt', 'like', 'ilike', 'is', 'not', 'in', 'contains', 'filter', 'or', 'order', 'limit', 'range', 'match']
+  for (const m of methods) {
+    builder[m] = vi.fn().mockReturnValue(builder)
+  }
+  return builder
+}
+
+function createOrgUserBuilder(orgId: string | null) {
+  return createChainableBuilder({
+    data: orgId ? { organization_id: orgId } : null,
+    error: orgId ? null : { message: 'Not found' },
+  })
+}
+
 describe('CRM Companies API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -94,30 +123,16 @@ describe('CRM Companies API', () => {
       }
 
       const { createClient } = await import('@/lib/supabase/server')
+      const companiesBuilder = createChainableBuilder({ data: mockCompany, error: null })
       const mock = createCompaniesAuthMock()
       ;(mock.from as any).mockImplementation((table: string) => {
-        if (table === 'users') {
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({
-                  data: { id: 'test-user-id', organization_id: 'test-org-id' },
-                  error: null,
-                }),
-              })),
-            })),
-          }
+        if (table === 'organization_users') {
+          return createOrgUserBuilder('test-org-id')
         }
         if (table === 'companies') {
-          return {
-            insert: vi.fn(() => ({
-              select: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({ data: mockCompany, error: null }),
-              })),
-            })),
-          }
+          return companiesBuilder
         }
-        return {}
+        return createChainableBuilder({ data: null, error: null })
       })
       vi.mocked(createClient).mockResolvedValue(mock as any)
 
@@ -144,7 +159,7 @@ describe('CRM Companies API', () => {
 })
 
 function createCompaniesAuthMock(companies: unknown[] = [], count: number = 0) {
-  const orMock = vi.fn().mockResolvedValue({ data: companies, error: null, count })
+  const companiesBuilder = createChainableBuilder({ data: companies, error: null, count } as any)
 
   return {
     auth: {
@@ -154,38 +169,13 @@ function createCompaniesAuthMock(companies: unknown[] = [], count: number = 0) {
       }),
     },
     from: vi.fn((table: string) => {
-      if (table === 'users') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
-                data: { id: 'test-user-id', organization_id: 'test-org-id' },
-                error: null,
-              }),
-            })),
-          })),
-        }
+      if (table === 'organization_users') {
+        return createOrgUserBuilder('test-org-id')
       }
       if (table === 'companies') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                range: vi.fn().mockImplementation(() => ({
-                  or: orMock,
-                  then: (resolve: any) => resolve({ data: companies, error: null, count }),
-                })),
-              })),
-            })),
-          })),
-          insert: vi.fn(() => ({
-            select: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({ data: companies[0] || { id: 'new-id' }, error: null }),
-            })),
-          })),
-        }
+        return companiesBuilder
       }
-      return {}
+      return createChainableBuilder({ data: null, error: null })
     }),
   }
 }
