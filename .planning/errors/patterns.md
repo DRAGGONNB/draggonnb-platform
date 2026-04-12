@@ -69,6 +69,30 @@ Recurring issues identified across multiple sessions. Consult before making chan
   - This is the same root pattern as ERR-007 (Vercel TypeScript Strictness) but specific to Supabase joins
 - **Related errors:** ERR-007, ERR-015
 
+## Pattern: Vitest ESM + Supabase Mock Builder
+- **Occurrences:** 3+ test files in session 48 (ERR-025, ERR-026)
+- **Root cause:** Two distinct issues compound in Vitest:
+  1. `require('@/lib/...')` fails because @/ path aliases don't resolve in ESM mode. Must use `await import()`.
+  2. Supabase mock builders using eager `{ ...chainable }` spread inside a loop capture incomplete objects. Methods added later (eq, order) are missing from objects returned by methods added earlier (select).
+- **Prevention:**
+  - NEVER use `require()` with @/ aliases in tests. Always use `await import('@/lib/...')`.
+  - For Supabase mock builders, use self-referencing pattern:
+    ```typescript
+    function createMockBuilder(result: { data: unknown; error: unknown }) {
+      const builder: any = {}
+      builder.then = (resolve: any) => resolve(result) // thenable for await
+      builder.single = vi.fn().mockResolvedValue(result)
+      builder.maybeSingle = vi.fn().mockResolvedValue(result)
+      const methods = ['select', 'insert', 'update', 'delete', 'eq', 'neq', 'gte', 'lte', 'order', 'limit', 'range', 'or', 'in', 'ilike', 'filter']
+      for (const m of methods) {
+        builder[m] = vi.fn().mockReturnValue(builder) // self-referencing
+      }
+      return builder
+    }
+    ```
+  - All chainable methods return the SAME builder object. `.then` makes it thenable for direct `await`.
+- **Related errors:** ERR-025, ERR-026
+
 ## Pattern: Supabase MCP Re-authentication
 - **Occurrences:** Every session
 - **Root cause:** Supabase MCP uses OAuth with browser-based login. Tokens expire between sessions.

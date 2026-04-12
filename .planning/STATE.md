@@ -68,24 +68,22 @@ Progress: 217+ DB tables + RLS live in Supabase. 198+ API routes. 20+ UI modules
 - **Vercel:** production READY, 21 env vars, PayFast merchant 32705333, tsc clean
 - **VPS:** Traefik + N8N (39 workflows, 27 active) + Gitea (OpenClaw removed -- security concern)
 - **Supabase:** 217 tables (33 new elijah_ tables), RLS live, 8 orgs, demo restaurant seeded (Sunset Grill, org: 678634bd), Elijah seeded (DragoonB org: 094a610d)
-- **GitHub:** DRAGGONNB/draggonnb-platform (main branch), latest commit: `905602d0`
-- **N8N:** 30 workflows (27 active). 4 restaurant workflows INACTIVE. Elijah Incident Intake INACTIVE (needs WhatsApp Cloud API).
+- **GitHub:** DRAGGONNB/draggonnb-platform (main branch + restaurant-sop-upgrade branch), latest commit: `c36cfcdd`
+- **N8N:** 30 workflows (all active except Elijah Incident Intake - needs WhatsApp Cloud API). 4 restaurant workflows activated in Session 48.
 - **VPS env:** PayFast merchant 32705333, Resend key updated, N8N Cloud ref removed
 - **Gitea:** API token expired — Chris to generate new token at localhost:3030 on VPS
 
 ## Session Continuity
 
-Last session: 2026-04-09 (Session 47)
-Stopped at: Restaurant module upgraded. 6 new pages built. Vercel build fixed. All code pushed.
+Last session: 2026-04-12 (Session 48)
+Stopped at: Comprehensive test suite overhaul complete. 583/583 tests passing. All committed and pushed.
 Resume with:
 1. Visual QA of restaurant module at `/restaurant/dashboard` (verify Vercel deploy works end-to-end)
 2. Seed demo data for The Lookout Deck (tables, staff with PINs, menu items, reservations, equipment)
-3. Block-based SOP execution page (Phase 4 of SOP plan) -- plan exists at `.claude/plans/graceful-beaming-dolphin.md`
-4. N8N Telegram AI SOP Creator workflow (Phase 5 of SOP plan)
-5. Guest-facing flow polish (`/t/[token]` bill view, payment, split)
-6. WhatsApp Cloud API setup → activate n8n Incident Intake workflow `KTzrMCJ7fcNe5PKN`
-7. Activate 4 N8N restaurant workflows in N8N dashboard (currently inactive)
-8. Gitea token renewal (Chris: Gitea admin panel at localhost:3030 via SSH tunnel)
+3. Guest-facing flow polish (`/t/[token]` bill view, payment, split)
+4. WhatsApp Cloud API setup -> activate n8n Incident Intake workflow `KTzrMCJ7fcNe5PKN`
+5. Gitea token renewal (Chris: Gitea admin panel at localhost:3030 via SSH tunnel)
+6. Push latest code to origin/main (currently on restaurant-sop-upgrade branch)
 
 ## Demo Restaurant — The Lookout Deck (Sunset Grill)
 
@@ -109,6 +107,36 @@ Resume with:
 | Guest T1 | `/r/sunset-grill/876b6b13-40b8-4aaa-99ed-593e808d46b9` |
 | Guest T2 | `/r/sunset-grill/5310b828-e25d-4a2e-930b-0d67c90cef09` |
 | Guest VIP | `/r/sunset-grill/d6db13a7-366b-491e-a623-cdd66bdbad50` |
+
+### Session 48 Summary (2026-04-12) — Comprehensive Test Suite Overhaul
+**What was done:**
+1. Wrote comprehensive integration tests for 6 modules: restaurant (54), elijah (54), social (52), email (62), accommodation (51), platform-core (60) = 333 new tests
+2. Fixed all pre-existing test failures across 14 files (CRM, auth, dashboard, provisioning, health-check, sidebar, base-agent, whatsapp)
+3. Root cause: require('@/lib/...') fails in Vitest ESM -- replaced with await import() across 3 test files
+4. Root cause: chainable Supabase mock builder used eager spread, breaking method chains -- replaced with self-referencing builder pattern + thenable
+5. Root cause: CRM/auth/dashboard tests mocked `from('users')` table that was removed in Session 43 -- updated to `organization_users` junction table
+6. Root cause: org-resolution tests tested multi-org tier priority that no longer exists in getOrgId -- simplified to match current behavior
+7. Fixed security bug: email webhook route timingSafeEqual throws on different-length buffers -- added length check
+8. Added missing @testing-library/dom peer dependency (8 component test files couldn't load)
+9. Fixed sidebar test assertions: updated for 6 NEW badges (was 2), split logo text, duplicate Analytics
+10. Fixed base-agent test: agent_type assertion 'test' -> 'lead_qualifier'
+11. Fixed whatsapp test: sendTextMessage now takes optional 3rd arg (orgId)
+12. Activated 4 N8N restaurant workflows (previously inactive)
+13. Final result: 583/583 tests passing across 34 files -- zero failures
+
+**Key fixes:**
+- `app/api/email/webhooks/route.ts` -- Buffer length check before timingSafeEqual (security fix)
+- `__tests__/helpers/api-test-utils.ts` -- Updated shared test utils for organization_users pattern
+- All CRM tests (contacts, companies, deals) -- organization_users mocks
+- `__tests__/integration/auth/org-resolution.test.ts` -- Simplified for current getOrgId behavior
+- `__tests__/integration/dashboard/data-flow.test.ts` -- organization_users + user_profiles mocks
+- `package.json` -- Added @testing-library/dom
+
+**Errors catalogued:** ERR-025 (require vs import in ESM), ERR-026 (chainable mock pattern), ERR-027 (timingSafeEqual buffer length), ERR-028 (missing @testing-library/dom)
+
+**Commits:**
+- 6dee136f: Comprehensive test suite: 583 tests all passing across 34 files
+- c36cfcdd: docs: session 48 close -- 583 tests all passing
 
 ### Session 47 Summary (2026-04-09) — Restaurant Module Massive Upgrade
 **What was done:**

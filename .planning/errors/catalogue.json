@@ -236,5 +236,61 @@
     "files_affected": [],
     "recurring": false,
     "tags": ["git", "merge-conflict", "framework-version", "unrelated-histories"]
+  },
+  {
+    "id": "ERR-025",
+    "timestamp": "2026-04-12",
+    "session": 48,
+    "category": "test",
+    "source": "vitest",
+    "error_message": "Cannot find module '@/lib/supabase/server' -- require() fails in Vitest ESM environment",
+    "root_cause": "Using require('@/lib/...') inside test helpers doesn't resolve the @/ path alias in Vitest's ESM environment. Path aliases only resolve with static imports or dynamic import().",
+    "resolution": "Replace all require('@/lib/...') with await import('@/lib/...') and make containing functions async.",
+    "prevention": "In Vitest tests, NEVER use require() with @/ aliases. Always use await import() for dynamic module access.",
+    "files_affected": ["__tests__/integration/api/restaurant/restaurant-full.test.ts", "__tests__/integration/api/elijah/elijah-full.test.ts", "__tests__/integration/api/social/social-content-full.test.ts"],
+    "recurring": true,
+    "tags": ["vitest", "esm", "require", "path-alias", "testing"]
+  },
+  {
+    "id": "ERR-026",
+    "timestamp": "2026-04-12",
+    "session": 48,
+    "category": "test",
+    "source": "vitest",
+    "error_message": "admin.from(...).select(...).eq is not a function -- chainable mock breaks on method chaining",
+    "root_cause": "Mock builder used eager spread { ...chainable } inside a loop, capturing incomplete object at each iteration. Early methods (select) returned objects missing later methods (eq, order).",
+    "resolution": "Self-referencing builder pattern: each method returns the same builder object. Added thenable (.then) so direct await resolves without .single().",
+    "prevention": "For Supabase mock builders, use self-referencing pattern where all chainable methods return the same object. Add .then for thenable support.",
+    "files_affected": ["__tests__/integration/api/restaurant/restaurant-full.test.ts", "__tests__/integration/api/elijah/elijah-full.test.ts"],
+    "recurring": true,
+    "tags": ["vitest", "mock", "supabase", "chainable", "testing"]
+  },
+  {
+    "id": "ERR-027",
+    "timestamp": "2026-04-12",
+    "session": 48,
+    "category": "security",
+    "source": "crypto",
+    "error_message": "crypto.timingSafeEqual throws when buffers have different lengths, causing webhook validation to return 200 instead of 401",
+    "root_cause": "timingSafeEqual requires equal-length buffers. Different-length signature vs expected value caused an exception caught by outer try-catch, defaulting to 200.",
+    "resolution": "Added buffer length check before timingSafeEqual call; return false on mismatch.",
+    "prevention": "Always check buffer lengths match before calling crypto.timingSafeEqual().",
+    "files_affected": ["app/api/email/webhooks/route.ts"],
+    "recurring": false,
+    "tags": ["security", "crypto", "webhook", "timingSafeEqual", "buffer-length"]
+  },
+  {
+    "id": "ERR-028",
+    "timestamp": "2026-04-12",
+    "session": 48,
+    "category": "test",
+    "source": "vitest",
+    "error_message": "Cannot find module '@testing-library/dom' -- component tests fail to load",
+    "root_cause": "@testing-library/react depends on @testing-library/dom as a peer dependency, but it wasn't installed.",
+    "resolution": "npm install --save-dev @testing-library/dom",
+    "prevention": "When using @testing-library/react, ensure @testing-library/dom is also installed.",
+    "files_affected": ["package.json"],
+    "recurring": false,
+    "tags": ["testing-library", "peer-dependency", "component-tests"]
   }
 ]
