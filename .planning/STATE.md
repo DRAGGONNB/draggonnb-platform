@@ -58,7 +58,7 @@ Progress: 217+ DB tables + RLS live in Supabase. 198+ API routes. 20+ UI modules
 
 ### Blockers/Concerns
 
-- Gitea API token expired -- need to generate new token on VPS (Gitea admin panel at localhost:3030)
+- ~~Gitea API token expired~~ RESOLVED 2026-04-12: new token generated, admin password reset
 - WhatsApp API: Phone Number ID and Access Token needed from Meta Business dashboard (deferred by Chris)
 - Domain DNS: draggonnb.online pointing needs verification
 - Meta App credentials needed: META_APP_ID, META_APP_SECRET, META_BUSINESS_PORTFOLIO_ID (Chris to provide)
@@ -71,7 +71,7 @@ Progress: 217+ DB tables + RLS live in Supabase. 198+ API routes. 20+ UI modules
 - **GitHub:** DRAGGONNB/draggonnb-platform (main branch + restaurant-sop-upgrade branch), latest commit: `c36cfcdd`
 - **N8N:** 30 workflows (all active except Elijah Incident Intake - needs WhatsApp Cloud API). 4 restaurant workflows activated in Session 48.
 - **VPS env:** PayFast merchant 32705333, Resend key updated, N8N Cloud ref removed
-- **Gitea:** API token expired — Chris to generate new token at localhost:3030 on VPS
+- **Gitea:** API token active (generated 2026-04-12), admin password reset, STATE.md + catalogue.json synced
 
 ## Session Continuity
 
