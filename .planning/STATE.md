@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Complete multi-tenant B2B operating system for South African SMEs. Shared Supabase DB with RLS-based tenant isolation, wildcard subdomain routing, DB-backed module gating, automated provisioning.
-**Current stats:** 217+ DB tables, 198+ API routes, 20+ UI modules, 6 AI agents, 30 N8N workflows (27 active), 241 tests. Build passing. tsc clean.
+**Current stats:** 217+ DB tables, 198+ API routes, 20+ UI modules, 6 AI agents, 30 N8N workflows (27 active), 583 tests (34 files). Build passing. tsc clean.
 
 ## Current Position
 
 Phase: Launch Readiness + First Client Prep (Restaurant Module Upgrade)
 Status: DEPLOYED TO PRODUCTION. Live at https://draggonnb-platform.vercel.app. Build passing. tsc clean.
-Last activity: 2026-04-09 -- Session 47: Restaurant module massive upgrade -- block-based SOPs, billing/payments, floor plan editor, 6 new management pages, Vercel build fixes.
-Progress: 217+ DB tables + RLS live in Supabase. 198+ API routes. 20+ UI modules. 6 AI agents. 30 N8N workflows. 241 tests. Build clean.
+Last activity: 2026-04-12 -- Session 48: Comprehensive test suite overhaul. 583 tests all passing across 34 files. New integration tests for restaurant (54), elijah (54), social (52), email (62), accommodation (51), platform-core (60). Fixed all pre-existing test failures (mock patterns, auth junction table, webhook security).
+Progress: 217+ DB tables + RLS live in Supabase. 198+ API routes. 20+ UI modules. 6 AI agents. 30 N8N workflows. 583 tests (34 files). Build clean.
 
 ## Accumulated Context
 
