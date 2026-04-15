@@ -13,6 +13,7 @@ import {
   Briefcase,
   ShoppingBag,
   HeartPulse,
+  Rocket,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -41,6 +42,21 @@ export function LandingNav() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#2D2F33]/95 shadow-sm backdrop-blur-sm">
+      {/* Launching Soon announcement bar */}
+      <div className="relative bg-gradient-to-r from-[#6B1420] via-[#8B1A2A] to-[#6B1420] text-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 py-2 text-center text-xs font-semibold sm:text-sm">
+          <Rocket className="h-3.5 w-3.5 shrink-0 animate-pulse" />
+          <span>
+            <span className="hidden sm:inline">Launching Soon --</span> Be among the first South African businesses on DraggonnB.
+          </span>
+          <a
+            href="#register-interest"
+            className="ml-1 hidden shrink-0 rounded-full bg-white/15 px-3 py-0.5 text-xs font-semibold underline-offset-4 transition-colors hover:bg-white/25 hover:underline sm:inline-block"
+          >
+            Register Interest
+          </a>
+        </div>
+      </div>
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">

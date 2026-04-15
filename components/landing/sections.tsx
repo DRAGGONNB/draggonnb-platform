@@ -51,10 +51,10 @@ export function HeroSection() {
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Button asChild size="lg" className="h-13 rounded-xl bg-gradient-to-r from-[#6B1420] to-[#8B1A2A] px-8 text-base font-semibold text-white hover:from-[#5A1018] hover:to-[#7A1624]">
-            <Link href="/qualify">
-              Get Started
+            <a href="#register-interest">
+              Register Your Interest
               <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+            </a>
           </Button>
           <Button
             asChild

@@ -9,6 +9,7 @@ import {
   CTASection,
 } from '@/components/landing/sections'
 import { IndustrySolutionsSection } from '@/components/landing/industry-solutions'
+import { RegisterInterestSection } from '@/components/landing/register-interest'
 import { LandingFooter } from '@/components/landing/footer'
 
 export default function Home({
@@ -32,6 +33,7 @@ export default function Home({
         <IndustrySolutionsSection />
         <SocialProofSection />
         <PricingPreviewSection />
+        <RegisterInterestSection />
         <CTASection />
       </main>
       <LandingFooter />
