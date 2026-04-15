@@ -28,7 +28,7 @@ export interface BrandStyles {
 
 export const BRAND: BrandStyles = {
   primaryColor: '#6B1420',
-  secondaryColor: '#2D2F33',
+  secondaryColor: '#363940',
   accentColor: '#C89030',
   logoUrl: '/logo.png',
   fontFamily: "'Inter', 'Space Grotesk', sans-serif",

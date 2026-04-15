@@ -74,7 +74,7 @@ export function welcomeEmail(data: WelcomeData): EmailTemplate {
   </tr>
 </table>
 <p style="margin:0 0 8px 0;font-size:14px;color:#6b6b78;">
-  Need a hand? Reply to this email or reach us at <a href="mailto:support@draggonnb.co.za" style="color:${BRAND.primaryColor};text-decoration:none;">support@draggonnb.co.za</a>.
+  Need a hand? Reply to this email or reach us at <a href="mailto:info@draggonnb.online" style="color:${BRAND.primaryColor};text-decoration:none;">info@draggonnb.online</a>.
 </p>`
 
   const plainText = `Welcome to ${BRAND.companyName}, ${data.clientName}!
@@ -89,7 +89,7 @@ Get started in three quick steps:
 
 Go to your dashboard: ${data.dashboardUrl}
 
-Need a hand? Reply to this email or reach us at support@draggonnb.co.za.
+Need a hand? Reply to this email or reach us at info@draggonnb.online.
 
 --
 ${BRAND.companyName} OS - The CRM and Marketing Platform Built for South Africa

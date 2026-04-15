@@ -21,9 +21,9 @@ import {
 // ============================================================================
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
-const DEFAULT_FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@draggonnb.app'
-const DEFAULT_FROM_NAME = process.env.EMAIL_FROM_NAME || 'DraggonnB CRMM'
-const REPLY_TO_EMAIL = process.env.EMAIL_REPLY_TO || 'support@draggonnb.app'
+const DEFAULT_FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@draggonnb.online'
+const DEFAULT_FROM_NAME = process.env.EMAIL_FROM_NAME || 'DraggonnB'
+const REPLY_TO_EMAIL = process.env.EMAIL_REPLY_TO || 'info@draggonnb.online'
 
 // Base URL for tracking pixels and links
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'

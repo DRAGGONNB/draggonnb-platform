@@ -180,7 +180,7 @@ export default function PricingPage() {
               Start Your Digital Journey
             </Link>
             <Link
-              href="mailto:support@draggonnb.online"
+              href="mailto:info@draggonnb.online"
               className="px-8 py-3 border border-[#A8A9AD]/30 hover:border-[#A8A9AD]/50 rounded-lg font-semibold transition-colors text-white hover:bg-white/5"
             >
               Contact Sales

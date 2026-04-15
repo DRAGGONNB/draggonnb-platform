@@ -20,7 +20,7 @@ const footerLinks = {
   Company: [
     { label: 'About', href: '#' },
     { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Contact', href: 'mailto:support@draggonnb.co.za' },
+    { label: 'Contact', href: 'mailto:info@draggonnb.online' },
     { label: 'Privacy Policy', href: '#' },
     { label: 'Terms of Service', href: '#' },
   ],

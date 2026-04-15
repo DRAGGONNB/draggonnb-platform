@@ -180,8 +180,8 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
 
         {/* Support Info */}
         <p className="text-sm text-brand-charcoal-300 mt-8 text-center">
-          Questions? <a href="mailto:support@draggonnb.com" className="text-brand-crimson-400 hover:text-brand-crimson-300">
-            Contact our support team
+          Questions? <a href="mailto:info@draggonnb.online" className="text-brand-crimson-400 hover:text-brand-crimson-300">
+            Contact our team
           </a>
         </p>
       </div>

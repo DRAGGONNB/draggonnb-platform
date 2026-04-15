@@ -151,12 +151,12 @@ function QualifyForm() {
             </div>
 
             <h1 className="mb-4 text-3xl font-bold text-[#363940]">
-              Your Challenges Are Being Analyzed
+              Thanks &mdash; We&apos;ve Got Your Details
             </h1>
 
             <p className="mb-10 text-lg text-[#A8A9AD]">
-              Our AI is reviewing your business needs right now. You&apos;ll receive a
-              personalized solution proposal within 2 hours at{' '}
+              You&apos;re on our pre-launch list. Our team will personally review your
+              business challenges and get back to you with a tailored proposal at{' '}
               <span className="font-medium text-[#363940]">{email}</span>.
             </p>
 
@@ -169,7 +169,7 @@ function QualifyForm() {
                     1
                   </span>
                   <p className="text-sm text-[#A8A9AD]">
-                    AI analyzes your 3 business challenges
+                    We review your business challenges personally
                   </p>
                 </li>
                 <li className="flex items-start gap-3">
@@ -185,7 +185,7 @@ function QualifyForm() {
                     3
                   </span>
                   <p className="text-sm text-[#A8A9AD]">
-                    You receive a detailed proposal with pricing
+                    You receive a tailored proposal &mdash; we&apos;ll be in touch soon
                   </p>
                 </li>
               </ol>
