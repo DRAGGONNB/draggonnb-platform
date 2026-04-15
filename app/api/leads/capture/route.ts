@@ -85,28 +85,39 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Sanitize and prepare lead data
-    const leadData = {
-      email: body.email.toLowerCase().trim(),
-      company_name: companyName.trim(),
-      contact_name: body.contact_name?.trim() || null,
-      phone: body.phone?.trim() || null,
-      website: body.website?.trim() || null,
-      industry: body.industry || null,
-      company_size: body.company_size || null,
-      source: body.source || 'qualify_form',
-      business_issues: Array.isArray(body.business_issues)
-        ? body.business_issues.filter((issue: unknown) => typeof issue === 'string' && issue.trim())
-        : [],
-      qualification_status: 'pending',
-    }
+    // Validate business issues first (source-agnostic)
+    const businessIssues = Array.isArray(body.business_issues)
+      ? body.business_issues.filter(
+          (issue: unknown) => typeof issue === 'string' && (issue as string).trim()
+        )
+      : []
 
-    // Ensure at least one business issue
-    if (leadData.business_issues.length === 0) {
+    if (businessIssues.length === 0) {
       return NextResponse.json(
         { error: 'At least one business challenge is required' },
         { status: 400 }
       )
+    }
+
+    // Map to actual `leads` table schema: name, company, email, phone, status, custom_fields.
+    // Extra fields (website, industry, company_size, source, business_issues, qualification_status)
+    // live in the `custom_fields` jsonb column — the table does NOT have those columns.
+    const contactName: string | null = body.contact_name?.trim() || null
+    const leadData = {
+      name: contactName || body.email.toLowerCase().trim(),
+      company: companyName.trim(),
+      email: body.email.toLowerCase().trim(),
+      phone: body.phone?.trim() || null,
+      status: 'new' as const,
+      custom_fields: {
+        contact_name: contactName,
+        website: body.website?.trim() || null,
+        industry: body.industry || null,
+        company_size: body.company_size || null,
+        source: body.source || 'qualify_form',
+        business_issues: businessIssues,
+        qualification_status: 'pending',
+      },
     }
 
     const supabase = createAdminClient()
@@ -155,13 +166,13 @@ export async function POST(request: NextRequest) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leadId: lead.id,
-          companyName: leadData.company_name,
-          contactName: leadData.contact_name || '',
+          companyName: leadData.company,
+          contactName: leadData.custom_fields.contact_name || '',
           email: leadData.email,
           phone: leadData.phone || '',
-          industry: leadData.industry || '',
+          industry: leadData.custom_fields.industry || '',
           tier_interest: body.tier_interest || '',
-          challenges: leadData.business_issues.join(', '),
+          challenges: businessIssues.join(', '),
         }),
       }).catch((err) => console.error('N8N lead alert failed:', err))
     }
