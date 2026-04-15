@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendEmail } from '@/lib/email/resend'
+
+// Where new-lead alerts are sent. Override via env if needed.
+const LEAD_ALERT_TO = process.env.LEAD_ALERT_TO_EMAIL || 'info@draggonnb.online'
 
 /**
  * POST /api/leads/capture
@@ -103,6 +107,7 @@ export async function POST(request: NextRequest) {
     // Extra fields (website, industry, company_size, source, business_issues, qualification_status)
     // live in the `custom_fields` jsonb column — the table does NOT have those columns.
     const contactName: string | null = body.contact_name?.trim() || null
+    const source: string = body.source || 'qualify_form'
     const leadData = {
       name: contactName || body.email.toLowerCase().trim(),
       company: companyName.trim(),
@@ -114,7 +119,7 @@ export async function POST(request: NextRequest) {
         website: body.website?.trim() || null,
         industry: body.industry || null,
         company_size: body.company_size || null,
-        source: body.source || 'qualify_form',
+        source,
         business_issues: businessIssues,
         qualification_status: 'pending',
       },
@@ -177,8 +182,27 @@ export async function POST(request: NextRequest) {
       }).catch((err) => console.error('N8N lead alert failed:', err))
     }
 
-    // Trigger AI qualification async (fire and forget)
-    triggerQualificationAsync(lead.id).catch((err) =>
+    // Send direct email notification to the team (fire and forget, independent of N8N)
+    sendLeadAlertEmail({
+      leadId: lead.id,
+      name: contactName || leadData.email,
+      company: leadData.company,
+      email: leadData.email,
+      phone: leadData.phone,
+      industry: body.industry || null,
+      companySize: body.company_size || null,
+      source,
+      businessIssues,
+      tierInterest: body.tier_interest || null,
+    }).catch((err) => console.error('Lead alert email failed:', err))
+
+    // Trigger AI qualification async (fire and forget).
+    // Use the incoming request origin so this works regardless of NEXT_PUBLIC_APP_URL.
+    const internalBaseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      request.nextUrl.origin ||
+      'http://localhost:3000'
+    triggerQualificationAsync(lead.id, internalBaseUrl).catch((err) =>
       console.error('Async qualification trigger failed:', err)
     )
 
@@ -199,9 +223,7 @@ export async function POST(request: NextRequest) {
  * Trigger qualification in the background
  * Calls the internal qualify endpoint
  */
-async function triggerQualificationAsync(leadId: string): Promise<void> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-
+async function triggerQualificationAsync(leadId: string, baseUrl: string): Promise<void> {
   try {
     const response = await fetch(`${baseUrl}/api/leads/${leadId}/qualify`, {
       method: 'POST',
@@ -216,5 +238,86 @@ async function triggerQualificationAsync(leadId: string): Promise<void> {
     }
   } catch (error) {
     console.error(`Qualification trigger error for lead ${leadId}:`, error)
+  }
+}
+
+/**
+ * Send direct email notification to the team when a lead is captured.
+ * Runs in parallel with the N8N webhook so notifications don't depend on
+ * the N8N workflow being correctly configured.
+ */
+async function sendLeadAlertEmail(payload: {
+  leadId: string
+  name: string
+  company: string
+  email: string
+  phone: string | null
+  industry: string | null
+  companySize: string | null
+  source: string
+  businessIssues: string[]
+  tierInterest: string | null
+}): Promise<void> {
+  const esc = (s: string) =>
+    s.replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!)
+    )
+
+  const row = (label: string, value: string | null) =>
+    value
+      ? `<tr><td style="padding:4px 12px 4px 0;color:#6B7280;font-size:13px;">${esc(label)}</td><td style="padding:4px 0;color:#111827;font-size:14px;">${esc(value)}</td></tr>`
+      : ''
+
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111827;">
+      <h2 style="color:#6B1420;margin:0 0 4px 0;font-size:20px;">New lead captured</h2>
+      <p style="color:#6B7280;margin:0 0 20px 0;font-size:14px;">Source: <strong>${esc(payload.source)}</strong></p>
+      <table style="border-collapse:collapse;width:100%;margin-bottom:20px;">
+        ${row('Name', payload.name)}
+        ${row('Company', payload.company)}
+        ${row('Email', payload.email)}
+        ${row('Phone', payload.phone)}
+        ${row('Industry', payload.industry)}
+        ${row('Company size', payload.companySize)}
+        ${row('Tier interest', payload.tierInterest)}
+        ${payload.businessIssues.length ? row('Business issues', payload.businessIssues.join(', ')) : ''}
+      </table>
+      <p style="color:#6B7280;font-size:12px;margin:0;">Lead ID: ${esc(payload.leadId)}</p>
+    </div>
+  `
+
+  const text = [
+    'New lead captured',
+    `Source: ${payload.source}`,
+    '',
+    `Name: ${payload.name}`,
+    `Company: ${payload.company}`,
+    `Email: ${payload.email}`,
+    payload.phone ? `Phone: ${payload.phone}` : null,
+    payload.industry ? `Industry: ${payload.industry}` : null,
+    payload.companySize ? `Company size: ${payload.companySize}` : null,
+    payload.tierInterest ? `Tier interest: ${payload.tierInterest}` : null,
+    payload.businessIssues.length ? `Business issues: ${payload.businessIssues.join(', ')}` : null,
+    '',
+    `Lead ID: ${payload.leadId}`,
+  ]
+    .filter((line): line is string => line !== null)
+    .join('\n')
+
+  const subjectCompany = payload.company.length > 40 ? payload.company.slice(0, 40) + '…' : payload.company
+  const result = await sendEmail({
+    to: LEAD_ALERT_TO,
+    subject: `🐉 New DraggonnB lead: ${subjectCompany}`,
+    html,
+    text,
+    fromName: 'DraggonnB Leads',
+    replyTo: payload.email,
+    tags: ['lead_alert', payload.source],
+  })
+
+  if (!result.success) {
+    console.error('Lead alert email send failed:', result.error)
+  } else {
+    console.log(`Lead alert email sent: ${result.messageId} (lead ${payload.leadId})`)
   }
 }

@@ -42,19 +42,24 @@ export async function POST(
       )
     }
 
+    // The `leads` table only has: id, name, company, email, phone, status, custom_fields.
+    // All qualification state lives inside custom_fields jsonb.
+    const cf: Record<string, unknown> = (lead.custom_fields as Record<string, unknown>) || {}
+    const currentQualStatus = (cf.qualification_status as string | undefined) ?? 'pending'
+
     // Don't re-qualify already qualified leads
-    if (lead.qualification_status !== 'pending') {
+    if (currentQualStatus !== 'pending') {
       return NextResponse.json({
         success: true,
-        message: `Lead already ${lead.qualification_status}`,
-        qualification: lead.qualification_score,
+        message: `Lead already ${currentQualStatus}`,
+        qualification: cf.qualification_score,
       })
     }
 
-    // Update status to qualifying
+    // Mark as qualifying (merge into custom_fields)
     await supabase
       .from('leads')
-      .update({ qualification_status: 'qualifying' })
+      .update({ custom_fields: { ...cf, qualification_status: 'qualifying' } })
       .eq('id', leadId)
 
     // Run Lead Qualifier Agent
@@ -64,13 +69,13 @@ export async function POST(
     try {
       const agentResult = await qualifier.qualifyLead({
         id: lead.id,
-        company_name: lead.company_name,
-        contact_name: lead.contact_name,
+        company_name: lead.company || (cf.company_name as string | undefined) || '',
+        contact_name: (cf.contact_name as string | undefined) || lead.name,
         email: lead.email,
-        website: lead.website,
-        industry: lead.industry,
-        company_size: lead.company_size,
-        business_issues: lead.business_issues || [],
+        website: cf.website as string | undefined,
+        industry: cf.industry as string | undefined,
+        company_size: cf.company_size as string | undefined,
+        business_issues: (cf.business_issues as string[] | undefined) || [],
       })
 
       if (!agentResult.result) {
@@ -83,7 +88,7 @@ export async function POST(
       // Mark as pending again so it can be retried
       await supabase
         .from('leads')
-        .update({ qualification_status: 'pending' })
+        .update({ custom_fields: { ...cf, qualification_status: 'pending' } })
         .eq('id', leadId)
 
       return NextResponse.json(
@@ -92,17 +97,20 @@ export async function POST(
       )
     }
 
-    // Update lead with qualification results
+    // Update lead with qualification results (all into custom_fields)
     await supabase
       .from('leads')
       .update({
-        qualification_status: qualificationResult.qualification_status,
-        qualification_score: qualificationResult.score,
-        recommended_tier: qualificationResult.recommended_tier,
-        solution_blueprint: {
-          automatable_processes: qualificationResult.automatable_processes,
-          suggested_templates: qualificationResult.suggested_templates,
-          reasoning: qualificationResult.reasoning,
+        custom_fields: {
+          ...cf,
+          qualification_status: qualificationResult.qualification_status,
+          qualification_score: qualificationResult.score,
+          recommended_tier: qualificationResult.recommended_tier,
+          solution_blueprint: {
+            automatable_processes: qualificationResult.automatable_processes,
+            suggested_templates: qualificationResult.suggested_templates,
+            reasoning: qualificationResult.reasoning,
+          },
         },
       })
       .eq('id', leadId)
@@ -114,7 +122,7 @@ export async function POST(
 
     // If qualified, generate proposal in background
     if (qualificationResult.qualification_status === 'qualified') {
-      generateProposalAsync(lead, qualificationResult).catch((err) =>
+      generateProposalAsync(lead, cf, qualificationResult).catch((err) =>
         console.error('Async proposal generation failed:', err)
       )
     }
@@ -137,6 +145,7 @@ export async function POST(
  */
 async function generateProposalAsync(
   lead: Record<string, unknown>,
+  cf: Record<string, unknown>,
   qualification: QualificationResult
 ): Promise<void> {
   try {
@@ -144,11 +153,11 @@ async function generateProposalAsync(
     await proposalAgent.generateProposal(
       {
         id: lead.id as string,
-        company_name: lead.company_name as string,
-        contact_name: lead.contact_name as string | undefined,
-        industry: lead.industry as string | undefined,
-        company_size: lead.company_size as string | undefined,
-        business_issues: (lead.business_issues as string[]) || [],
+        company_name: (lead.company as string) || (cf.company_name as string) || '',
+        contact_name: (cf.contact_name as string | undefined) || (lead.name as string | undefined),
+        industry: cf.industry as string | undefined,
+        company_size: cf.company_size as string | undefined,
+        business_issues: (cf.business_issues as string[]) || [],
       },
       qualification
     )
