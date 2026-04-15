@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
 import {
   Users,
   Mail,
@@ -17,7 +16,6 @@ import {
   TrendingUp,
   Zap,
   Clock,
-  Send,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -27,7 +25,7 @@ import { Button } from '@/components/ui/button'
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-[#2D2F33] px-4 pb-24 pt-32 sm:px-6 sm:pt-40 lg:px-8 lg:pt-48">
+    <section className="relative overflow-hidden bg-[#363940] px-4 pb-24 pt-32 sm:px-6 sm:pt-40 lg:px-8 lg:pt-48">
       {/* Background Effects */}
       <div className="pointer-events-none absolute left-1/2 top-0 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-[#6B1420]/[0.12] blur-[140px]" />
       <div className="pointer-events-none absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-[#6B1420]/[0.08] blur-[120px]" />
@@ -137,7 +135,7 @@ export function ModuleShowcaseSection() {
           <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
             The Platform
           </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-[#2D2F33] lg:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold text-[#363940] lg:text-4xl">
             Everything You Need to{' '}
             <span className="gradient-text-brand">Run and Grow</span>
           </h2>
@@ -158,7 +156,7 @@ export function ModuleShowcaseSection() {
                 <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#6B1420]/10">
                   <Icon className="h-6 w-6 text-[#6B1420]" />
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-[#2D2F33]">{mod.title}</h3>
+                <h3 className="mb-2 text-lg font-semibold text-[#363940]">{mod.title}</h3>
                 <p className="text-sm leading-relaxed text-[#A8A9AD]">{mod.description}</p>
               </div>
             )
@@ -205,7 +203,7 @@ export function HowItWorksSection() {
           <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
             How It Works
           </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-[#2D2F33] lg:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold text-[#363940] lg:text-4xl">
             Three Steps to a{' '}
             <span className="gradient-text-brand">Smarter Business</span>
           </h2>
@@ -236,109 +234,8 @@ export function HowItWorksSection() {
                   </span>
                 </div>
 
-                <h3 className="mb-3 text-xl font-semibold text-[#2D2F33]">{step.title}</h3>
+                <h3 className="mb-3 text-xl font-semibold text-[#363940]">{step.title}</h3>
                 <p className="text-sm leading-relaxed text-[#A8A9AD]">{step.description}</p>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/*  Social Proof / Stats                                               */
-/* ------------------------------------------------------------------ */
-
-const stats = [
-  { value: 2400, suffix: '+', label: 'Automation Hours Saved', icon: Clock },
-  { value: 340, suffix: '%', label: 'Average Client Growth', icon: TrendingUp },
-  { value: 150, suffix: 'K+', label: 'Emails Sent', icon: Send },
-  { value: 72, suffix: 'hr', label: 'Go-Live Time', icon: Zap },
-]
-
-function AnimatedCounter({
-  target,
-  suffix,
-  duration = 2000,
-}: {
-  target: number
-  suffix: string
-  duration?: number
-}) {
-  const [count, setCount] = useState(0)
-  const [hasAnimated, setHasAnimated] = useState(false)
-  const ref = useRef<HTMLSpanElement>(null)
-
-  useEffect(() => {
-    const element = ref.current
-    if (!element) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true)
-          const startTime = performance.now()
-          const animate = (currentTime: number) => {
-            const elapsed = currentTime - startTime
-            const progress = Math.min(elapsed / duration, 1)
-            const eased = 1 - Math.pow(1 - progress, 3)
-            setCount(Math.floor(eased * target))
-            if (progress < 1) {
-              requestAnimationFrame(animate)
-            }
-          }
-          requestAnimationFrame(animate)
-        }
-      },
-      { threshold: 0.3 }
-    )
-
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [target, duration, hasAnimated])
-
-  return (
-    <span ref={ref}>
-      {count.toLocaleString()}
-      {suffix}
-    </span>
-  )
-}
-
-export function SocialProofSection() {
-  return (
-    <section className="bg-[#2D2F33] px-4 py-20 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-14 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
-            Results That Matter
-          </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-white lg:text-4xl">
-            Built to Deliver{' '}
-            <span className="gradient-text-brand">Real Impact</span>
-          </h2>
-          <p className="mx-auto max-w-2xl text-lg text-[#A8A9AD]">
-            Our platform helps South African businesses automate operations and focus on growth.
-          </p>
-        </div>
-
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon
-            return (
-              <div
-                key={stat.label}
-                className="group rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-sm transition-all hover-lift hover-glow-brand"
-              >
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#6B1420]/15">
-                  <Icon className="h-6 w-6 text-[#6B1420]" />
-                </div>
-                <p className="mb-1 text-3xl font-bold text-white sm:text-4xl">
-                  <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                </p>
-                <p className="text-sm text-[#A8A9AD]">{stat.label}</p>
               </div>
             )
           })}
@@ -407,7 +304,7 @@ export function PricingPreviewSection() {
           <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
             Pricing
           </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-[#2D2F33] lg:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold text-[#363940] lg:text-4xl">
             Transparent Pricing,{' '}
             <span className="gradient-text-brand">Powerful Platform</span>
           </h2>
@@ -434,11 +331,11 @@ export function PricingPreviewSection() {
                 </div>
               )}
 
-              <h3 className="mb-1 text-xl font-semibold text-[#2D2F33]">{tier.name}</h3>
+              <h3 className="mb-1 text-xl font-semibold text-[#363940]">{tier.name}</h3>
               <p className="mb-5 text-sm text-[#A8A9AD]">{tier.description}</p>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-[#2D2F33]">{tier.price}</span>
+                <span className="text-4xl font-bold text-[#363940]">{tier.price}</span>
                 <span className="ml-1 text-[#A8A9AD]">/month</span>
               </div>
 
@@ -458,7 +355,7 @@ export function PricingPreviewSection() {
                 className={`w-full rounded-xl ${
                   tier.popular
                     ? 'btn-brand'
-                    : 'border-[#C0C1C4] bg-transparent text-[#2D2F33] hover:bg-[#F5F5F6] hover:text-[#2D2F33]'
+                    : 'border-[#C0C1C4] bg-transparent text-[#363940] hover:bg-[#F5F5F6] hover:text-[#363940]'
                 }`}
               >
                 <Link href={`/qualify?tier=${tier.id}`}>Get Started</Link>

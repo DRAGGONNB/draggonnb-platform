@@ -54,7 +54,7 @@ export function IndustrySolutionsSection() {
           <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#6B1420]">
             Industry Solutions
           </p>
-          <h2 className="mb-4 font-display text-3xl font-bold text-[#2D2F33] lg:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold text-[#363940] lg:text-4xl">
             Built for{' '}
             <span className="gradient-text-brand">Your Industry</span>
           </h2>
@@ -75,7 +75,7 @@ export function IndustrySolutionsSection() {
                 <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#6B1420]/10">
                   <Icon className="h-6 w-6 text-[#6B1420]" />
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-[#2D2F33]">{industry.title}</h3>
+                <h3 className="mb-2 text-lg font-semibold text-[#363940]">{industry.title}</h3>
                 <p className="text-sm leading-relaxed text-[#A8A9AD]">{industry.description}</p>
               </div>
             )

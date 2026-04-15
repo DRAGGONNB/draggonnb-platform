@@ -41,7 +41,7 @@ export function LandingNav() {
   }, [])
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#2D2F33]/95 shadow-sm backdrop-blur-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#363940]/95 shadow-sm backdrop-blur-sm">
       {/* Launching Soon announcement bar */}
       <div className="relative bg-gradient-to-r from-[#6B1420] via-[#8B1A2A] to-[#6B1420] text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 py-2 text-center text-xs font-semibold sm:text-sm">
@@ -93,7 +93,7 @@ export function LandingNav() {
 
             {dropdownOpen && (
               <div className="absolute left-1/2 top-full pt-2 -translate-x-1/2">
-                <div className="w-56 rounded-xl border border-white/10 bg-[#2D2F33] p-2 shadow-2xl">
+                <div className="w-56 rounded-xl border border-white/10 bg-[#363940] p-2 shadow-2xl">
                   {industryItems.map((item) => {
                     const Icon = item.icon
                     return (
@@ -135,7 +135,7 @@ export function LandingNav() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="border-t border-white/10 bg-[#2D2F33] lg:hidden">
+        <div className="border-t border-white/10 bg-[#363940] lg:hidden">
           <div className="flex flex-col gap-4 px-4 py-6">
             <a
               href="#modules"

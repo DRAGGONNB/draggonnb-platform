@@ -4,7 +4,6 @@ import {
   HeroSection,
   ModuleShowcaseSection,
   HowItWorksSection,
-  SocialProofSection,
   PricingPreviewSection,
   CTASection,
 } from '@/components/landing/sections'
@@ -24,14 +23,13 @@ export default function Home({
   }
 
   return (
-    <div className="min-h-screen bg-[#2D2F33] text-white">
+    <div className="min-h-screen bg-[#363940] text-white">
       <LandingNav />
       <main>
         <HeroSection />
         <ModuleShowcaseSection />
         <HowItWorksSection />
         <IndustrySolutionsSection />
-        <SocialProofSection />
         <PricingPreviewSection />
         <RegisterInterestSection />
         <CTASection />

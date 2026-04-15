@@ -123,17 +123,17 @@ function QualifyForm() {
   }
 
   const inputClasses =
-    'w-full rounded-lg border border-[#C0C1C4] bg-white px-4 py-3 text-[#2D2F33] placeholder-[#A8A9AD] transition-colors focus:border-[#6B1420] focus:outline-none focus:ring-2 focus:ring-[#6B1420]/20'
+    'w-full rounded-lg border border-[#C0C1C4] bg-white px-4 py-3 text-[#363940] placeholder-[#A8A9AD] transition-colors focus:border-[#6B1420] focus:outline-none focus:ring-2 focus:ring-[#6B1420]/20'
   const selectClasses =
-    'w-full rounded-lg border border-[#C0C1C4] bg-white px-4 py-3 text-[#2D2F33] transition-colors focus:border-[#6B1420] focus:outline-none focus:ring-2 focus:ring-[#6B1420]/20'
-  const labelClasses = 'mb-1.5 block text-sm font-medium text-[#2D2F33]'
+    'w-full rounded-lg border border-[#C0C1C4] bg-white px-4 py-3 text-[#363940] transition-colors focus:border-[#6B1420] focus:outline-none focus:ring-2 focus:ring-[#6B1420]/20'
+  const labelClasses = 'mb-1.5 block text-sm font-medium text-[#363940]'
 
   // Confirmation view
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-white">
         {/* Header */}
-        <header className="border-b border-[#C0C1C4]/30 bg-[#2D2F33]">
+        <header className="border-b border-[#C0C1C4]/30 bg-[#363940]">
           <div className="mx-auto flex max-w-7xl items-center px-4 py-4 sm:px-6 lg:px-8">
             <Link href="/" className="flex items-center gap-2">
               <Image src="/logo.png" alt="DraggonnB" width={32} height={32} className="rounded-lg" />
@@ -150,19 +150,19 @@ function QualifyForm() {
               <CheckCircle2 className="h-10 w-10 text-green-500" />
             </div>
 
-            <h1 className="mb-4 text-3xl font-bold text-[#2D2F33]">
+            <h1 className="mb-4 text-3xl font-bold text-[#363940]">
               Your Challenges Are Being Analyzed
             </h1>
 
             <p className="mb-10 text-lg text-[#A8A9AD]">
               Our AI is reviewing your business needs right now. You&apos;ll receive a
               personalized solution proposal within 2 hours at{' '}
-              <span className="font-medium text-[#2D2F33]">{email}</span>.
+              <span className="font-medium text-[#363940]">{email}</span>.
             </p>
 
             {/* What happens next */}
             <div className="mb-10 rounded-xl border border-[#C0C1C4]/50 bg-[#F5F5F6] p-6 text-left">
-              <h2 className="mb-5 text-lg font-semibold text-[#2D2F33]">What happens next?</h2>
+              <h2 className="mb-5 text-lg font-semibold text-[#363940]">What happens next?</h2>
               <ol className="space-y-4">
                 <li className="flex items-start gap-3">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#6B1420] text-xs font-bold text-white">
@@ -207,7 +207,7 @@ function QualifyForm() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header - Dark */}
-      <header className="border-b border-white/10 bg-[#2D2F33]">
+      <header className="border-b border-white/10 bg-[#363940]">
         <div className="mx-auto flex max-w-7xl items-center px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.png" alt="DraggonnB" width={32} height={32} className="rounded-lg" />
@@ -226,7 +226,7 @@ function QualifyForm() {
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-[#6B1420] to-[#4A0E16] shadow-lg">
                 <Brain className="h-7 w-7 text-white" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-[#2D2F33] sm:text-3xl">
+              <h1 className="mb-2 text-2xl font-bold text-[#363940] sm:text-3xl">
                 Tell Us About Your{' '}
                 <span className="gradient-text-brand">Business Challenges</span>
               </h1>
@@ -374,7 +374,7 @@ function QualifyForm() {
               <div>
                 <div className="mb-4 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-[#6B1420]" />
-                  <h2 className="text-lg font-semibold text-[#2D2F33]">Your Business Challenges</h2>
+                  <h2 className="text-lg font-semibold text-[#363940]">Your Business Challenges</h2>
                 </div>
                 <p className="mb-4 text-sm text-[#A8A9AD]">
                   Describe up to 3 areas where your business is struggling. Our AI will use these

@@ -25,9 +25,9 @@ export default function PricingPage() {
     .map((id) => [id, PRICING_TIERS[id]] as const)
 
   return (
-    <div className="min-h-screen bg-[#2D2F33]">
+    <div className="min-h-screen bg-[#363940]">
       {/* Header - Dark */}
-      <div className="bg-[#2D2F33] px-4 py-16 sm:px-6 lg:px-8">
+      <div className="bg-[#363940] px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <Link href="/" className="mb-8 inline-flex items-center gap-2">
             <Image src="/logo.png" alt="DraggonnB" width={32} height={32} className="rounded-lg" />
@@ -83,9 +83,9 @@ export default function PricingPage() {
               )}
 
               <div className="flex-1 p-8">
-                <h3 className="text-2xl font-bold text-[#2D2F33] mb-2">{tier.name}</h3>
+                <h3 className="text-2xl font-bold text-[#363940] mb-2">{tier.name}</h3>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-[#2D2F33]">
+                  <span className="text-4xl font-bold text-[#363940]">
                     R{annual ? Math.round(tier.price * 10.8 / 12).toLocaleString() : tier.price.toLocaleString()}
                   </span>
                   <span className="text-[#A8A9AD] ml-2">/{tier.frequency}</span>
@@ -113,7 +113,7 @@ export default function PricingPage() {
                   className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
                     tierId === 'growth'
                       ? 'btn-brand'
-                      : 'bg-white hover:bg-[#F5F5F6] text-[#2D2F33] border border-[#C0C1C4] hover:border-[#A8A9AD]'
+                      : 'bg-white hover:bg-[#F5F5F6] text-[#363940] border border-[#C0C1C4] hover:border-[#A8A9AD]'
                   }`}
                 >
                   {isLoading && selectedTier === tierId ? 'Processing...' : 'Get Started'}
@@ -127,39 +127,39 @@ export default function PricingPage() {
       {/* FAQ Section - Light */}
       <div className="px-4 py-16 sm:px-6 lg:px-8 bg-white">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-center text-[#2D2F33] mb-12">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-center text-[#363940] mb-12">Frequently Asked Questions</h2>
 
           <div className="space-y-8">
             <div>
-              <h3 className="text-xl font-semibold text-[#2D2F33] mb-2">Can I change my plan later?</h3>
+              <h3 className="text-xl font-semibold text-[#363940] mb-2">Can I change my plan later?</h3>
               <p className="text-[#A8A9AD]">
                 Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.
               </p>
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold text-[#2D2F33] mb-2">What payment methods do you accept?</h3>
+              <h3 className="text-xl font-semibold text-[#363940] mb-2">What payment methods do you accept?</h3>
               <p className="text-[#A8A9AD]">
                 We accept all major credit/debit cards and EFT via PayFast, South Africa&apos;s trusted payment gateway.
               </p>
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold text-[#2D2F33] mb-2">Is there a setup fee?</h3>
+              <h3 className="text-xl font-semibold text-[#363940] mb-2">Is there a setup fee?</h3>
               <p className="text-[#A8A9AD]">
                 No setup fees! We&apos;ll provision your account automatically within 48 hours.
               </p>
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold text-[#2D2F33] mb-2">What if I need more than the plan limits?</h3>
+              <h3 className="text-xl font-semibold text-[#363940] mb-2">What if I need more than the plan limits?</h3>
               <p className="text-[#A8A9AD]">
                 Upgrade to a higher tier or contact our sales team for custom Enterprise solutions.
               </p>
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold text-[#2D2F33] mb-2">How does recurring billing work?</h3>
+              <h3 className="text-xl font-semibold text-[#363940] mb-2">How does recurring billing work?</h3>
               <p className="text-[#A8A9AD]">
                 PayFast automatically charges your payment method monthly. You can cancel anytime with no penalties.
               </p>
@@ -169,7 +169,7 @@ export default function PricingPage() {
       </div>
 
       {/* CTA Footer - Dark */}
-      <div className="px-4 py-12 sm:px-6 lg:px-8 bg-[#2D2F33] text-white">
+      <div className="px-4 py-12 sm:px-6 lg:px-8 bg-[#363940] text-white">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-2xl font-bold mb-4 text-white">Ready to get started?</h2>
           <p className="text-[#A8A9AD] mb-6">
@@ -180,7 +180,7 @@ export default function PricingPage() {
               Start Your Digital Journey
             </Link>
             <Link
-              href="mailto:support@draggonnb.co.za"
+              href="mailto:support@draggonnb.online"
               className="px-8 py-3 border border-[#A8A9AD]/30 hover:border-[#A8A9AD]/50 rounded-lg font-semibold transition-colors text-white hover:bg-white/5"
             >
               Contact Sales

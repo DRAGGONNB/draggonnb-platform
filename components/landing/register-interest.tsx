@@ -56,7 +56,7 @@ export function RegisterInterestSection() {
   return (
     <section
       id="register-interest"
-      className="relative overflow-hidden bg-[#2D2F33] px-4 py-24 sm:px-6 lg:px-8"
+      className="relative overflow-hidden bg-[#363940] px-4 py-24 sm:px-6 lg:px-8"
     >
       <div className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[#6B1420]/[0.15] blur-[120px]" />
 
@@ -83,10 +83,10 @@ export function RegisterInterestSection() {
               <Check className="h-7 w-7 text-white" />
             </div>
             <h3 className="mb-2 font-display text-2xl font-bold text-white">
-              You're on the list.
+              You&apos;re on the list.
             </h3>
             <p className="text-[#A8A9AD]">
-              Thanks -- we'll be in touch as soon as your launch invite is
+              Thanks -- we&apos;ll be in touch as soon as your launch invite is
               ready. Keep an eye on your inbox.
             </p>
           </div>
@@ -213,7 +213,7 @@ export function RegisterInterestSection() {
             </Button>
 
             <p className="mt-4 text-center text-xs text-[#A8A9AD]">
-              We'll only contact you about the launch. No spam, ever.
+              We&apos;ll only contact you about the launch. No spam, ever.
             </p>
           </form>
         )}
